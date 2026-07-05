@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Controllers;
+
+use App\Core\View;
+use App\Services\ScheduleGridService;
+use DateTimeImmutable;
+
+class PublicViewController
+{
+    /** Oeffentliche Wochenansicht ohne Login, ohne private Trainerdaten/Konflikte (Abschnitt 11). */
+    public function week(string $offset = '0'): void
+    {
+        $offset = (int) $offset;
+        $monday = (new DateTimeImmutable('monday this week'))->modify(($offset * 7) . ' days');
+
+        $days = [];
+        for ($i = 0; $i < 7; $i++) {
+            $date = $monday->modify("+{$i} days")->format('Y-m-d');
+            $days[] = ScheduleGridService::buildDayGrid($date);
+        }
+
+        View::render('public/week', [
+            'days' => $days,
+            'offset' => $offset,
+            'weekLabel' => $monday->format('d.m.Y') . ' - ' . $monday->modify('+6 days')->format('d.m.Y'),
+        ], 'public/layout');
+    }
+}
