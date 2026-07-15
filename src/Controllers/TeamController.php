@@ -9,6 +9,7 @@ use App\Core\Request;
 use App\Core\Url;
 use App\Core\View;
 use App\Models\ChangeLog;
+use App\Models\Pitch;
 use App\Models\Team;
 use App\Models\User;
 
@@ -20,6 +21,7 @@ class TeamController
         View::render('teams/index', [
             'teams' => Team::allWithTrainers(),
             'trainers' => User::trainers(),
+            'pitches' => Pitch::allActive(),
         ]);
     }
 
@@ -77,6 +79,7 @@ class TeamController
             'preferred_size' => Request::input('preferred_size', 'egal'),
             'priority' => (int) Request::input('priority', 5),
             'external_ref' => trim((string) Request::input('external_ref', '')) ?: null,
+            'default_pitch_id' => Request::input('default_pitch_id') ?: null,
         ];
     }
 }

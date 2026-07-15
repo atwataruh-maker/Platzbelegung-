@@ -73,6 +73,14 @@ CREATE TABLE IF NOT EXISTS pitch_relations (
     CONSTRAINT fk_pr_child FOREIGN KEY (child_pitch_id) REFERENCES pitches(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Nachtraeglich ergaenzt: Standard-Heimplatz je Mannschaft, damit importierte
+-- Heimspiele (z.B. aus DFBnet) automatisch einen Platz zugewiesen bekommen
+-- und sofort die Platzsperre/Konflikterkennung greifen kann. FK erst hier
+-- moeglich, da "pitches" erst an dieser Stelle existiert.
+ALTER TABLE teams
+    ADD COLUMN default_pitch_id INT UNSIGNED NULL AFTER preferred_size,
+    ADD CONSTRAINT fk_teams_default_pitch FOREIGN KEY (default_pitch_id) REFERENCES pitches(id) ON DELETE SET NULL;
+
 -- ---------------------------------------------------------------------
 -- Saisons / Sondermodi
 -- ---------------------------------------------------------------------
@@ -120,13 +128,14 @@ CREATE TABLE IF NOT EXISTS games (
     lead_minutes INT UNSIGNED NULL COMMENT 'Vorlaufzeit, NULL = Standardwert verwenden',
     lag_minutes INT UNSIGNED NULL COMMENT 'Nachlaufzeit, NULL = Standardwert verwenden',
     status ENUM('scheduled','changed','cancelled') NOT NULL DEFAULT 'scheduled',
-    source ENUM('manual','csv') NOT NULL DEFAULT 'manual',
-    external_ref VARCHAR(150) NULL,
+    source ENUM('manual','csv','dfbnet') NOT NULL DEFAULT 'manual',
+    external_ref VARCHAR(150) NULL COMMENT 'z.B. DFBnet-Spielnummer, fuer Abgleich beim automatischen Import',
     notes TEXT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_games_team FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE,
-    CONSTRAINT fk_games_pitch FOREIGN KEY (pitch_id) REFERENCES pitches(id) ON DELETE SET NULL
+    CONSTRAINT fk_games_pitch FOREIGN KEY (pitch_id) REFERENCES pitches(id) ON DELETE SET NULL,
+    INDEX idx_games_external_ref (external_ref)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ---------------------------------------------------------------------

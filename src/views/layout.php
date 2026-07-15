@@ -34,6 +34,7 @@ $user = Auth::user();
                 <a href="<?= View::e(Url::to('/admin/base-schedule')) ?>">Grundbelegung</a>
                 <a href="<?= View::e(Url::to('/admin/games')) ?>">Spiele</a>
                 <a href="<?= View::e(Url::to('/admin/conflicts')) ?>">Konflikte</a>
+                <a href="<?= View::e(Url::to('/admin/log')) ?>">Protokoll</a>
             <?php endif; ?>
         </nav>
         <form method="post" action="<?= View::e(Url::to('/logout')) ?>" class="logout-form">

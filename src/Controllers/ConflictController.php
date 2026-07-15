@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Core\Auth;
-use App\Core\Config;
 use App\Core\Csrf;
 use App\Core\Flash;
 use App\Core\Request;
@@ -13,7 +12,6 @@ use App\Models\ChangeLog;
 use App\Models\Conflict;
 use App\Models\FallbackSuggestion;
 use App\Services\ConflictService;
-use DateTimeImmutable;
 
 class ConflictController
 {
@@ -60,10 +58,7 @@ class ConflictController
         Auth::requireRole('admin');
         Csrf::requireValid();
 
-        $horizon = (int) Config::get('rules.planning_horizon_days', 21);
-        $start = (new DateTimeImmutable('today'))->format('Y-m-d');
-        $end = (new DateTimeImmutable('today'))->modify("+{$horizon} days")->format('Y-m-d');
-        ConflictService::scanRange($start, $end);
+        ConflictService::rescanHorizon();
 
         Flash::set('success', 'Konflikte wurden neu berechnet.');
         header('Location: ' . Url::to('/admin/conflicts'));

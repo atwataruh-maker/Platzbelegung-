@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Core\Config;
 use App\Core\Database;
 use App\Models\BaseSchedule;
 use App\Models\ChangeLog;
@@ -23,6 +24,15 @@ use PDO;
  */
 class ConflictService
 {
+    /** Scannt den in rules.planning_horizon_days konfigurierten Zeitraum ab heute. */
+    public static function rescanHorizon(): void
+    {
+        $horizon = (int) Config::get('rules.planning_horizon_days', 21);
+        $start = (new DateTimeImmutable('today'))->format('Y-m-d');
+        $end = (new DateTimeImmutable('today'))->modify("+{$horizon} days")->format('Y-m-d');
+        self::scanRange($start, $end);
+    }
+
     public static function scanRange(string $startDate, string $endDate): void
     {
         self::autoResolveStaleConflicts();

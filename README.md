@@ -13,6 +13,9 @@ Dies ist die MVP-Version ("Version 1" der Anforderungsliste):
 - Sommer-/Winter-/Hallenplan als Grundbelegung hinterlegbar
 - Wochen- und Tagesansicht (Plaetze als Spalten, 30-Minuten-Raster)
 - Spiele manuell anlegen
+- automatischer Spielplan-Import per API-Endpunkt (`POST /import/games`),
+  gespeist durch ein separates DFBnet-Automatisierungsskript
+  (siehe `automation/dfbnet-import/`, laeuft NICHT auf STRATO)
 - automatische Platzblockierung (Vorlauf/Spieldauer/Nachlauf, inkl. Teilflaechen)
 - automatische Konflikterkennung (Training vs. Sperre, Doppelbelegung, keine Alternative)
 - automatische Ausweichvorschlaege mit Trainerbestaetigung
@@ -114,8 +117,25 @@ config/             config.example.php (kopieren nach config.php)
   Ausweichplatz zur selben Uhrzeit und legt Trainerbestaetigungen +
   Benachrichtigungen an.
 
+## Automatischer Spielplan-Import (DFBnet)
+
+`POST /import/games` nimmt Spieldaten aus einer externen Quelle entgegen
+(Token-Auth, siehe `config.import.api_token`), gleicht Mannschaften ueber
+`teams.external_ref` ab und verarbeitet Spiele wie manuell angelegte:
+automatische Platzsperre, Konflikterkennung, Ausweichvorschlaege. Bereits
+importierte Spiele, die bei einem erneuten Sync fehlen, werden automatisch
+abgesagt (inkl. Aufhebung der Platzsperre).
+
+Datenquelle ist ein separates Node.js/Playwright-Skript unter
+`automation/dfbnet-import/`, das **nicht** auf STRATO laeuft, sondern z.B.
+taeglich als GitHub Action (`.github/workflows/dfbnet-import.yml`). Details,
+Einrichtung und ein wichtiger Vorbehalt (das Skript wurde ohne Live-Zugriff
+auf DFBnet gebaut und muss vor dem produktiven Einsatz einmal echt getestet
+werden) stehen in `automation/dfbnet-import/README.md`.
+
 ## Nicht enthalten (geplant fuer Version 2/3, siehe Anforderungsliste)
 
-CSV-Import aus DFBnet, Fussball.de-Widget-Auswertung, PWA/WhatsApp-Vorlagen,
+Fussball.de-Automatisierung (technisch nicht ohne Headless-Browser moeglich,
+siehe automation/dfbnet-import), PWA/WhatsApp-Vorlagen,
 Ferien-/Turniermodus-Automatik, automatische Zeitverschiebung (aktuell wird
 nur der Platz getauscht, nicht die Uhrzeit).

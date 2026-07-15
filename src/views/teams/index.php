@@ -1,6 +1,7 @@
 <?php
 /** @var array $teams */
 /** @var array $trainers */
+/** @var array $pitches */
 use App\Core\Csrf;
 use App\Core\Url;
 use App\Core\View;
@@ -53,7 +54,15 @@ use App\Core\View;
             </select>
         </label>
         <label>Prioritaet (1=hoch) <input type="number" name="priority" value="5"></label>
-        <label>Fussball.de/DFBnet-Kennung <input type="text" name="external_ref"></label>
+        <label>Fussball.de/DFBnet-Kennung <input type="text" name="external_ref" placeholder="z.B. DFBnet-Mannschafts-ID"></label>
+        <label>Standard-Heimplatz (fuer automatischen Spielplan-Import)
+            <select name="default_pitch_id">
+                <option value="">-- keiner / manuell zuweisen --</option>
+                <?php foreach ($pitches as $p): ?>
+                    <option value="<?= (int) $p['id'] ?>"><?= View::e($p['name']) ?> (<?= View::e($p['season_type']) ?>)</option>
+                <?php endforeach; ?>
+            </select>
+        </label>
         <button type="submit" class="btn btn-primary">Anlegen</button>
     </form>
 </section>
@@ -85,6 +94,15 @@ use App\Core\View;
                                 </select>
                             </label>
                             <label>Prioritaet <input type="number" name="priority" value="<?= (int) $team['priority'] ?>"></label>
+                            <label>Fussball.de/DFBnet-Kennung <input type="text" name="external_ref" value="<?= View::e($team['external_ref'] ?? '') ?>"></label>
+                            <label>Standard-Heimplatz
+                                <select name="default_pitch_id">
+                                    <option value="">-- keiner / manuell zuweisen --</option>
+                                    <?php foreach ($pitches as $p): ?>
+                                        <option value="<?= (int) $p['id'] ?>" <?= (int) ($team['default_pitch_id'] ?? 0) === (int) $p['id'] ? 'selected' : '' ?>><?= View::e($p['name']) ?> (<?= View::e($p['season_type']) ?>)</option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </label>
                             <button type="submit" class="btn btn-secondary">Speichern</button>
                         </form>
                     </details>

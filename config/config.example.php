@@ -25,6 +25,12 @@ return [
         // true = Mails wirklich versenden (PHP mail()), false = nur in notifications-Tabelle/Log schreiben
         'enabled' => true,
     ],
+    'import' => [
+        // Geheimtoken fuer den maschinellen Spielplan-Import (POST /import/games).
+        // Muss identisch mit dem GitHub-Actions-Secret IMPORT_API_TOKEN sein.
+        // Mit z.B. `php -r "echo bin2hex(random_bytes(32));"` erzeugen.
+        'api_token' => 'bitte-zufaelligen-token-erzeugen',
+    ],
     'rules' => [
         // Standard-Spieldauer/Vor-/Nachlaufzeit, falls beim Spiel nichts anderes hinterlegt ist
         'default_duration_minutes' => 90,

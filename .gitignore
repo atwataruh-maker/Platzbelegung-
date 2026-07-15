@@ -1,3 +1,5 @@
 /config/config.php
 /storage/logs/*.log
 .DS_Store
+/automation/dfbnet-import/node_modules/
+/automation/dfbnet-import/debug-screenshots/

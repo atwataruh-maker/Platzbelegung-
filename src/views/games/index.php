@@ -57,7 +57,7 @@ use App\Core\View;
 <section class="card">
     <h2>Alle Spiele</h2>
     <table class="table">
-        <thead><tr><th>Anstoss</th><th>Mannschaft</th><th>Gegner</th><th>Heim</th><th>Platz</th><th>Status</th><th>Aktionen</th></tr></thead>
+        <thead><tr><th>Anstoss</th><th>Mannschaft</th><th>Gegner</th><th>Heim</th><th>Platz</th><th>Status</th><th>Quelle</th><th>Aktionen</th></tr></thead>
         <tbody>
         <?php foreach ($games as $g): ?>
             <tr>
@@ -65,9 +65,29 @@ use App\Core\View;
                 <td><?= View::e($g['team_name']) ?></td>
                 <td><?= View::e($g['opponent']) ?></td>
                 <td><?= $g['is_home'] ? 'Ja' : 'Nein' ?></td>
-                <td><?= View::e($g['pitch_name'] ?? '-') ?></td>
+                <td><?= View::e($g['pitch_name'] ?? '-') ?><?= $g['is_home'] && !$g['pitch_name'] ? ' <span class="muted">(bitte Platz zuweisen)</span>' : '' ?></td>
                 <td><?= View::e($g['status']) ?></td>
+                <td><span class="chip"><?= View::e($g['source']) ?></span></td>
                 <td>
+                    <details>
+                        <summary>Bearbeiten</summary>
+                        <form method="post" action="<?= View::e(Url::to('/admin/games/' . $g['id'] . '/update')) ?>" class="grid-form">
+                            <?= Csrf::field() ?>
+                            <input type="hidden" name="team_id" value="<?= (int) $g['team_id'] ?>">
+                            <input type="hidden" name="is_home" value="<?= (int) $g['is_home'] ?>">
+                            <label>Gegner <input type="text" name="opponent" value="<?= View::e($g['opponent']) ?>" required></label>
+                            <label>Anstoss <input type="datetime-local" name="kickoff_datetime" value="<?= View::e(str_replace(' ', 'T', substr($g['kickoff_datetime'], 0, 16))) ?>" required></label>
+                            <label>Platz
+                                <select name="pitch_id">
+                                    <option value="">-- kein Platz / auswaerts --</option>
+                                    <?php foreach ($pitches as $p): ?>
+                                        <option value="<?= (int) $p['id'] ?>" <?= (int) ($g['pitch_id'] ?? 0) === (int) $p['id'] ? 'selected' : '' ?>><?= View::e($p['name']) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </label>
+                            <button type="submit" class="btn btn-secondary">Speichern</button>
+                        </form>
+                    </details>
                     <?php if ($g['status'] !== 'cancelled'): ?>
                     <form method="post" action="<?= View::e(Url::to('/admin/games/' . $g['id'] . '/cancel')) ?>" class="inline-form" onsubmit="return confirm('Spiel absagen? Die Platzsperre wird aufgehoben.');">
                         <?= Csrf::field() ?>

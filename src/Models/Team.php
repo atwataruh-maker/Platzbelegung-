@@ -43,4 +43,21 @@ class Team extends Model
         $stmt->execute(['uid' => $userId, 'uid2' => $userId, 'uid3' => $userId]);
         return $stmt->fetchAll();
     }
+
+    public static function findByExternalRef(string $externalRef): ?array
+    {
+        $stmt = static::db()->prepare('SELECT * FROM teams WHERE external_ref = ? AND active = 1 LIMIT 1');
+        $stmt->execute([$externalRef]);
+        $row = $stmt->fetch();
+        return $row === false ? null : $row;
+    }
+
+    /** Fallback-Zuordnung ueber den Namen, wenn keine external_ref hinterlegt ist. */
+    public static function findByName(string $name): ?array
+    {
+        $stmt = static::db()->prepare('SELECT * FROM teams WHERE active = 1 AND LOWER(name) = LOWER(?) LIMIT 1');
+        $stmt->execute([trim($name)]);
+        $row = $stmt->fetch();
+        return $row === false ? null : $row;
+    }
 }

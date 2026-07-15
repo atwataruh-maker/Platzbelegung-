@@ -4,10 +4,12 @@ require dirname(__DIR__) . '/src/autoload.php';
 
 use App\Controllers\AuthController;
 use App\Controllers\BaseScheduleController;
+use App\Controllers\ChangeLogController;
 use App\Controllers\ConflictController;
 use App\Controllers\DashboardController;
 use App\Controllers\DayViewController;
 use App\Controllers\GameController;
+use App\Controllers\ImportController;
 use App\Controllers\MyTeamController;
 use App\Controllers\PitchController;
 use App\Controllers\PublicViewController;
@@ -43,6 +45,9 @@ $router->post('/my-team/decline/{id}', [MyTeamController::class, 'decline']);
 $router->get('/public/week', [PublicViewController::class, 'week']);
 $router->get('/public/week/{offset}', [PublicViewController::class, 'week']);
 
+// Maschinelle Import-Schnittstelle (kein Session-Login, Token-Absicherung siehe ImportController)
+$router->post('/import/games', [ImportController::class, 'games']);
+
 $router->get('/admin/teams', [TeamController::class, 'index']);
 $router->post('/admin/teams', [TeamController::class, 'store']);
 $router->post('/admin/teams/{id}/update', [TeamController::class, 'update']);
@@ -74,5 +79,7 @@ $router->get('/admin/conflicts', [ConflictController::class, 'index']);
 $router->post('/admin/conflicts/{id}/resolve', [ConflictController::class, 'resolve']);
 $router->post('/admin/conflicts/{id}/ignore', [ConflictController::class, 'ignore']);
 $router->post('/admin/conflicts/rescan', [ConflictController::class, 'rescan']);
+
+$router->get('/admin/log', [ChangeLogController::class, 'index']);
 
 $router->dispatch(Request::method(), Request::path());
