@@ -97,9 +97,13 @@ config/             config.example.php (kopieren nach config.php)
 ## Wichtige Konzepte
 
 - **Teilflaechen:** In `pitches`/`pitch_relations` koennen Plaetze als
-  "ganzer Platz" (z.B. Rasen Hauptplatz) mit mehreren Teilflaechen (Rasen
-  1/3, 2/3, 3/3) modelliert werden. Eine Sperre des ganzen Platzes sperrt
-  automatisch alle Teilflaechen (siehe `PitchRelation::relatedPitchIds()`).
+  "ganzer Platz" mit mehreren Teilflaechen modelliert werden (z.B. ein
+  kombinierter Grossfeld-Rasenplatz aus mehreren Dritteln). Eine Sperre des
+  ganzen Platzes sperrt automatisch alle Teilflaechen (siehe
+  `PitchRelation::relatedPitchIds()`). Bei VfL Ramsdorf aendert sich die
+  reale Rasenaufteilung je nach beteiligter Mannschaftsgroesse (Grossfeld
+  vs. Kleinfeld) - diese variable Geometrie bildet das aktuelle MVP noch
+  nicht ab, siehe Kommentar in `database/seed.sql`.
 - **Automatische Platzsperre:** `BlockingService` berechnet aus Anstoss,
   Vorlauf-, Spieldauer- und Nachlaufzeit die Sperrzeit und legt fuer alle
   betroffenen Plaetze `pitch_blocks`-Eintraege an.

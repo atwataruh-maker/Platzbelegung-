@@ -40,8 +40,9 @@ use App\Core\View;
 
 <section class="card">
     <h2>Bestehende Plaetze</h2>
-    <p class="muted">Teilflaechen-Zuordnung: Belegt jemand den "ganzen Platz" (z.B. Rasen Hauptplatz), werden alle
-        verknuepften Teilflaechen automatisch mitgesperrt.</p>
+    <p class="muted">Teilflaechen-Zuordnung: Belegt jemand einen als "ganzer Platz" markierten Platz, werden alle
+        verknuepften Teilflaechen automatisch mitgesperrt (z.B. wenn ein Grossfeldspiel mehrere Rasendrittel
+        gleichzeitig braucht).</p>
     <table class="table">
         <thead><tr><th>Name</th><th>Saison</th><th>Art</th><th>Groesse</th><th>Teilflaechen</th><th>Aktionen</th></tr></thead>
         <tbody>
