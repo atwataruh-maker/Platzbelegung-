@@ -42,6 +42,15 @@ class PitchRelation extends Model
      * Plaetze (Eltern und Kinder), da eine Belegung eines Elements
      * automatisch alle anderen betroffenen Flaechen mitsperrt.
      *
+     * Bewusst OHNE Geschwister-Ausweitung (Kind -> Elternteil -> andere
+     * Kinder): bei Kombi-Plaetzen (z.B. "KuRa Grossfeld" aus KuRa 1 + KuRa 2)
+     * sind die einzelnen Teilplaetze ausserhalb eines Grossfeldspiels
+     * unabhaengig voneinander bespielbar. Wird der Kombi-Platz selbst belegt,
+     * kaskadiert das ueber childrenOf() bereits korrekt auf beide realen
+     * Plaetze (siehe BlockingService) - dafuer ist diese Geschwisterlogik
+     * nicht noetig und wuerde sonst faelschlich gleichzeitiges, unabhaengiges
+     * Training auf den Teilplaetzen als Doppelbelegung markieren.
+     *
      * @return int[]
      */
     public static function relatedPitchIds(int $pitchId): array
@@ -52,9 +61,6 @@ class PitchRelation extends Model
         }
         foreach (self::parentsOf($pitchId) as $parent) {
             $ids[] = (int) $parent['id'];
-            foreach (self::childrenOf((int) $parent['id']) as $sibling) {
-                $ids[] = (int) $sibling['id'];
-            }
         }
         return array_values(array_unique($ids));
     }

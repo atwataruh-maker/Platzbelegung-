@@ -34,6 +34,10 @@ use App\Core\View;
             </select>
         </label>
         <label>Sortierung <input type="number" name="sort_order" value="0"></label>
+        <label class="checkbox-label">
+            <input type="checkbox" name="is_combo" value="1">
+            Kombi-Platz (Grossfeld aus mehreren Plaetzen, keine eigene Spalte im Wochenplan)
+        </label>
         <button type="submit" class="btn btn-primary">Anlegen</button>
     </form>
 </section>
@@ -42,9 +46,10 @@ use App\Core\View;
     <h2>Bestehende Plaetze</h2>
     <p class="muted">Teilflaechen-Zuordnung: Belegt jemand einen als "ganzer Platz" markierten Platz, werden alle
         verknuepften Teilflaechen automatisch mitgesperrt (z.B. wenn ein Grossfeldspiel mehrere Rasendrittel
-        gleichzeitig braucht).</p>
+        gleichzeitig braucht). Kombi-Plaetze (z.B. "KuRa Grossfeld") sind reine Buendelungen fuer Spiele und
+        erscheinen nicht als eigene Spalte im Wochen-/Tagesplan.</p>
     <table class="table">
-        <thead><tr><th>Name</th><th>Saison</th><th>Art</th><th>Groesse</th><th>Teilflaechen</th><th>Aktionen</th></tr></thead>
+        <thead><tr><th>Name</th><th>Saison</th><th>Art</th><th>Groesse</th><th>Typ</th><th>Teilflaechen</th><th>Aktionen</th></tr></thead>
         <tbody>
         <?php foreach ($pitches as $pitch): ?>
             <tr>
@@ -52,6 +57,7 @@ use App\Core\View;
                 <td><?= View::e($pitch['season_type']) ?></td>
                 <td><?= View::e($pitch['kind']) ?></td>
                 <td><?= View::e($pitch['size']) ?></td>
+                <td><?= $pitch['is_combo'] ? '<span class="chip">Kombi</span>' : 'Realer Platz' ?></td>
                 <td>
                     <?php foreach ($relations[$pitch['id']] ?? [] as $child): ?>
                         <span class="chip">

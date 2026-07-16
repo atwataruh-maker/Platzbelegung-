@@ -58,6 +58,13 @@ CREATE TABLE IF NOT EXISTS pitches (
     season_type ENUM('summer','winter','hall') NOT NULL,
     kind ENUM('kunstrasen','rasen','halle') NOT NULL,
     size ENUM('gross','drittel','halle') NOT NULL DEFAULT 'gross',
+    -- Kombi-Platz: kein eigener, einzeln bespielbarer Platz, sondern eine
+    -- Buendelung mehrerer realer Plaetze fuer Grossfeldspiele (z.B. "KuRa
+    -- Grossfeld" = KuRa 1 + KuRa 2 gemeinsam belegt). Erscheint nicht als
+    -- eigene Spalte im Wochen-/Tagesplan, ist aber bei der Platzwahl fuer
+    -- Mannschaften/Spiele waehlbar. Die tatsaechliche Sperrung der realen
+    -- Teilplaetze laeuft ueber pitch_relations (siehe unten).
+    is_combo TINYINT(1) NOT NULL DEFAULT 0,
     sort_order INT NOT NULL DEFAULT 0,
     active TINYINT(1) NOT NULL DEFAULT 1,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP

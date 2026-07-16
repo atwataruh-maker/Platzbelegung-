@@ -99,14 +99,23 @@ config/             config.example.php (kopieren nach config.php)
 
 ## Wichtige Konzepte
 
-- **Teilflaechen:** In `pitches`/`pitch_relations` koennen Plaetze als
-  "ganzer Platz" mit mehreren Teilflaechen modelliert werden (z.B. ein
-  kombinierter Grossfeld-Rasenplatz aus mehreren Dritteln). Eine Sperre des
-  ganzen Platzes sperrt automatisch alle Teilflaechen (siehe
-  `PitchRelation::relatedPitchIds()`). Bei VfL Ramsdorf aendert sich die
-  reale Rasenaufteilung je nach beteiligter Mannschaftsgroesse (Grossfeld
-  vs. Kleinfeld) - diese variable Geometrie bildet das aktuelle MVP noch
-  nicht ab, siehe Kommentar in `database/seed.sql`.
+- **Teilflaechen / Kombi-Plaetze:** In `pitches`/`pitch_relations` koennen
+  Plaetze als "ganzer Platz" mit mehreren Teilflaechen modelliert werden.
+  Eine Sperre des ganzen Platzes sperrt automatisch alle Teilflaechen
+  (siehe `PitchRelation::relatedPitchIds()`). Fuer Grossfeldspiele (ab
+  D-Jugend aufwaerts) gibt es zusaetzlich echte Kombi-Plaetze
+  (`pitches.is_combo = 1`, z.B. "KuRa Grossfeld" aus KuRa 1 + KuRa 2, oder
+  "Rasen Grossfeld" aus Rasen 1/3 + 2/3): sie buendeln zwei reale Plaetze
+  nur fuer den Moment eines Spiels, erscheinen nicht als eigene Spalte im
+  Wochen-/Tagesplan und lassen die Teilplaetze ausserhalb eines Spiels
+  unabhaengig voneinander bespielbar (bewusst ohne Geschwister-Kopplung in
+  `relatedPitchIds()`, sonst wuerden gleichzeitige, unabhaengige Trainings
+  auf z.B. Rasen 1/3 und Rasen 2/3 faelschlich als Doppelbelegung gelten).
+  Pro Mannschaft laesst sich ueber "Standard-Heimplatz" ein Kombi-Platz als
+  Vorgabe hinterlegen, oder er wird bei der Spielanlage manuell gewaehlt.
+  Die exakte, sich je nach Grossfeld-/Kleinfeldbeteiligung aendernde
+  Rasengeometrie aus dem Original-Belegungsplan (zwei Diagramme) bildet das
+  MVP weiterhin nicht bis auf den Quadratmeter genau ab.
 - **Automatische Platzsperre:** `BlockingService` berechnet aus Anstoss,
   Vorlauf-, Spieldauer- und Nachlaufzeit die Sperrzeit und legt fuer alle
   betroffenen Plaetze `pitch_blocks`-Eintraege an.

@@ -33,7 +33,7 @@ use App\Core\View;
             <select name="pitch_id">
                 <option value="">-- kein Platz / auswaerts --</option>
                 <?php foreach ($pitches as $p): ?>
-                    <option value="<?= (int) $p['id'] ?>"><?= View::e($p['name']) ?></option>
+                    <option value="<?= (int) $p['id'] ?>"><?= View::e($p['name']) ?><?= $p['is_combo'] ? ' - Kombi/Grossfeld' : '' ?></option>
                 <?php endforeach; ?>
             </select>
         </label>
@@ -81,7 +81,7 @@ use App\Core\View;
                                 <select name="pitch_id">
                                     <option value="">-- kein Platz / auswaerts --</option>
                                     <?php foreach ($pitches as $p): ?>
-                                        <option value="<?= (int) $p['id'] ?>" <?= (int) ($g['pitch_id'] ?? 0) === (int) $p['id'] ? 'selected' : '' ?>><?= View::e($p['name']) ?></option>
+                                        <option value="<?= (int) $p['id'] ?>" <?= (int) ($g['pitch_id'] ?? 0) === (int) $p['id'] ? 'selected' : '' ?>><?= View::e($p['name']) ?><?= $p['is_combo'] ? ' - Kombi/Grossfeld' : '' ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </label>

@@ -42,14 +42,14 @@ INSERT INTO teams (name, age_group, gender, priority, preferred_pitch_kind, pref
 ('Reserve Ligaspiel Jugend (Platzblocker)', 'Ligaspiel', 'gemischt', 2, 'egal', 'egal');
 
 -- Sommer-Plaetze (6 Flaechen exakt wie im Belegungsplan: KuRa 1, KuRa 2,
--- Rasen 1/3, Rasen 2/3, Rasen 3/3, Rasen Reserve)
+-- Rasen 1/3, Rasen 2/3, Rasen 3/3, Hauptplatz [vormals "Rasen Reserve"])
 INSERT INTO pitches (name, season_type, kind, size, sort_order) VALUES
 ('KuRa 1', 'summer', 'kunstrasen', 'gross', 10),
 ('KuRa 2', 'summer', 'kunstrasen', 'gross', 11),
 ('Rasen 1/3', 'summer', 'rasen', 'drittel', 20),
 ('Rasen 2/3', 'summer', 'rasen', 'drittel', 21),
 ('Rasen 3/3', 'summer', 'rasen', 'drittel', 22),
-('Rasen Reserve', 'summer', 'rasen', 'drittel', 23);
+('Hauptplatz', 'summer', 'rasen', 'drittel', 23);
 
 -- Winter-Plaetze (Platzhalter, noch kein echter Winterplan geliefert)
 INSERT INTO pitches (name, season_type, kind, size, sort_order) VALUES
@@ -62,15 +62,34 @@ INSERT INTO pitches (name, season_type, kind, size, sort_order) VALUES
 ('Paulushalle', 'hall', 'halle', 'halle', 40),
 ('Walburgishalle', 'hall', 'halle', 'halle', 41);
 
--- Hinweis Teilflaechen-Modell (pitch_relations): Laut Belegungsplan aendert
--- sich die tatsaechliche Rasenaufteilung je nachdem, ob eine Grossfeld- oder
--- nur Kleinfeldmannschaften beteiligt sind (siehe die zwei Diagramme im
--- Plan). Das aktuelle MVP bildet nur eine statische Eltern-/Kind-Beziehung
--- ab und modelliert diese variable Geometrie noch nicht - hier bewusst
--- keine Relation angelegt, um keine falschen Annahmen zu seeden. Rasen 3/3
--- und Rasen Reserve werden freitags nachweislich gemeinsam von einer
--- Mannschaft genutzt (siehe Grundbelegung unten), das laesst sich mit dem
--- jetzigen Modell einfach ueber zwei Grundbelegungs-Eintraege abbilden.
+-- Kombi-Plaetze fuer Grossfeldspiele (Abschnitt "Grossfeld-Umfang je
+-- Mannschaft"): ab D-Jugend aufwaerts braucht ein Heimspiel entweder
+-- KuRa 1 + KuRa 2 gemeinsam oder Rasen 1/3 + Rasen 2/3 gemeinsam. Diese
+-- Kombi-Plaetze sind is_combo=1, erscheinen NICHT als eigene Spalte im
+-- Wochen-/Tagesplan, sind aber als Standard-Heimplatz (Mannschaften) oder
+-- direkt bei der Spielanlage waehlbar. Die Sperrung der zwei realen
+-- Teilplaetze passiert automatisch ueber pitch_relations.
+INSERT INTO pitches (name, season_type, kind, size, sort_order, is_combo) VALUES
+('KuRa Grossfeld (KuRa 1 + KuRa 2)', 'summer', 'kunstrasen', 'gross', 15, 1),
+('Rasen Grossfeld (1/3 + 2/3)', 'summer', 'rasen', 'gross', 25, 1);
+
+INSERT INTO pitch_relations (parent_pitch_id, child_pitch_id)
+SELECT p1.id, p2.id FROM pitches p1, pitches p2
+WHERE p1.name = 'KuRa Grossfeld (KuRa 1 + KuRa 2)' AND p2.name IN ('KuRa 1', 'KuRa 2');
+
+INSERT INTO pitch_relations (parent_pitch_id, child_pitch_id)
+SELECT p1.id, p2.id FROM pitches p1, pitches p2
+WHERE p1.name = 'Rasen Grossfeld (1/3 + 2/3)' AND p2.name IN ('Rasen 1/3', 'Rasen 2/3');
+
+-- Hinweis Teilflaechen-Modell: Laut Belegungsplan aendert sich die
+-- tatsaechliche Rasenaufteilung je nachdem, ob eine Grossfeld- oder nur
+-- Kleinfeldmannschaften beteiligt sind (siehe die zwei Diagramme im Plan).
+-- Die beiden Kombi-Plaetze oben bilden den Grossfeld-Fall ab; die exakte
+-- Kleinfeld-Geometrie (drei annaehernd gleiche Drittel) modelliert das MVP
+-- weiterhin nicht bis auf die Ebene einzelner Quadratmeter. Rasen 3/3 und
+-- Hauptplatz werden freitags nachweislich gemeinsam von einer Mannschaft
+-- genutzt (siehe Grundbelegung unten), das laesst sich mit dem jetzigen
+-- Modell einfach ueber zwei Grundbelegungs-Eintraege abbilden.
 
 -- Saisons
 INSERT INTO seasons (name, type, start_date, end_date, is_active) VALUES
@@ -105,7 +124,7 @@ FROM (
     UNION ALL SELECT 'C-Juniorinnen', 'KuRa 1', 3, '17:30:00', '19:00:00'
     UNION ALL SELECT 'D1-Juniorinnen', 'Rasen 1/3', 3, '17:30:00', '19:00:00'
     UNION ALL SELECT 'F1/F2-Junioren', 'Rasen 3/3', 3, '17:30:00', '18:30:00'
-    UNION ALL SELECT 'F1/F2-Junioren', 'Rasen Reserve', 3, '17:30:00', '18:30:00'
+    UNION ALL SELECT 'F1/F2-Junioren', 'Hauptplatz', 3, '17:30:00', '18:30:00'
     UNION ALL SELECT 'D2-Juniorinnen', 'KuRa 2', 3, '18:00:00', '19:30:00'
     UNION ALL SELECT 'E2-Junioren', 'Rasen 2/3', 3, '18:00:00', '19:30:00'
     UNION ALL SELECT 'VfL Ramsdorf II', 'KuRa 1', 3, '19:00:00', '20:30:00'
@@ -122,7 +141,7 @@ FROM (
     UNION ALL SELECT 'Reserve Ligaspiel Jugend (Platzblocker)', 'KuRa 1', 5, '16:30:00', '20:30:00'
     UNION ALL SELECT 'F1/F2-Junioren', 'KuRa 2', 5, '16:30:00', '17:30:00'
     UNION ALL SELECT 'G-Junioren/G-F Juniorinnen', 'Rasen 3/3', 5, '17:00:00', '18:00:00'
-    UNION ALL SELECT 'G-Junioren/G-F Juniorinnen', 'Rasen Reserve', 5, '17:00:00', '18:00:00'
+    UNION ALL SELECT 'G-Junioren/G-F Juniorinnen', 'Hauptplatz', 5, '17:00:00', '18:00:00'
     UNION ALL SELECT 'Reserve Ligaspiel Jugend (Platzblocker)', 'KuRa 2', 5, '17:30:00', '19:00:00'
     UNION ALL SELECT 'E1/E2-Juniorinnen', 'Rasen 1/3', 5, '17:30:00', '19:00:00'
     UNION ALL SELECT 'C-Juniorinnen', 'Rasen 2/3', 5, '17:30:00', '19:00:00'

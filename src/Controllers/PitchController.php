@@ -104,6 +104,7 @@ class PitchController
             'kind' => Request::input('kind', 'rasen'),
             'size' => Request::input('size', 'gross'),
             'sort_order' => (int) Request::input('sort_order', 0),
+            'is_combo' => Request::input('is_combo') ? 1 : 0,
         ];
     }
 }

@@ -30,8 +30,12 @@ class PitchBlock extends Model
     public static function forDateRange(string $start, string $end): array
     {
         $stmt = static::db()->prepare(
-            'SELECT pb.*, p.name AS pitch_name FROM pitch_blocks pb
+            'SELECT pb.*, p.name AS pitch_name, g.opponent AS game_opponent, g.team_id AS game_team_id,
+                    gt.name AS game_team_name
+             FROM pitch_blocks pb
              JOIN pitches p ON p.id = pb.pitch_id
+             LEFT JOIN games g ON g.id = pb.game_id
+             LEFT JOIN teams gt ON gt.id = g.team_id
              WHERE pb.start_datetime < ? AND pb.end_datetime > ?
              ORDER BY pb.start_datetime'
         );

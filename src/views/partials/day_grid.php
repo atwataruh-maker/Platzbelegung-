@@ -30,7 +30,7 @@ $weekdayNames = [1 => 'Montag', 2 => 'Dienstag', 3 => 'Mittwoch', 4 => 'Donnerst
                         <?php if ($cell['type'] === 'training'): ?>
                             style="background-color: <?= ScheduleGridService::teamColor((int) $cell['team_id']) ?>;"
                         <?php endif; ?>
-                    ><?= View::e($cell['label']) ?></td>
+                    ><?= View::e($cell['label']) ?><?php if (!empty($cell['displaced_team'])): ?><br><small class="displaced">verdr&auml;ngt: <?= View::e($cell['displaced_team']) ?></small><?php endif; ?></td>
                 <?php endforeach; ?>
             </tr>
         <?php endforeach; ?>

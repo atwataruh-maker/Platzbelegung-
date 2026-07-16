@@ -24,7 +24,7 @@ class BaseScheduleController
         View::render('base_schedule/index', [
             'entries' => BaseSchedule::allWithNames(),
             'teams' => Team::allWithTrainers(),
-            'pitches' => Pitch::allActive(),
+            'pitches' => Pitch::allBookable(),
             'seasons' => Season::all('start_date DESC'),
             'weekdays' => self::WEEKDAYS,
         ]);

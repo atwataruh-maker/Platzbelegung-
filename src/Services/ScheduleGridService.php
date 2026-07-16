@@ -17,8 +17,12 @@ use PDO;
 class ScheduleGridService
 {
     private const SLOT_MINUTES = 30;
-    private const DAY_START = '08:00';
-    private const DAY_END = '22:00';
+    // Kompakter Standardbereich (in der Praxis findet vor 15 Uhr kein
+    // Training/Spiel statt). Wird automatisch erweitert, falls echte Daten
+    // (z.B. eine fruehe Vorlaufzeit vor einem Spiel) ausserhalb liegen -
+    // es wird also nie etwas abgeschnitten.
+    private const DEFAULT_DAY_START = '15:00';
+    private const DEFAULT_DAY_END = '22:00';
 
     public static function buildDayGrid(string $date): array
     {
@@ -28,7 +32,7 @@ class ScheduleGridService
 
         $pitches = [];
         foreach ($seasonTypes as $type) {
-            foreach (Pitch::forSeasonType($type) as $pitch) {
+            foreach (Pitch::bookableForSeasonType($type) as $pitch) {
                 $pitches[$pitch['id']] = $pitch;
             }
         }
@@ -45,7 +49,7 @@ class ScheduleGridService
         $dayEnd = "{$date} 23:59:59";
         $blocks = PitchBlock::forDateRange($dayStart, $dayEnd);
 
-        $slots = self::buildSlots();
+        $slots = self::buildSlots($date, $trainings, $blocks);
         $cells = [];
 
         foreach ($pitches as $pitch) {
@@ -65,48 +69,103 @@ class ScheduleGridService
 
     private static function resolveCell(array $pitch, array $slot, array $trainings, array $blocks): array
     {
+        $blockMatch = null;
         foreach ($blocks as $block) {
             if ((int) $block['pitch_id'] !== (int) $pitch['id']) {
                 continue;
             }
             if ($slot['start'] < substr($block['end_datetime'], 11, 5) && substr($block['start_datetime'], 11, 5) < $slot['end']) {
-                return [
-                    'type' => 'block',
-                    'reason' => $block['reason'],
-                    'label' => $block['reason'] === 'game' ? 'Spiel' : ucfirst($block['reason']),
-                    'note' => $block['note'],
-                ];
+                $blockMatch = $block;
+                break;
             }
         }
 
+        $trainingMatch = null;
         foreach ($trainings as $training) {
             if ((int) $training['pitch_id'] !== (int) $pitch['id']) {
                 continue;
             }
             if ($slot['start'] < $training['end_time'] && $training['start_time'] < $slot['end']) {
-                return [
-                    'type' => 'training',
-                    'label' => $training['team_name'],
-                    'team_id' => (int) $training['team_id'],
-                ];
+                $trainingMatch = $training;
+                break;
             }
+        }
+
+        if ($blockMatch !== null) {
+            $label = $blockMatch['reason'] === 'game' ? 'Spiel' : ucfirst($blockMatch['reason']);
+            if (!empty($blockMatch['game_team_name'])) {
+                $label = $blockMatch['game_team_name'] . ' - Spiel';
+                if (!empty($blockMatch['game_opponent'])) {
+                    $label .= ' vs. ' . $blockMatch['game_opponent'];
+                }
+            }
+            return [
+                'type' => 'block',
+                'reason' => $blockMatch['reason'],
+                'label' => $label,
+                'note' => $blockMatch['note'],
+                // Welche Mannschaft durch das Spiel/die Sperre den Platz raeumen muss.
+                'displaced_team' => $trainingMatch['team_name'] ?? null,
+            ];
+        }
+
+        if ($trainingMatch !== null) {
+            return [
+                'type' => 'training',
+                'label' => $trainingMatch['team_name'],
+                'team_id' => (int) $trainingMatch['team_id'],
+            ];
         }
 
         return ['type' => 'free', 'label' => ''];
     }
 
-    /** @return array<int,array{start:string,end:string}> */
-    private static function buildSlots(): array
+    /**
+     * Zeitbereich fuer die Slots: kompakter Standardbereich, automatisch
+     * erweitert um alle tatsaechlich vorkommenden Trainings-/Sperrzeiten
+     * dieses Tages, damit nie echte Daten abgeschnitten werden.
+     *
+     * @return array<int,array{start:string,end:string}>
+     */
+    private static function buildSlots(string $date, array $trainings, array $blocks): array
     {
+        $startMinutes = self::toMinutes(self::DEFAULT_DAY_START);
+        $endMinutes = self::toMinutes(self::DEFAULT_DAY_END);
+
+        foreach ($trainings as $training) {
+            $startMinutes = min($startMinutes, self::toMinutes(substr($training['start_time'], 0, 5)));
+            $endMinutes = max($endMinutes, self::toMinutes(substr($training['end_time'], 0, 5)));
+        }
+
+        foreach ($blocks as $block) {
+            $blockStartDate = substr($block['start_datetime'], 0, 10);
+            $blockEndDate = substr($block['end_datetime'], 0, 10);
+            $startTime = $blockStartDate === $date ? substr($block['start_datetime'], 11, 5) : '00:00';
+            $endTime = $blockEndDate === $date ? substr($block['end_datetime'], 11, 5) : '23:59';
+            $startMinutes = min($startMinutes, self::toMinutes($startTime));
+            $endMinutes = max($endMinutes, self::toMinutes($endTime));
+        }
+
+        $startMinutes = intdiv($startMinutes, self::SLOT_MINUTES) * self::SLOT_MINUTES;
+        $endMinutes = (int) ceil($endMinutes / self::SLOT_MINUTES) * self::SLOT_MINUTES;
+
         $slots = [];
-        $current = DateTimeImmutable::createFromFormat('H:i', self::DAY_START);
-        $end = DateTimeImmutable::createFromFormat('H:i', self::DAY_END);
-        while ($current < $end) {
-            $next = $current->modify('+' . self::SLOT_MINUTES . ' minutes');
-            $slots[] = ['start' => $current->format('H:i'), 'end' => $next->format('H:i')];
-            $current = $next;
+        for ($minutes = $startMinutes; $minutes < $endMinutes; $minutes += self::SLOT_MINUTES) {
+            $slots[] = ['start' => self::fromMinutes($minutes), 'end' => self::fromMinutes($minutes + self::SLOT_MINUTES)];
         }
         return $slots;
+    }
+
+    private static function toMinutes(string $hhmm): int
+    {
+        [$h, $m] = explode(':', $hhmm);
+        return ((int) $h) * 60 + (int) $m;
+    }
+
+    private static function fromMinutes(int $minutes): string
+    {
+        $minutes = (($minutes % 1440) + 1440) % 1440;
+        return sprintf('%02d:%02d', intdiv($minutes, 60), $minutes % 60);
     }
 
     /** @return int[] */
