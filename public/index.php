@@ -13,6 +13,7 @@ use App\Controllers\ImportController;
 use App\Controllers\MyTeamController;
 use App\Controllers\PitchController;
 use App\Controllers\PublicViewController;
+use App\Controllers\ScheduleOverrideController;
 use App\Controllers\SeasonController;
 use App\Controllers\TeamController;
 use App\Controllers\WeekViewController;
@@ -79,7 +80,11 @@ $router->get('/admin/conflicts', [ConflictController::class, 'index']);
 $router->post('/admin/conflicts/{id}/resolve', [ConflictController::class, 'resolve']);
 $router->post('/admin/conflicts/{id}/ignore', [ConflictController::class, 'ignore']);
 $router->post('/admin/conflicts/rescan', [ConflictController::class, 'rescan']);
+$router->post('/admin/fallback-suggestions/{id}/apply', [ConflictController::class, 'applySuggestion']);
 
 $router->get('/admin/log', [ChangeLogController::class, 'index']);
+
+$router->post('/admin/schedule-overrides', [ScheduleOverrideController::class, 'store']);
+$router->post('/admin/schedule-overrides/{id}/delete', [ScheduleOverrideController::class, 'destroy']);
 
 $router->dispatch(Request::method(), Request::path());

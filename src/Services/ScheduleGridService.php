@@ -6,6 +6,7 @@ use App\Core\Database;
 use App\Models\BaseSchedule;
 use App\Models\Pitch;
 use App\Models\PitchBlock;
+use App\Models\ScheduleOverride;
 use DateTimeImmutable;
 use PDO;
 
@@ -36,7 +37,10 @@ class ScheduleGridService
                 $pitches[$pitch['id']] = $pitch;
             }
         }
-        usort($pitches, static fn ($a, $b) => $a['sort_order'] <=> $b['sort_order']);
+        // uasort statt usort: behaelt die Pitch-ID als Schluessel, damit
+        // $pitches gleichzeitig als sortierte Spaltenliste UND als
+        // id->Platz-Nachschlagetabelle (fuer Verschiebungs-Hinweise) dient.
+        uasort($pitches, static fn ($a, $b) => $a['sort_order'] <=> $b['sort_order']);
 
         $trainings = [];
         foreach ($seasonIds as $seasonId) {
@@ -48,13 +52,14 @@ class ScheduleGridService
         $dayStart = "{$date} 00:00:00";
         $dayEnd = "{$date} 23:59:59";
         $blocks = PitchBlock::forDateRange($dayStart, $dayEnd);
+        $overridesByBaseSchedule = ScheduleOverride::mapForDate($date);
 
-        $slots = self::buildSlots($date, $trainings, $blocks);
+        $slots = self::buildSlots($date, $trainings, $blocks, $overridesByBaseSchedule);
         $cells = [];
 
         foreach ($pitches as $pitch) {
             foreach ($slots as $slot) {
-                $cells[$pitch['id']][$slot['start']] = self::resolveCell($pitch, $slot, $trainings, $blocks);
+                $cells[$pitch['id']][$slot['start']] = self::resolveCell($pitch, $slot, $trainings, $blocks, $overridesByBaseSchedule, $pitches);
             }
         }
 
@@ -67,7 +72,7 @@ class ScheduleGridService
         ];
     }
 
-    private static function resolveCell(array $pitch, array $slot, array $trainings, array $blocks): array
+    private static function resolveCell(array $pitch, array $slot, array $trainings, array $blocks, array $overridesByBaseSchedule, array $pitchesById): array
     {
         $blockMatch = null;
         foreach ($blocks as $block) {
@@ -80,6 +85,8 @@ class ScheduleGridService
             }
         }
 
+        // Urspruengliches Trainingsvorkommen an dieser Stelle (auch wenn es
+        // inzwischen per Override an einen anderen Platz verschoben wurde).
         $trainingMatch = null;
         foreach ($trainings as $training) {
             if ((int) $training['pitch_id'] !== (int) $pitch['id']) {
@@ -90,6 +97,7 @@ class ScheduleGridService
                 break;
             }
         }
+        $override = $trainingMatch !== null ? ($overridesByBaseSchedule[(int) $trainingMatch['id']] ?? null) : null;
 
         if ($blockMatch !== null) {
             $label = $blockMatch['reason'] === 'game' ? 'Spiel' : ucfirst($blockMatch['reason']);
@@ -104,20 +112,76 @@ class ScheduleGridService
                 'reason' => $blockMatch['reason'],
                 'label' => $label,
                 'note' => $blockMatch['note'],
-                // Welche Mannschaft durch das Spiel/die Sperre den Platz raeumen muss.
+                // Welche Mannschaft durch das Spiel/die Sperre den Platz raeumen muss ...
                 'displaced_team' => $trainingMatch['team_name'] ?? null,
+                // ... und wohin sie ausgewichen ist, falls bereits geklaert.
+                'moved_to' => self::describeOverrideTarget($override, $pitchesById),
             ];
         }
 
-        if ($trainingMatch !== null) {
+        // Ist an diesem Platz/Slot ein von ANDERSWO hierher verschobenes Training?
+        foreach ($trainings as $candidate) {
+            $candidateOverride = $overridesByBaseSchedule[(int) $candidate['id']] ?? null;
+            if ($candidateOverride === null) {
+                continue;
+            }
+            if ((int) $candidateOverride['new_pitch_id'] !== (int) $pitch['id']) {
+                continue;
+            }
+            $newStart = substr($candidateOverride['new_start_time'], 0, 5);
+            $newEnd = substr($candidateOverride['new_end_time'], 0, 5);
+            if ($slot['start'] < $newEnd && $newStart < $slot['end']) {
+                $originalPitch = $pitchesById[(int) $candidate['pitch_id']] ?? null;
+                return [
+                    'type' => 'training',
+                    'label' => $candidate['team_name'],
+                    'team_id' => (int) $candidate['team_id'],
+                    'base_schedule_id' => (int) $candidate['id'],
+                    'duration_minutes' => self::minutesBetween($candidateOverride['new_start_time'], $candidateOverride['new_end_time']),
+                    'moved' => true,
+                    'moved_from' => ($originalPitch['name'] ?? '?') . ', ' . substr($candidate['start_time'], 0, 5) . ' Uhr',
+                    'moved_reason' => $candidateOverride['reason'],
+                    'override_id' => (int) $candidateOverride['id'],
+                ];
+            }
+        }
+
+        if ($trainingMatch !== null && $override === null) {
             return [
                 'type' => 'training',
                 'label' => $trainingMatch['team_name'],
                 'team_id' => (int) $trainingMatch['team_id'],
+                'base_schedule_id' => (int) $trainingMatch['id'],
+                'duration_minutes' => self::minutesBetween($trainingMatch['start_time'], $trainingMatch['end_time']),
+            ];
+        }
+
+        if ($trainingMatch !== null && $override !== null) {
+            // Training war urspruenglich hier geplant, ist aber verschoben - Platz ist frei,
+            // aber ein Hinweis zeigt an, wohin es verlegt wurde.
+            return [
+                'type' => 'free',
+                'label' => '',
+                'moved_away_text' => $trainingMatch['team_name'] . ' verschoben auf ' . self::describeOverrideTarget($override, $pitchesById),
             ];
         }
 
         return ['type' => 'free', 'label' => ''];
+    }
+
+    private static function describeOverrideTarget(?array $override, array $pitchesById): ?string
+    {
+        if ($override === null) {
+            return null;
+        }
+        $pitch = $pitchesById[(int) $override['new_pitch_id']] ?? null;
+        $pitchName = $pitch['name'] ?? "Platz-ID {$override['new_pitch_id']}";
+        return $pitchName . ', ' . substr($override['new_start_time'], 0, 5) . '-' . substr($override['new_end_time'], 0, 5) . ' Uhr';
+    }
+
+    private static function minutesBetween(string $start, string $end): int
+    {
+        return self::toMinutes(substr($end, 0, 5)) - self::toMinutes(substr($start, 0, 5));
     }
 
     /**
@@ -127,7 +191,7 @@ class ScheduleGridService
      *
      * @return array<int,array{start:string,end:string}>
      */
-    private static function buildSlots(string $date, array $trainings, array $blocks): array
+    private static function buildSlots(string $date, array $trainings, array $blocks, array $overridesByBaseSchedule = []): array
     {
         $startMinutes = self::toMinutes(self::DEFAULT_DAY_START);
         $endMinutes = self::toMinutes(self::DEFAULT_DAY_END);
@@ -135,6 +199,11 @@ class ScheduleGridService
         foreach ($trainings as $training) {
             $startMinutes = min($startMinutes, self::toMinutes(substr($training['start_time'], 0, 5)));
             $endMinutes = max($endMinutes, self::toMinutes(substr($training['end_time'], 0, 5)));
+        }
+
+        foreach ($overridesByBaseSchedule as $override) {
+            $startMinutes = min($startMinutes, self::toMinutes(substr($override['new_start_time'], 0, 5)));
+            $endMinutes = max($endMinutes, self::toMinutes(substr($override['new_end_time'], 0, 5)));
         }
 
         foreach ($blocks as $block) {

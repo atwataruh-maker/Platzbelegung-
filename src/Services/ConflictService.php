@@ -8,8 +8,10 @@ use App\Models\BaseSchedule;
 use App\Models\ChangeLog;
 use App\Models\Conflict;
 use App\Models\Notification;
+use App\Models\Pitch;
 use App\Models\PitchBlock;
 use App\Models\PitchRelation;
+use App\Models\ScheduleOverride;
 use App\Models\Season;
 use App\Models\User;
 use DateInterval;
@@ -63,11 +65,42 @@ class ConflictService
             }
         }
 
+        $occurrences = self::applyOverrides($occurrences, $date);
+
         foreach ($occurrences as $bs) {
             self::checkTrainingVsBlock($bs, $date);
         }
 
         self::checkDoubleBookings($occurrences, $date);
+    }
+
+    /**
+     * Ersetzt Platz/Zeit eines Trainingsvorkommens durch eine bereits
+     * hinterlegte Verschiebung (schedule_overrides), bevor die
+     * Konflikterkennung laeuft - ein verschobenes Training wird also an
+     * seinem NEUEN Platz geprueft, nicht mehr am urspruenglichen.
+     */
+    private static function applyOverrides(array $occurrences, string $date): array
+    {
+        $overrides = ScheduleOverride::mapForDate($date);
+        if ($overrides === []) {
+            return $occurrences;
+        }
+
+        foreach ($occurrences as &$bs) {
+            $override = $overrides[(int) $bs['id']] ?? null;
+            if ($override === null) {
+                continue;
+            }
+            $bs['pitch_id'] = $override['new_pitch_id'];
+            $bs['start_time'] = $override['new_start_time'];
+            $bs['end_time'] = $override['new_end_time'];
+            $pitch = Pitch::find((int) $override['new_pitch_id']);
+            $bs['pitch_name'] = $pitch['name'] ?? $bs['pitch_name'];
+        }
+        unset($bs);
+
+        return $occurrences;
     }
 
     /** @return int[] */

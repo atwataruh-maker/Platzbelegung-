@@ -35,7 +35,7 @@ class FallbackService
         $weekday = (int) $baseSchedule['weekday'];
 
         foreach ($candidates as $candidate) {
-            if (self::isPitchFree((int) $candidate['id'], $start, $end, (int) $baseSchedule['id'], $baseSchedule['season_id'], $weekday)) {
+            if (self::isPitchFree((int) $candidate['id'], $start, $end, (int) $baseSchedule['id'], $baseSchedule['season_id'], $weekday, $occurrenceDate)) {
                 $suggestionId = FallbackSuggestion::create([
                     'conflict_id' => $conflictId,
                     'base_schedule_id' => $baseSchedule['id'],
@@ -109,25 +109,49 @@ class FallbackService
     }
 
     /** Prueft, ob ein Kandidatenplatz (inkl. Teilflaechen) zur gewuenschten Zeit frei ist. */
-    private static function isPitchFree(int $pitchId, string $start, string $end, int $excludeBaseScheduleId, int $seasonId, int $weekday): bool
-    {
+    private static function isPitchFree(
+        int $pitchId,
+        string $start,
+        string $end,
+        int $excludeBaseScheduleId,
+        int $seasonId,
+        int $weekday,
+        string $occurrenceDate
+    ): bool {
         $relatedIds = PitchRelation::relatedPitchIds($pitchId);
 
         if (PitchBlock::overlapping($relatedIds, $start, $end) !== []) {
             return false;
         }
 
-        $placeholders = implode(',', array_fill(0, count($relatedIds), '?'));
-        $sql = "SELECT COUNT(*) FROM base_schedules
-                WHERE active = 1 AND season_id = ? AND weekday = ? AND id != ?
-                  AND pitch_id IN ($placeholders)
-                  AND start_time < ? AND end_time > ?";
-        $stmt = Database::connection()->prepare($sql);
         $startTime = substr($start, 11, 8);
         $endTime = substr($end, 11, 8);
-        $stmt->execute([$seasonId, $weekday, $excludeBaseScheduleId, ...$relatedIds, $endTime, $startTime]);
 
-        return (int) $stmt->fetchColumn() === 0;
+        // Grundbelegung pruefen, aber Trainings ausschliessen, die an diesem
+        // Datum bereits per Override auf einen anderen Platz verschoben wurden.
+        $placeholders = implode(',', array_fill(0, count($relatedIds), '?'));
+        $sql = "SELECT COUNT(*) FROM base_schedules bs
+                LEFT JOIN schedule_overrides so ON so.base_schedule_id = bs.id AND so.occurrence_date = ?
+                WHERE bs.active = 1 AND bs.season_id = ? AND bs.weekday = ? AND bs.id != ?
+                  AND bs.pitch_id IN ($placeholders)
+                  AND bs.start_time < ? AND bs.end_time > ?
+                  AND so.id IS NULL";
+        $stmt = Database::connection()->prepare($sql);
+        $stmt->execute([$occurrenceDate, $seasonId, $weekday, $excludeBaseScheduleId, ...$relatedIds, $endTime, $startTime]);
+        if ((int) $stmt->fetchColumn() > 0) {
+            return false;
+        }
+
+        // Pruefen, ob an diesem Datum bereits eine andere Belegung per
+        // Override auf diesen Kandidatenplatz verschoben wurde.
+        $overridePlaceholders = implode(',', array_fill(0, count($relatedIds), '?'));
+        $overrideSql = "SELECT COUNT(*) FROM schedule_overrides
+                WHERE occurrence_date = ? AND base_schedule_id != ? AND new_pitch_id IN ($overridePlaceholders)
+                  AND new_start_time < ? AND new_end_time > ?";
+        $stmt2 = Database::connection()->prepare($overrideSql);
+        $stmt2->execute([$occurrenceDate, $excludeBaseScheduleId, ...$relatedIds, $endTime, $startTime]);
+
+        return (int) $stmt2->fetchColumn() === 0;
     }
 
     private static function createConfirmationsAndNotify(int $suggestionId, array $baseSchedule, array $candidatePitch, string $occurrenceDate, string $start, string $end): void

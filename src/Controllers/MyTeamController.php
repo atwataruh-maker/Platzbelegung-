@@ -14,6 +14,7 @@ use App\Models\FallbackSuggestion;
 use App\Models\Game;
 use App\Models\Team;
 use App\Models\TrainerConfirmation;
+use App\Services\ScheduleOverrideService;
 
 class MyTeamController
 {
@@ -44,8 +45,16 @@ class MyTeamController
         Auth::requireRole('admin', 'trainer', 'betreuer');
         Csrf::requireValid();
 
-        $this->respond((int) $confirmationId, 'confirmed');
-        Flash::set('success', 'Ausweichvorschlag bestaetigt.');
+        $userId = Auth::id();
+        TrainerConfirmation::respond((int) $confirmationId, $userId, 'confirmed');
+        ChangeLog::record($userId, 'trainer_confirmation', (int) $confirmationId, 'confirmed', 'Trainer hat Ausweichvorschlag bestaetigt');
+
+        $fsId = $this->fallbackSuggestionIdFor((int) $confirmationId);
+        if ($fsId !== null) {
+            ScheduleOverrideService::applyFallbackSuggestion($fsId, $userId);
+        }
+
+        Flash::set('success', 'Ausweichvorschlag bestaetigt, Training wurde verschoben.');
         header('Location: ' . Url::to('/my-team'));
         exit;
     }
@@ -55,26 +64,26 @@ class MyTeamController
         Auth::requireRole('admin', 'trainer', 'betreuer');
         Csrf::requireValid();
 
-        $this->respond((int) $confirmationId, 'declined');
+        $userId = Auth::id();
+        TrainerConfirmation::respond((int) $confirmationId, $userId, 'declined');
+        ChangeLog::record($userId, 'trainer_confirmation', (int) $confirmationId, 'declined', 'Trainer hat Ausweichvorschlag abgelehnt');
+
+        $fsId = $this->fallbackSuggestionIdFor((int) $confirmationId);
+        if ($fsId !== null) {
+            ScheduleOverrideService::declineFallbackSuggestion($fsId, $userId);
+        }
+
         Flash::set('success', 'Ausweichvorschlag abgelehnt. Der Admin wurde informiert.');
         header('Location: ' . Url::to('/my-team'));
         exit;
     }
 
-    private function respond(int $confirmationId, string $status): void
+    private function fallbackSuggestionIdFor(int $confirmationId): ?int
     {
-        $userId = Auth::id();
-        TrainerConfirmation::respond($confirmationId, $userId, $status);
-
         $stmt = Database::connection()->prepare('SELECT fallback_suggestion_id FROM trainer_confirmations WHERE id = ?');
         $stmt->execute([$confirmationId]);
         $fsId = $stmt->fetchColumn();
-
-        if ($fsId !== false) {
-            FallbackSuggestion::setStatus((int) $fsId, $status === 'confirmed' ? 'accepted' : 'rejected');
-        }
-
-        ChangeLog::record($userId, 'trainer_confirmation', $confirmationId, $status, 'Trainer hat Ausweichvorschlag beantwortet');
+        return $fsId === false ? null : (int) $fsId;
     }
 
     private function pendingConfirmationsForUser(int $userId): array

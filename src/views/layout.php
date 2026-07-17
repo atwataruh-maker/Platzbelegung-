@@ -13,6 +13,8 @@ $user = Auth::user();
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="csrf-token" content="<?= View::e(Csrf::token()) ?>">
+<meta name="base-url" content="<?= View::e(Url::to('')) ?>">
 <title>Platzbelegung VfL Ramsdorf</title>
 <link rel="stylesheet" href="<?= View::e(Url::to('/assets/css/app.css')) ?>">
 </head>
@@ -56,5 +58,6 @@ $user = Auth::user();
 <footer class="footer">
     <a href="<?= View::e(Url::to('/public/week')) ?>">Oeffentliche Ansicht</a>
 </footer>
+<script src="<?= View::e(Url::to('/assets/js/week-editor.js')) ?>" defer></script>
 </body>
 </html>

@@ -18,7 +18,12 @@ Dies ist die MVP-Version ("Version 1" der Anforderungsliste):
   (siehe `automation/dfbnet-import/`, laeuft NICHT auf STRATO)
 - automatische Platzblockierung (Vorlauf/Spieldauer/Nachlauf, inkl. Teilflaechen)
 - automatische Konflikterkennung (Training vs. Sperre, Doppelbelegung, keine Alternative)
-- automatische Ausweichvorschlaege mit Trainerbestaetigung
+- automatische Ausweichvorschlaege mit Ein-Klick-Uebernahme (Admin) oder
+  Trainerbestaetigung - beides verschiebt das Training tatsaechlich im Plan
+- manuelles Verschieben von Trainings per Drag&Drop im Admin-Wochenplan
+  (nur fuer den jeweiligen Tag, die Grundbelegung bleibt unveraendert)
+- Tagesplan informiert ueber alle Verschiebungen des Tages inkl. Grund
+  (Spiel oder manuell)
 - E-Mail-Benachrichtigungen (per PHP `mail()`, kein externer Dienst noetig)
 - oeffentliche, anonymisierte Wochenansicht ohne Login
 - Aenderungsprotokoll
@@ -125,6 +130,17 @@ config/             config.example.php (kopieren nach config.php)
 - **Ausweichvorschlaege:** `FallbackService` sucht einen freien, passenden
   Ausweichplatz zur selben Uhrzeit und legt Trainerbestaetigungen +
   Benachrichtigungen an.
+- **Tatsaechliche Verschiebung (`schedule_overrides`):** Ein Trainingsvorkommen
+  (Grundbelegung + konkretes Datum) kann auf einen abweichenden Platz/Zeit
+  "verschoben" werden - entweder automatisch durch Uebernahme eines
+  Ausweichvorschlags (`ScheduleOverrideService::applyFallbackSuggestion()`,
+  ausloesbar per Ein-Klick-Button im Adminbereich oder durch Trainer-
+  Bestaetigung) oder manuell per Drag&Drop im Admin-Wochenplan
+  (`ScheduleOverrideService::createManualOverride()`). Wochen-/Tagesplan und
+  `ConflictService`/`FallbackService` beruecksichtigen bestehende
+  Verschiebungen, damit ein verschobenes Training an seinem NEUEN Platz
+  geprueft wird und nicht erneut als Konflikt auftaucht. Der Tagesplan zeigt
+  alle Verschiebungen des Tages inkl. Grund (Spiel oder manuell) gesammelt an.
 
 ## Automatischer Spielplan-Import (DFBnet)
 

@@ -22,6 +22,11 @@ use App\Core\View;
 </section>
 <?php endif; ?>
 
+<?php $dragEnabled = Auth::isAdmin(); ?>
+<?php if ($dragEnabled): ?>
+<p class="muted">Trainings koennen hier per Drag&amp;Drop auf einen anderen Platz/Zeit verschoben werden (nur fuer diesen Tag, die Grundbelegung bleibt unveraendert).</p>
+<?php endif; ?>
+
 <?php foreach ($days as $grid): ?>
     <?php require __DIR__ . '/../partials/day_grid.php'; ?>
 <?php endforeach; ?>

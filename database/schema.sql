@@ -120,6 +120,30 @@ CREATE TABLE IF NOT EXISTS base_schedules (
     CONSTRAINT fk_bs_season FOREIGN KEY (season_id) REFERENCES seasons(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Abweichende Platz-/Zeitzuordnung fuer ein einzelnes Trainingsvorkommen an
+-- einem bestimmten Datum (Ausnahme, nicht die dauerhafte Grundbelegung).
+-- Entsteht entweder automatisch durch Uebernahme eines Ausweichvorschlags
+-- (reason='game_conflict') oder durch manuelles Drag&Drop im Wochenplan
+-- (reason='manual'). Wochen-/Tagesplan und Konflikterkennung pruefen ein
+-- Trainingsvorkommen an seinem hier hinterlegten neuen Platz/Zeit, sofern
+-- ein Eintrag existiert.
+CREATE TABLE IF NOT EXISTS schedule_overrides (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    base_schedule_id INT UNSIGNED NOT NULL,
+    occurrence_date DATE NOT NULL,
+    new_pitch_id INT UNSIGNED NOT NULL,
+    new_start_time TIME NOT NULL,
+    new_end_time TIME NOT NULL,
+    reason ENUM('game_conflict','manual') NOT NULL DEFAULT 'manual',
+    conflict_id INT UNSIGNED NULL,
+    created_by INT UNSIGNED NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_override (base_schedule_id, occurrence_date),
+    CONSTRAINT fk_so_bs FOREIGN KEY (base_schedule_id) REFERENCES base_schedules(id) ON DELETE CASCADE,
+    CONSTRAINT fk_so_pitch FOREIGN KEY (new_pitch_id) REFERENCES pitches(id) ON DELETE CASCADE,
+    CONSTRAINT fk_so_user FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- ---------------------------------------------------------------------
 -- Spiele
 -- ---------------------------------------------------------------------
@@ -188,6 +212,12 @@ CREATE TABLE IF NOT EXISTS conflicts (
     CONSTRAINT fk_conf_resolver FOREIGN KEY (resolved_by) REFERENCES users(id) ON DELETE SET NULL,
     INDEX idx_conf_date_status (occurrence_date, status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Nachtraeglich ergaenzt: schedule_overrides.conflict_id verweist auf den
+-- Konflikt, der durch Uebernahme eines Ausweichvorschlags geloest wurde
+-- (NULL bei manuellen Drag&Drop-Verschiebungen ohne vorherigen Konflikt).
+ALTER TABLE schedule_overrides
+    ADD CONSTRAINT fk_so_conflict FOREIGN KEY (conflict_id) REFERENCES conflicts(id) ON DELETE SET NULL;
 
 -- ---------------------------------------------------------------------
 -- Ausweichvorschlaege

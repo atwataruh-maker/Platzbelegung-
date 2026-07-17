@@ -32,10 +32,18 @@ use App\Core\View;
             <h3>Ausweichvorschlaege</h3>
             <ul class="plain-list">
                 <?php foreach ($suggestions[$c['id']] as $s): ?>
-                    <li>
-                        <?= View::e($s['pitch_name']) ?>,
-                        <?= View::e(substr($s['suggested_start'], 11, 5)) ?>&ndash;<?= View::e(substr($s['suggested_end'], 11, 5)) ?> Uhr
-                        &ndash; Status: <?= View::e($s['status']) ?>
+                    <li class="suggestion-item">
+                        <span>
+                            <?= View::e($s['pitch_name']) ?>,
+                            <?= View::e(substr($s['suggested_start'], 11, 5)) ?>&ndash;<?= View::e(substr($s['suggested_end'], 11, 5)) ?> Uhr
+                            &ndash; Status: <?= View::e($s['status']) ?>
+                        </span>
+                        <?php if ($s['status'] === 'pending'): ?>
+                            <form method="post" action="<?= View::e(Url::to('/admin/fallback-suggestions/' . $s['id'] . '/apply')) ?>" class="inline-form">
+                                <?= Csrf::field() ?>
+                                <button type="submit" class="btn btn-primary btn-small">Vorschlag &uuml;bernehmen</button>
+                            </form>
+                        <?php endif; ?>
                     </li>
                 <?php endforeach; ?>
             </ul>
