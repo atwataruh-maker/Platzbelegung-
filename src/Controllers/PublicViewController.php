@@ -26,4 +26,20 @@ class PublicViewController
             'weekLabel' => $monday->format('d.m.Y') . ' - ' . $monday->modify('+6 days')->format('d.m.Y'),
         ], 'public/layout');
     }
+
+    /** Oeffentliche Tagesansicht ohne Login, ohne private Trainerdaten/Konflikte. */
+    public function day(?string $date = null): void
+    {
+        $date = $date ?: (new DateTimeImmutable('today'))->format('Y-m-d');
+        $grid = ScheduleGridService::buildDayGrid($date);
+
+        $prev = (new DateTimeImmutable($date))->modify('-1 day')->format('Y-m-d');
+        $next = (new DateTimeImmutable($date))->modify('+1 day')->format('Y-m-d');
+
+        View::render('public/day', [
+            'grid' => $grid,
+            'prevDate' => $prev,
+            'nextDate' => $next,
+        ], 'public/layout');
+    }
 }

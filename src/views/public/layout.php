@@ -15,6 +15,10 @@ use App\Core\View;
 <header class="topbar">
     <div class="topbar-inner">
         <span class="brand">VfL Ramsdorf &middot; Platzbelegung</span>
+        <nav class="nav">
+            <a href="<?= View::e(Url::to('/public/week')) ?>">Woche</a>
+            <a href="<?= View::e(Url::to('/public/day')) ?>">Tag</a>
+        </nav>
     </div>
 </header>
 <main class="content">

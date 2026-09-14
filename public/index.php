@@ -45,6 +45,8 @@ $router->post('/my-team/decline/{id}', [MyTeamController::class, 'decline']);
 
 $router->get('/public/week', [PublicViewController::class, 'week']);
 $router->get('/public/week/{offset}', [PublicViewController::class, 'week']);
+$router->get('/public/day', [PublicViewController::class, 'day']);
+$router->get('/public/day/{date}', [PublicViewController::class, 'day']);
 
 // Maschinelle Import-Schnittstelle (kein Session-Login, Token-Absicherung siehe ImportController)
 $router->post('/import/games', [ImportController::class, 'games']);
