@@ -109,6 +109,7 @@ class ScheduleGridService
             }
             return [
                 'type' => 'block',
+                'id' => (int) $blockMatch['id'],
                 'reason' => $blockMatch['reason'],
                 'label' => $label,
                 'note' => $blockMatch['note'],
@@ -223,6 +224,60 @@ class ScheduleGridService
             $slots[] = ['start' => self::fromMinutes($minutes), 'end' => self::fromMinutes($minutes + self::SLOT_MINUTES)];
         }
         return $slots;
+    }
+
+    /**
+     * Fasst aufeinanderfolgende Slots mit identischem Inhalt zu einem
+     * zusammenhaengenden Belegungsblock zusammen (fuer die Kartendarstellung
+     * im Raster: ein Training/Spiel = ein Block ueber mehrere Zeilen, statt
+     * einer Zelle pro 30-Minuten-Slot).
+     *
+     * @return array<int,array<int,array>> Platz-ID => Liste von Events, je
+     *   mit 'start_index' (0-basiert in $grid['slots']) und 'span' (Anzahl Slots)
+     */
+    public static function buildEvents(array $grid): array
+    {
+        $events = [];
+        $slotCount = count($grid['slots']);
+
+        foreach ($grid['pitches'] as $pitch) {
+            $pitchId = $pitch['id'];
+            $pitchEvents = [];
+            $i = 0;
+            while ($i < $slotCount) {
+                $cell = $grid['cells'][$pitchId][$grid['slots'][$i]['start']];
+                if ($cell['type'] === 'free' && empty($cell['moved_away_text'])) {
+                    $i++;
+                    continue;
+                }
+                $key = self::eventKey($cell);
+                $span = 1;
+                $j = $i + 1;
+                while ($j < $slotCount) {
+                    $nextCell = $grid['cells'][$pitchId][$grid['slots'][$j]['start']];
+                    if (self::eventKey($nextCell) !== $key) {
+                        break;
+                    }
+                    $span++;
+                    $j++;
+                }
+                $pitchEvents[] = $cell + ['start_index' => $i, 'span' => $span];
+                $i = $j;
+            }
+            $events[$pitchId] = $pitchEvents;
+        }
+
+        return $events;
+    }
+
+    private static function eventKey(array $cell): string
+    {
+        return match ($cell['type']) {
+            'training' => 'training:' . ($cell['base_schedule_id'] ?? '') . ':' . (empty($cell['moved']) ? '0' : '1'),
+            'block' => 'block:' . ($cell['id'] ?? ''),
+            'free' => 'note:' . ($cell['moved_away_text'] ?? ''),
+            default => 'other',
+        };
     }
 
     private static function toMinutes(string $hhmm): int

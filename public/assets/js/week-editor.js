@@ -1,17 +1,17 @@
 (function () {
   'use strict';
 
-  // Nur aktiv, wenn mindestens eine editierbare Wochenplan-Tabelle auf der
+  // Nur aktiv, wenn mindestens ein editierbares Belegungsraster auf der
   // Seite ist (Admin-Wochenansicht). Bewusst ohne Framework/Build-Schritt.
-  var editableTables = document.querySelectorAll('.grid-table-editable');
-  if (editableTables.length === 0) {
+  var editableGrids = document.querySelectorAll('.day-grid-table-editable');
+  if (editableGrids.length === 0) {
     return;
   }
 
   var csrfToken = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
   var baseUrl = (document.querySelector('meta[name="base-url"]') || {}).content || '';
 
-  var dragSource = null; // { baseScheduleId, durationMinutes, table }
+  var dragSource = null; // { baseScheduleId, durationMinutes, grid }
 
   function addMinutes(hhmm, minutes) {
     var parts = hhmm.split(':');
@@ -29,14 +29,14 @@
   }
 
   document.addEventListener('dragstart', function (e) {
-    var cell = e.target.closest ? e.target.closest('td.cell[draggable="true"]') : null;
+    var cell = e.target.closest ? e.target.closest('.cell[draggable="true"]') : null;
     if (!cell) {
       return;
     }
     dragSource = {
       baseScheduleId: cell.getAttribute('data-base-schedule-id'),
       durationMinutes: parseInt(cell.getAttribute('data-duration-minutes') || '30', 10),
-      table: cell.closest('table'),
+      grid: cell.closest('.day-grid-table'),
     };
     cell.classList.add('dragging');
     if (e.dataTransfer) {
@@ -46,7 +46,7 @@
   });
 
   document.addEventListener('dragend', function (e) {
-    var cell = e.target.closest ? e.target.closest('td.cell') : null;
+    var cell = e.target.closest ? e.target.closest('.cell') : null;
     if (cell) {
       cell.classList.remove('dragging');
     }
@@ -58,8 +58,8 @@
     if (!dragSource) {
       return;
     }
-    var cell = e.target.closest ? e.target.closest('td.cell[data-pitch-id]') : null;
-    if (!cell || cell.closest('table') !== dragSource.table) {
+    var cell = e.target.closest ? e.target.closest('.cell[data-pitch-id]') : null;
+    if (!cell || cell.closest('.day-grid-table') !== dragSource.grid) {
       return;
     }
     e.preventDefault();
@@ -76,15 +76,14 @@
     if (!dragSource) {
       return;
     }
-    var cell = e.target.closest ? e.target.closest('td.cell[data-pitch-id]') : null;
-    if (!cell || cell.closest('table') !== dragSource.table) {
+    var cell = e.target.closest ? e.target.closest('.cell[data-pitch-id]') : null;
+    if (!cell || cell.closest('.day-grid-table') !== dragSource.grid) {
       return;
     }
     e.preventDefault();
     clearDropTargets();
 
-    var table = dragSource.table;
-    var occurrenceDate = table.getAttribute('data-date');
+    var occurrenceDate = dragSource.grid.getAttribute('data-date');
     var newPitchId = cell.getAttribute('data-pitch-id');
     var newStartTime = cell.getAttribute('data-slot-start');
     var newEndTime = addMinutes(newStartTime, dragSource.durationMinutes);
