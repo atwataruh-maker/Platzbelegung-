@@ -1,0 +1,13 @@
+{
+  "name": "vfl-ramsdorf-dfbnet-import",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Automatisierter DFBnet-Spielplan-Import fuer die Platzbelegung VfL Ramsdorf. Laeuft NICHT auf dem STRATO-PHP-Hosting, sondern separat (z.B. als GitHub Action).",
+  "type": "commonjs",
+  "scripts": {
+    "import": "node import.js"
+  },
+  "dependencies": {
+    "playwright": "^1.47.0"
+  }
+}

@@ -1,0 +1,43 @@
+name: DFBnet Spielplan-Import
+
+on:
+  schedule:
+    # taeglich 05:15 UTC (~06:15/07:15 MEZ/MESZ). Zeit bewusst versetzt zum
+    # STRATO-Cron (siehe cron/daily.php), damit importierte Spiele noch vor
+    # dem taeglichen Konflikt-Scan in der App ankommen.
+    - cron: '15 5 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: automation/dfbnet-import
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Chromium (Playwright)
+        run: npx playwright install --with-deps chromium
+
+      - name: Spielplan importieren
+        env:
+          IMPORT_API_URL: ${{ secrets.IMPORT_API_URL }}
+          IMPORT_API_TOKEN: ${{ secrets.IMPORT_API_TOKEN }}
+        run: node import.js
+
+      - name: Debug-Screenshots hochladen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dfbnet-import-debug-screenshots
+          path: automation/dfbnet-import/debug-screenshots/
+          if-no-files-found: ignore
+          retention-days: 14

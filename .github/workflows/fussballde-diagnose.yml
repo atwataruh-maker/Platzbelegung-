@@ -1,0 +1,36 @@
+name: fussball.de Diagnose-Abruf
+
+# Rein lesender Test, ob die recherchierten fussball.de-Endpunkte von einem
+# GitHub-Actions-Runner aus erreichbar sind und welches HTML sie liefern.
+# Kein Login, keine Zugangsdaten, kein Schreibzugriff auf die App - dient
+# nur dazu, die spaetere echte Import-Automatisierung (analog
+# automation/dfbnet-import) auf Basis echter Antworten zu entwickeln.
+# Bewusst nur manuell auslösbar (workflow_dispatch), kein Zeitplan.
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: automation/fussballde-import
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Diagnose-Abruf ausfuehren
+        run: node diagnose.js
+
+      - name: Ergebnisse hochladen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fussballde-diagnose-output
+          path: automation/fussballde-import/diagnose-output/
+          if-no-files-found: warn
+          retention-days: 14

@@ -1,0 +1,9 @@
+RewriteEngine On
+
+# Direkt existierende Dateien/Ordner (z.B. assets/) ausliefern
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Alles andere an den Front-Controller weiterreichen
+RewriteRule ^ index.php [L]
