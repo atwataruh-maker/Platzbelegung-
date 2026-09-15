@@ -59,6 +59,13 @@ async function diagnoseOne(target) {
 
         const body = await response.text();
 
+        // Auszug direkt ins Workflow-Log schreiben (nicht nur in die Artefakt-
+        // Datei) - so laesst sich der Inhalt auch pruefen, wenn der Download
+        // des Artefakts von woanders aus nicht moeglich ist.
+        console.log(`--- Auszug ${target.key} (erste 1500 Zeichen von ${body.length}) ---`);
+        console.log(body.slice(0, 1500));
+        console.log(`--- Ende Auszug ${target.key} ---`);
+
         fs.mkdirSync(OUT_DIR, { recursive: true });
         const filePath = path.join(OUT_DIR, `${target.key}.html`);
         fs.writeFileSync(filePath, body, 'utf8');
@@ -73,6 +80,10 @@ async function diagnoseOne(target) {
         // (echte Bestaetigung/Widerlegung erfolgt durch manuelles Ansehen
         // der gespeicherten HTML-Datei, nicht durch diese Heuristik).
         result.looksLikeEmptyAppShell = body.length < 2000 && /<div id=["']app["']|<app-root/i.test(body);
+        // Grobe Plausibilitaetspruefung anhand der vom Nutzer genannten
+        // Beispieldaten (Gegner aus dem Screenshot, konkrete Spielnummer).
+        result.mentionsKnownOpponents = /Raesfeld|Schermbeck|Reken|Gahlen/i.test(body);
+        result.mentionsExampleSpielnummer = body.includes('210666011');
     } catch (err) {
         result.ok = false;
         result.error = err.message;
