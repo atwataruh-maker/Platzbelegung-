@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Core\Auth;
+use App\Core\Url;
 use App\Core\View;
 use App\Models\Conflict;
 use App\Models\Game;
@@ -13,7 +14,14 @@ class DashboardController
 {
     public function index(): void
     {
-        Auth::requireLogin();
+        // Ohne Login soll die Startseite direkt den oeffentlichen Tagesplan
+        // zeigen statt zum Login zu zwingen - der ist fuer Eltern/Fans ohne
+        // Account gedacht (siehe PublicViewController).
+        if (!Auth::check()) {
+            header('Location: ' . Url::to('/public/day'));
+            exit;
+        }
+
         $user = Auth::user();
 
         if ($user['role'] === 'admin') {

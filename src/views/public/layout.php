@@ -19,6 +19,7 @@ use App\Core\View;
             <a href="<?= View::e(Url::to('/public/week')) ?>">Woche</a>
             <a href="<?= View::e(Url::to('/public/day')) ?>">Tag</a>
         </nav>
+        <a class="btn-link" href="<?= View::e(Url::to('/login')) ?>">Anmelden</a>
     </div>
 </header>
 <main class="content">
