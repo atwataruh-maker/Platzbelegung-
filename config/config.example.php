@@ -26,10 +26,19 @@ return [
         'enabled' => true,
     ],
     'import' => [
-        // Geheimtoken fuer den maschinellen Spielplan-Import (POST /import/games).
-        // Muss identisch mit dem GitHub-Actions-Secret IMPORT_API_TOKEN sein.
+        // Geheimtoken fuer den maschinellen Spielplan-Import (POST /import/games,
+        // GET /import/dfbnet-credentials). Muss identisch mit dem
+        // GitHub-Actions-Secret IMPORT_API_TOKEN sein.
         // Mit z.B. `php -r "echo bin2hex(random_bytes(32));"` erzeugen.
         'api_token' => 'bitte-zufaelligen-token-erzeugen',
+    ],
+    'security' => [
+        // Schluessel zum Verschluesseln sensibler Werte in der Datenbank
+        // (aktuell: DFBnet-Passwort, siehe /admin/dfbnet). Mit z.B.
+        // `php -r "echo bin2hex(random_bytes(32));"` erzeugen und NICHT
+        // mehr aendern, sonst koennen bereits gespeicherte Werte nicht
+        // mehr entschluesselt werden.
+        'encryption_key' => 'bitte-zufaelligen-schluessel-erzeugen',
     ],
     'rules' => [
         // Standard-Spieldauer/Vor-/Nachlaufzeit, falls beim Spiel nichts anderes hinterlegt ist

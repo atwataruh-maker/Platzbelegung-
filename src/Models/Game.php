@@ -32,6 +32,25 @@ class Game extends Model
         return $stmt->fetchAll();
     }
 
+    /** Heimspiele innerhalb der Kalenderwoche, die mit $mondayDate (Montag) beginnt. Fuer die oeffentliche Tagesansicht. */
+    public static function homeGamesForWeek(string $mondayDate): array
+    {
+        $stmt = static::db()->prepare(
+            "SELECT g.*, t.name AS team_name, p.name AS pitch_name
+             FROM games g
+             JOIN teams t ON t.id = g.team_id
+             LEFT JOIN pitches p ON p.id = g.pitch_id
+             WHERE g.is_home = 1 AND g.status != 'cancelled'
+               AND g.kickoff_datetime >= :start AND g.kickoff_datetime < :end
+             ORDER BY g.kickoff_datetime"
+        );
+        $stmt->execute([
+            'start' => $mondayDate . ' 00:00:00',
+            'end' => (new \DateTimeImmutable($mondayDate))->modify('+7 days')->format('Y-m-d') . ' 00:00:00',
+        ]);
+        return $stmt->fetchAll();
+    }
+
     public static function forTeam(int $teamId, int $limit = 10): array
     {
         $stmt = static::db()->prepare(

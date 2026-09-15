@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Core\View;
+use App\Models\Game;
 use App\Services\ScheduleGridService;
 use DateTimeImmutable;
 
@@ -33,6 +34,9 @@ class PublicViewController
         $date = $date ?: (new DateTimeImmutable('today'))->format('Y-m-d');
         $grid = ScheduleGridService::buildDayGrid($date);
 
+        $monday = (new DateTimeImmutable($date))->modify('monday this week');
+        $homeGames = Game::homeGamesForWeek($monday->format('Y-m-d'));
+
         $prev = (new DateTimeImmutable($date))->modify('-1 day')->format('Y-m-d');
         $next = (new DateTimeImmutable($date))->modify('+1 day')->format('Y-m-d');
 
@@ -40,6 +44,8 @@ class PublicViewController
             'grid' => $grid,
             'prevDate' => $prev,
             'nextDate' => $next,
+            'homeGames' => $homeGames,
+            'weekLabel' => $monday->format('d.m.Y') . ' - ' . $monday->modify('+6 days')->format('d.m.Y'),
         ], 'public/layout');
     }
 }

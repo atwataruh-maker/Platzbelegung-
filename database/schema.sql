@@ -283,4 +283,20 @@ CREATE TABLE IF NOT EXISTS change_log (
     CONSTRAINT fk_log_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ---------------------------------------------------------------------
+-- DFBnet-Zugangsdaten fuer den automatisierten Spielplan-Import.
+-- Wird vom Admin ueber /admin/dfbnet gepflegt; das Passwort steht nie im
+-- Klartext in der Datenbank (verschluesselt, siehe App\Core\Crypto).
+-- Immer genau eine Zeile (id=1); die GitHub Action ruft die Zugangsdaten
+-- ueber /import/dfbnet-credentials ab, siehe automation/dfbnet-import.
+-- ---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS dfbnet_credentials (
+    id TINYINT UNSIGNED NOT NULL PRIMARY KEY DEFAULT 1,
+    username VARCHAR(150) NOT NULL,
+    password_encrypted TEXT NOT NULL,
+    updated_by INT UNSIGNED NULL,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_dfbnet_credentials_user FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 SET FOREIGN_KEY_CHECKS = 1;

@@ -29,8 +29,6 @@ jobs:
 
       - name: Spielplan importieren
         env:
-          DFBNET_USERNAME: ${{ secrets.DFBNET_USERNAME }}
-          DFBNET_PASSWORD: ${{ secrets.DFBNET_PASSWORD }}
           IMPORT_API_URL: ${{ secrets.IMPORT_API_URL }}
           IMPORT_API_TOKEN: ${{ secrets.IMPORT_API_TOKEN }}
         run: node import.js

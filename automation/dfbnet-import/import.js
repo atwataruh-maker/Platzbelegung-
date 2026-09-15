@@ -15,8 +15,12 @@
  * =====================================================================
  *
  * Ablauf:
- *   1. Login bei portal.dfbnet.org mit den Zugangsdaten aus den
- *      Umgebungsvariablen DFBNET_USERNAME / DFBNET_PASSWORD.
+ *   1. DFBnet-Zugangsdaten von der App abrufen (GET
+ *      /import/dfbnet-credentials, Token-Auth) - der Admin traegt sie
+ *      unter /admin/dfbnet in der Oberflaeche ein, das Passwort liegt
+ *      dort verschluesselt in der Datenbank. Es muessen also keine
+ *      DFBnet-Zugangsdaten mehr als GitHub-Secret hinterlegt werden.
+ *   1b. Login bei portal.dfbnet.org mit diesen Zugangsdaten.
  *   2. Fuer jede Mannschaft aus team-mapping.json: die hinterlegte
  *      Spielplanbearbeitung-URL der Staffel oeffnen und den CSV-Export
  *      auslösen (Direktlink statt Menue-Navigation, siehe README - das
@@ -32,10 +36,9 @@ const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
 
-const DFBNET_USERNAME = requireEnv('DFBNET_USERNAME');
-const DFBNET_PASSWORD = requireEnv('DFBNET_PASSWORD');
 const IMPORT_API_URL = requireEnv('IMPORT_API_URL'); // z.B. https://platzbelegung.vfl-ramsdorf.de/import/games
 const IMPORT_API_TOKEN = requireEnv('IMPORT_API_TOKEN');
+const IMPORT_CREDENTIALS_URL = deriveCredentialsUrl(IMPORT_API_URL);
 const TEAM_MAPPING_PATH = process.env.TEAM_MAPPING_PATH || path.join(__dirname, 'team-mapping.json');
 const SCREENSHOT_DIR = process.env.SCREENSHOT_DIR || path.join(__dirname, 'debug-screenshots');
 const CLUB_NAME_PATTERN = /ramsdorf/i; // ANPASSEN falls der Vereinsname im CSV anders geschrieben wird
@@ -50,6 +53,36 @@ function requireEnv(name) {
         process.exit(1);
     }
     return value;
+}
+
+/** /import/games -> /import/dfbnet-credentials, sonst Fallback auf den Origin der URL. */
+function deriveCredentialsUrl(importApiUrl) {
+    if (importApiUrl.endsWith('/import/games')) {
+        return importApiUrl.slice(0, -'/import/games'.length) + '/import/dfbnet-credentials';
+    }
+    return new URL('/import/dfbnet-credentials', importApiUrl).toString();
+}
+
+/** Holt die vom Admin unter /admin/dfbnet hinterlegten DFBnet-Zugangsdaten von der App. */
+async function fetchDfbnetCredentials() {
+    const response = await fetch(IMPORT_CREDENTIALS_URL, {
+        headers: { Authorization: `Bearer ${IMPORT_API_TOKEN}` },
+    });
+    const body = await response.json().catch(() => ({}));
+
+    if (response.status === 404) {
+        throw new Error(
+            'Keine DFBnet-Zugangsdaten in der App hinterlegt. Bitte im Adminbereich ' +
+            'unter /admin/dfbnet einmalig Benutzername und Passwort eintragen.'
+        );
+    }
+    if (!response.ok) {
+        throw new Error(`Abruf der DFBnet-Zugangsdaten fehlgeschlagen (${response.status}): ${JSON.stringify(body)}`);
+    }
+    if (!body.username || !body.password) {
+        throw new Error('Antwort der App enthielt keine vollstaendigen DFBnet-Zugangsdaten.');
+    }
+    return { username: body.username, password: body.password };
 }
 
 function loadTeamMapping() {
@@ -203,15 +236,15 @@ function combineDateTime(dateStr, timeStr) {
     return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')} ${hour}:${minute}:00`;
 }
 
-async function loginToDfbnet(page) {
+async function loginToDfbnet(page, username, password) {
     await page.goto(LOGIN_URL, { waitUntil: 'networkidle' });
     await screenshot(page, '01-login-page');
 
     // ANPASSEN: Feld-Labels/Platzhalter pruefen, falls dies fehlschlaegt.
     const userField = page.getByLabel(/benutzername|username|e-?mail/i).first();
     const passField = page.getByLabel(/passwort|password/i).first();
-    await userField.fill(DFBNET_USERNAME);
-    await passField.fill(DFBNET_PASSWORD);
+    await userField.fill(username);
+    await passField.fill(password);
 
     const loginButton = page.getByRole('button', { name: /anmelden|login|einloggen/i }).first();
     await Promise.all([
@@ -281,7 +314,8 @@ async function main() {
     let hadError = false;
 
     try {
-        await loginToDfbnet(page);
+        const { username, password } = await fetchDfbnetCredentials();
+        await loginToDfbnet(page, username, password);
 
         for (const teamConfig of teamMappings) {
             try {

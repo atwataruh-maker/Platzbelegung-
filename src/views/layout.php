@@ -35,6 +35,7 @@ $user = Auth::user();
                 <a href="<?= View::e(Url::to('/admin/seasons')) ?>">Saisons</a>
                 <a href="<?= View::e(Url::to('/admin/base-schedule')) ?>">Grundbelegung</a>
                 <a href="<?= View::e(Url::to('/admin/games')) ?>">Spiele</a>
+                <a href="<?= View::e(Url::to('/admin/dfbnet')) ?>">DFBnet-Zugang</a>
                 <a href="<?= View::e(Url::to('/admin/conflicts')) ?>">Konflikte</a>
                 <a href="<?= View::e(Url::to('/admin/log')) ?>">Protokoll</a>
             <?php endif; ?>

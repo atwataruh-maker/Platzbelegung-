@@ -24,7 +24,16 @@ damit sieht man ohne eigenen DFBnet-Login sofort, wo es ggf. hakt.
 
 1. **Wer hat DFBnet-Zugang?** In der Regel der/die Spielausschuss-Obmann/
    -frau oder Jugendleiter:in des Vereins. Diese Person muss die
-   Zugangsdaten bereitstellen (siehe Sicherheitshinweis unten).
+   Zugangsdaten bereitstellen.
+
+   **Zugangsdaten werden in der App eingetragen, nicht bei GitHub:** als
+   Admin in der Platzbelegung-App unter **DFBnet-Zugang**
+   (`/admin/dfbnet`) einmalig Benutzername und Passwort hinterlegen. Das
+   Passwort wird dort verschluesselt gespeichert und nie wieder im
+   Klartext angezeigt; die Automatisierung ruft es sich bei jedem Lauf
+   ueber den tokengesicherten Endpunkt `GET /import/dfbnet-credentials`
+   ab (siehe Sicherheitshinweis unten). Es muss also **kein** DFBnet-
+   Passwort mehr als GitHub-Secret hinterlegt werden.
 
 2. **team-mapping.json anlegen** (Kopie von `team-mapping.example.json`,
    im Repo einchecken - die Datei enthaelt keine Zugangsdaten, nur
@@ -45,15 +54,18 @@ damit sieht man ohne eigenen DFBnet-Login sofort, wo es ggf. hakt.
    nach dem Import manuell in der Spiele-Liste nachtragen).
 
 4. **API-Token erzeugen** und in `config/config.php` unter `import.api_token`
-   eintragen (z.B. `php -r "echo bin2hex(random_bytes(32));"`).
+   eintragen (z.B. `php -r "echo bin2hex(random_bytes(32));"`). Dieser Token
+   sichert sowohl `POST /import/games` als auch `GET /import/dfbnet-credentials` ab.
 
-5. **GitHub-Secrets** im Repository unter Settings > Secrets and variables >
+5. **DFBnet-Zugangsdaten eintragen**: als Admin in der App unter
+   `/admin/dfbnet` (siehe Schritt 1).
+
+6. **GitHub-Secrets** im Repository unter Settings > Secrets and variables >
    Actions anlegen:
-   - `DFBNET_USERNAME`, `DFBNET_PASSWORD` - echte DFBnet-Zugangsdaten
    - `IMPORT_API_URL` - z.B. `https://platzbelegung.vfl-ramsdorf.de/import/games`
    - `IMPORT_API_TOKEN` - derselbe Wert wie in `config.php`
 
-6. Workflow einmal manuell ausloesen (Tab "Actions" > "DFBnet
+7. Workflow einmal manuell ausloesen (Tab "Actions" > "DFBnet
    Spielplan-Import" > "Run workflow") und die Screenshots/Logs pruefen.
 
 ## Lokal testen
@@ -62,15 +74,21 @@ damit sieht man ohne eigenen DFBnet-Login sofort, wo es ggf. hakt.
 cd automation/dfbnet-import
 npm install
 npx playwright install chromium
-export DFBNET_USERNAME=... DFBNET_PASSWORD=... IMPORT_API_URL=... IMPORT_API_TOKEN=...
+export IMPORT_API_URL=... IMPORT_API_TOKEN=...
 npm run import
 ```
 
+Die DFBnet-Zugangsdaten holt sich das Skript dabei live von der App (siehe
+oben) - lokal muss also eine erreichbare Instanz mit bereits unter
+`/admin/dfbnet` hinterlegten Zugangsdaten als `IMPORT_API_URL` angegeben werden.
+
 ## Sicherheitshinweis
 
-Das DFBnet-Passwort landet **nie** in der PHP-App oder deren Datenbank -
-nur als GitHub-Actions-Secret, das ausschliesslich innerhalb des
-Workflow-Laufs sichtbar ist. Automatisierter Login kann je nach
+Das DFBnet-Passwort landet verschluesselt in der Datenbank der App (siehe
+`App\Core\Crypto`, Schluessel in `config/config.php` unter
+`security.encryption_key`) und wird nur fuer den unmittelbaren Login-
+Vorgang der Automatisierung entschluesselt an sie uebertragen - nie an
+Dritte, nie im Klartext geloggt. Automatisierter Login kann je nach
 DFBnet-Nutzungsbedingungen unerwuenscht sein und im ungluecklichen Fall zu
 einer Kontosperrung fuehren - das ist eine Risikoabwaegung, die der Verein
 bewusst getroffen hat. Falls die Kontosperrung passiert oder DFBnet den

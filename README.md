@@ -158,6 +158,12 @@ Einrichtung und ein wichtiger Vorbehalt (das Skript wurde ohne Live-Zugriff
 auf DFBnet gebaut und muss vor dem produktiven Einsatz einmal echt getestet
 werden) stehen in `automation/dfbnet-import/README.md`.
 
+Die DFBnet-Zugangsdaten dafuer traegt ein Admin direkt in der App unter
+**DFBnet-Zugang** (`/admin/dfbnet`) ein (verschluesselt gespeichert, siehe
+`config.security.encryption_key`) - es muessen keine DFBnet-Zugangsdaten
+als GitHub-Secret hinterlegt werden. Die Automatisierung ruft sie bei
+jedem Lauf tokengesichert ueber `GET /import/dfbnet-credentials` ab.
+
 ## Nicht enthalten (geplant fuer Version 2/3, siehe Anforderungsliste)
 
 Fussball.de-Automatisierung (technisch nicht ohne Headless-Browser moeglich,

@@ -8,6 +8,7 @@ use App\Controllers\ChangeLogController;
 use App\Controllers\ConflictController;
 use App\Controllers\DashboardController;
 use App\Controllers\DayViewController;
+use App\Controllers\DfbnetSettingsController;
 use App\Controllers\GameController;
 use App\Controllers\ImportController;
 use App\Controllers\MyTeamController;
@@ -50,6 +51,10 @@ $router->get('/public/day/{date}', [PublicViewController::class, 'day']);
 
 // Maschinelle Import-Schnittstelle (kein Session-Login, Token-Absicherung siehe ImportController)
 $router->post('/import/games', [ImportController::class, 'games']);
+$router->get('/import/dfbnet-credentials', [ImportController::class, 'dfbnetCredentials']);
+
+$router->get('/admin/dfbnet', [DfbnetSettingsController::class, 'index']);
+$router->post('/admin/dfbnet', [DfbnetSettingsController::class, 'store']);
 
 $router->get('/admin/teams', [TeamController::class, 'index']);
 $router->post('/admin/teams', [TeamController::class, 'store']);
