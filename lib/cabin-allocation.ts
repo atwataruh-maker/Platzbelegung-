@@ -35,8 +35,11 @@ function genderOf(team:string):Gender{
 }
 function youthSharing(label:string):boolean{
  const group=label.match(/^(.+)-Junior(?:en|innen)$/i)?.[1];
- // Every age group in a combined session must be G, F, E or D.
- return !!group&&group.split(/\s*[/-]\s*/).every(part=>/^[D-G]\d*$/i.test(part));
+ // All youth age groups may share, including combined teams.
+ return !!group&&group.split(/\s*[/-]\s*/).every(part=>/^[A-G]\d*$/i.test(part));
+}
+export function isHomeWomensTeam(b:CabinBooking):boolean{
+ return !b.guest&&b.gender==='female'&&!b.shareEligible&&(b.category==='Frauen'||/\b(Damen|Frauen)\b/i.test(b.team));
 }
 function canShare(a:CabinBooking,b:CabinBooking):boolean{
  return a.shareEligible&&b.shareEligible&&a.gender!=='unknown'&&a.gender===b.gender&&a.guest===b.guest&&!a.fixed&&!b.fixed;
@@ -52,6 +55,7 @@ function ownTrainingTeam(team:string,category:string,trainingNames:string[]):str
 }
 function candidates(b:CabinBooking):CabinId[]{
  if(b.fixed)return [b.fixed];
+ if(isHomeWomensTeam(b))return ['home1','home2'];
  return b.guest?['away1','shared']:['shared','home1','home2','away1'];
 }
 
@@ -113,7 +117,7 @@ export function allocateCabins(allocation:Allocation,schedule:MatchSchedule|null
  const conflicts:string[]=[];
  for(const b of assigned){
   if(b.room){b.sharingWith=assigned.filter(other=>other.id!==b.id&&other.room===b.room&&concurrent(b,other)).map(other=>other.team);continue;}
-  b.reason=b.gender==='unknown'?'Geschlechtszuordnung fehlt in der Quelle. Bitte mit der Kabinenkoordination klären.':'Keine konfliktfreie Kabinenzuordnung für den gesamten Zeitraum ermittelt. Bitte mit der Kabinenkoordination abstimmen.';
+  b.reason=b.gender==='unknown'?'Geschlechtszuordnung fehlt in der Quelle. Bitte mit der Kabinenkoordination klären.':isHomeWomensTeam(b)?'Für die Damen ist weder die 1. noch die 2. Heimkabine im gesamten Zeitraum allein verfügbar. Bitte mit der Kabinenkoordination abstimmen.':'Keine konfliktfreie Kabinenzuordnung für den gesamten Zeitraum ermittelt. Bitte mit der Kabinenkoordination abstimmen.';
   conflicts.push(`${b.team}${b.category?' · '+b.category:''} · ${clock(b.start)}–${clock(b.end)}: ${b.reason}`);
  }
  assigned.sort((a,b)=>a.start-b.start||a.team.localeCompare(b.team)||a.id.localeCompare(b.id));

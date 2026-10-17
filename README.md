@@ -9,7 +9,7 @@ Mobile Vereins-Webapp mit Platzbelegung, Kabinenbelegung, Fußballspielen und He
 - Heimspiele, Ergebnisse und Tagesnavigation aus FUSSBALL.DE; automatische Ausweichplanung bei Platzkonflikten.
 - Hauptplatz mit zwei Trainingshälften als letzte Ausweichoption für die 1. Herren und Jugendteams.
 - Vier Kabinen mit festen Zuordnungen für die 1. und 2. Herren, Geschlechtertrennung, Gästen und Umkleidepuffern.
-- Freie Auswärtskabinen für Heimteams; gleichgeschlechtliche G- bis D-Jugendteams dürfen Kabinen teilen.
+- Freie Auswärtskabinen für Heimteams; alle gleichgeschlechtlichen Jugendteams von G bis A dürfen Kabinen teilen. Damen nutzen ausschließlich die 1. oder 2. Heimkabine allein.
 - Ehrenamtliche Gesuche anlegen, abschließen und wieder öffnen; Schreibzugriff für berechtigte Betreiber.
 
 ## Technik und Start

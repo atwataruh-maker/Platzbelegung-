@@ -22,6 +22,17 @@ for(const [name,room] of [['VfL Ramsdorf','home1'],['VfL Ramsdorf I','home1'],['
 // Category prevents the B-youth second team being mistaken for the second men's team.
 p=plan([], [game('youth','B-Junioren',{home:'VfL Ramsdorf II'})]);assert.equal(p.bookings.find(b=>!b.guest).fixed,null);
 p=plan([], [game('women','Frauen')]);assert.ok(p.bookings.every(b=>b.gender==='female'));
+// Women use only a free home cabin, exclusively, for both training and matches.
+for(const viaMatch of [false,true])for(const occupied of [[],['1. Herren'],['2. Herren'],['1. Herren','2. Herren']]){
+ const women=viaMatch?[]:[training('VfL Ramsdorf Damen',['r1'])];
+ p=plan([...occupied.map(n=>training(n)),...women,training('C-Juniorinnen',['r2']),training('E1-Juniorinnen',['r3'])],viaMatch?[game('women','Frauen')]:[]);
+ const w=p.bookings.find(b=>!b.guest&&(b.team==='VfL Ramsdorf Damen'||b.category==='Frauen'));
+ assert.equal(w.shareEligible,false);
+ if(occupied.length===2){assert.equal(w.room,null);assert.match(w.reason,/weder die 1. noch die 2. Heimkabine/);}
+ else{assert.ok(['home1','home2'].includes(w.room));assert.equal(w.sharingWith.length,0);if(occupied[0]==='1. Herren')assert.equal(w.room,'home2');if(occupied[0]==='2. Herren')assert.equal(w.room,'home1');}
+ if(viaMatch)assert.equal(p.bookings.find(b=>b.guest).room,'away1');
+ noRoomClashes(p);
+}
 // A club derby preserves the fixed cabin even for the team listed as away.
 p=plan([], [game('derby','Herren',{home:'VfL Ramsdorf III',away:'VfL Ramsdorf II',location:'Vereinsduell'})]);assert.equal(p.bookings.find(b=>b.team==='2. Herren').room,'home2');
 // Two visitors use the two designated visitor cabins; genders never share one at once.
@@ -38,30 +49,30 @@ p=plan([training('D1-Junioren'),training('D2-Junioren',BACK)],[game('second-yout
 p=plan([training('G-Junioren / G-F-Juniorinnen')]);
 assert.equal(p.bookings.length,2);assert.deepEqual(p.bookings.map(b=>b.gender).sort(),['female','male']);assert.notEqual(p.bookings[0].room,p.bookings[1].room);noRoomClashes(p);
 p=plan([training('SF Nordvelen')]);assert.equal(p.bookings[0].room,null);assert.equal(p.bookings[0].gender,'unknown');assert.match(p.conflicts[0],/Geschlechtszuordnung/);
-// Older youth stay exclusive; home teams can now use all four cabins without guests.
+// Home youth teams can use all four cabins without guests, with genders separate.
 p=plan([training('1. Herren'),training('2. Herren',BACK),training('A-Junioren',['r1']),training('C-Juniorinnen',['r2'])]);
 assert.equal(p.bookings.filter(b=>!b.room).length,0);assert.ok(p.bookings.some(b=>b.room==='away1'&&!b.guest));noRoomClashes(p);
 const fixedTeams=[training('1. Herren'),training('2. Herren',BACK)];
-// With three rooms occupied, the youngest teams can share the fourth at either training or games.
-for(const names of [['D1-Junioren','E1-Junioren'],['D1-Juniorinnen','G/F-Juniorinnen'],['F1/F2-Junioren','G-Junioren']]){
+// With three rooms occupied, all same-gender youth age groups can share the fourth.
+for(const names of [['D1-Junioren','E1-Junioren'],['D1-Juniorinnen','G/F-Juniorinnen'],['F1/F2-Junioren','G-Junioren'],['A-Junioren','B-Junioren'],['D1-Junioren','C-Junioren'],['D1-Junioren','C/D-Junioren'],['C-Juniorinnen','E1/E2-Juniorinnen']]){
  p=plan([...fixedTeams,...names.map(n=>training(n,['r1']))],[game('visitor')]);
  const youth=p.bookings.filter(b=>names.includes(b.team));assert.equal(youth.length,2);assert.equal(youth[0].room,'shared');assert.equal(youth[1].room,'shared');assert.deepEqual(youth[0].sharingWith,[youth[1].team]);assert.deepEqual(youth[1].sharingWith,[youth[0].team]);assert.equal(p.conflicts.length,0);noRoomClashes(p);
 }
-// No sharing across gender, above D youth, with adults, or for an age group including C.
-for(const names of [['D1-Junioren','D1-Juniorinnen'],['D1-Junioren','C-Junioren'],['D1-Junioren','3. Herren'],['D1-Junioren','C/D-Junioren']]){
+// No sharing across genders or with adults.
+for(const names of [['D1-Junioren','D1-Juniorinnen'],['D1-Junioren','3. Herren']]){
  p=plan([...fixedTeams,...names.map(n=>training(n,['r1']))],[game('visitor')]);
  assert.equal(p.bookings.filter(b=>!b.room).length,1);noRoomClashes(p);
 }
 // Guests retain priority; a home youth side never shares an occupied guest cabin.
 p=plan(fixedTeams,[game('visitor'),game('young','D-Junioren')]);
 assert.ok(p.bookings.filter(b=>b.guest).every(b=>b.room));assert.equal(p.bookings.find(b=>b.category==='D-Junioren'&&!b.guest).room,null);noRoomClashes(p);
-// Sharing also applies to visitors of the same gender through D youth.
-p=plan([],['one','two','three'].map(id=>game(id,'D-Junioren')));
+// Sharing also applies to visitors of the same gender through A youth.
+p=plan([],['one','two','three'].map(id=>game(id,'A-Junioren')));
 const guests=p.bookings.filter(b=>b.guest);assert.equal(guests.length,3);assert.ok(guests.every(b=>b.room));assert.ok(guests.some(b=>b.sharingWith.length));noRoomClashes(p);
 // Guest reservation and changing buffers must end before a home team can take over.
 for(const start of [1170,1169]){
- p=plan([training('1. Herren',FRONT,1170,1260),training('2. Herren',BACK,1170,1260),training('A-Junioren',['r1'],start,1260),training('B-Junioren',['r2'],start,1260)],[game('visitor')]);
- const late=p.bookings.find(b=>b.team==='B-Junioren');
+ p=plan([training('1. Herren',FRONT,1170,1260),training('2. Herren',BACK,1170,1260),training('3. Herren',['r1'],start,1260),training('Alte Herren',['r2'],start,1260)],[game('visitor')]);
+ const late=p.bookings.find(b=>b.team==='Alte Herren');
  if(start===1170){assert.ok(late.room);assert.equal(p.conflicts.length,0);}else{assert.equal(p.bookings.filter(b=>!b.room).length,1);assert.ok(late.room!=='away1');}
  noRoomClashes(p);
 }
@@ -76,6 +87,24 @@ for(let day=19;day<=25;day++){
  const d=`2026-10-${day}`,s={...schedule(),from:d,to:d};const a=allocate(d,s,true);p=allocateCabins(a,s);noRoomClashes(p);
  const sessions=TRAINING.filter(t=>t.day===new Date(d+'T12:00Z').getUTCDay());
  assert.equal(p.bookings.length,sessions.length+(day===23?1:0));
+}
+
+// Regressions for the reported dates, using the October 17 source check:
+// Oct 15 C-youth fixture at 18:00; Oct 16 fixture was moved to November 2.
+for(const d of ['2026-10-15','2026-10-16']){
+ const s={...schedule(d.endsWith('15')?[game('031R0M5T7K000000VS5489BUVVE0O1R6','C-Junioren',{date:d,time:'18:00',away:'RSV Borken'})]:[]),from:d,to:d};
+ p=allocateCabins(allocate(d,s,true),s);noRoomClashes(p);
+ assert.ok(p.bookings.filter(b=>b.gender!=='unknown').every(b=>b.room),d+' all known teams must fit');
+ if(d.endsWith('15')){
+  assert.equal(p.bookings.filter(b=>!b.room).length,1);assert.equal(p.bookings.find(b=>!b.room).team,'SF Nordvelen');
+  assert.equal(p.bookings.find(b=>b.team==='1. Herren').room,'home1');
+  assert.equal(p.bookings.find(b=>b.team==='RSV Borken').room,'away1');
+  assert.ok(['A-Junioren','B-Junioren'].every(t=>p.bookings.find(b=>b.team===t).sharingWith.length));
+ }else{
+  assert.equal(p.conflicts.length,0);assert.equal(p.bookings.find(b=>b.team==='VfL Ramsdorf Damen').room,'home1');
+  assert.equal(p.bookings.find(b=>b.team==='2. Herren').room,'home2');
+  assert.ok(p.bookings.find(b=>b.team==='C-Juniorinnen').sharingWith.includes('E1/E2-Juniorinnen'));
+ }
 }
 
 // Main-pitch fallback: exactly two half-pitch sessions, games block both halves.
