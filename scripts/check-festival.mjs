@@ -1,0 +1,14 @@
+import fs from 'node:fs';
+import ts from 'typescript';
+import assert from 'node:assert/strict';
+const compiled = ts.transpileModule(fs.readFileSync('lib/matches.ts','utf8'), {compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText;
+const {parseMatches} = await import('data:text/javascript;base64,'+Buffer.from(compiled).toString('base64'));
+const row = (day, kind, path, score) => `<tr class="row-headline"><td>Samstag, ${day}.10.2026 - 10:00 Uhr | ${kind} | Kinderfußball</td></tr><tr><td class="column-club"><div class="club-name">VfL Ramsdorf</div></td><td class="column-club"><div class="club-name">Gastverein</div></td><td class="column-score"><a href="https://www.fussball.de/${path}">${score}</a></td></tr>`;
+const html = '<table class="club-matchplan-table"><tbody>'+row('04','Herren','spiel/test/-/id/match1','<span class="score-left">0</span>:<span class="score-right">2</span><span class="icon-verified"></span>')+row('10','F-Juniorinnen','spieltag/team/-/staffel/group1','')+row('11','F-Juniorinnen','spieltag/team/-/staffel/group1','')+'</tbody></table>';
+const matches = parseMatches(html,'2026-10-04','2026-10-11').matches;
+assert.equal(matches.length,3);
+assert.equal(new Set(matches.map(m=>m.id)).size,3);
+assert.deepEqual(matches[0].result,{home:0,away:2,confirmed:true});
+assert.equal(matches[1].result,undefined);
+assert.ok(matches[1].url.includes('/spieltag/'));
+console.log('PASS: results and festival group links coexist; repeated festival dates remain distinct.');

@@ -1,0 +1,23 @@
+import fs from 'node:fs';
+import ts from 'typescript';
+import assert from 'node:assert/strict';
+import {build} from 'esbuild';
+import {Miniflare} from 'miniflare';
+const source=ts.transpileModule(fs.readFileSync('lib/matches.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText;
+const {parseMatches,shiftMatchDate,isMatchDate}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+const row=(day,score='<span class="score-left">0</span>:<span class="score-right">0<span class="icon-verified"></span></span>')=>`<tr class="row-headline"><td>${day}.10.2026 - 17:00 Uhr | E-Junioren | Liga</td></tr><tr><td class="column-club"><div class="club-name">VfL Ramsdorf</div></td><td class="column-club"><div class="club-name">Gast</div></td><td class="column-score"><a href="https://www.fussball.de/spiel/test/-/spiel/ID${day}">${score}</a></td></tr>`;
+const bye='<tr class="row-headline"><td>11.10.2026 - Uhr | A-Junioren | Liga</td></tr><tr><td class="column-club"><div class="club-name">VfL Ramsdorf</div></td><td class="column-club no-border"><span class="info-text">spielfrei</span></td><td class="column-score"></td></tr>';
+const wrap=s=>'<table class="club-matchplan-table"><tbody>'+s+'</tbody></table>';
+const empty='<div class="club-matchplan-table"><table><thead><tr><th>Datum</th></tr></thead></table></div>';
+assert.equal(parseMatches(wrap(bye+row('09')),'2026-10-09','2026-10-16').matches.length,1);
+assert.deepEqual(parseMatches(wrap(row('09')),'2026-10-09','2026-10-09').matches[0].result,{home:0,away:0,confirmed:true});
+assert.equal(parseMatches(wrap(bye),'2026-10-11','2026-10-11').matches.length,0);
+assert.equal(parseMatches(empty,'2026-10-06','2026-10-06').matches.length,0);
+const partial=parseMatches(wrap(row('09')+'<tr class="row-headline"><td>Broken entry</td></tr>'),'2026-10-09','2026-10-09');assert.equal(partial.omittedRows,1);assert.equal(partial.matches.length,1);
+assert.throws(()=>parseMatches('<html>Error</html>','2026-10-09','2026-10-09'));
+assert.equal(parseMatches(wrap(row('09','<span class="info-text">o.E.</span>')),'2026-10-09','2026-10-09').matches[0].status,'Ohne Ergebniswertung');
+assert.equal(parseMatches(wrap(row('09','<span class="info-text">20.11.2026 19:30</span>')),'2026-10-09','2026-10-09').matches[0].status,'Verlegt: 20.11.2026 19:30');
+assert.equal(shiftMatchDate('2026-10-25',-1),'2026-10-24');assert.equal(shiftMatchDate('2026-03-29',1),'2026-03-30');assert.equal(shiftMatchDate('2026-01-01',-1),'2025-12-31');assert.equal(isMatchDate('2026-02-30'),false);
+const compiled=await build({stdin:{contents:"import {GET} from './app/api/spiele/route.ts';export default {fetch:GET};",resolveDir:process.cwd(),sourcefile:'test.ts'},bundle:true,write:false,format:'esm',platform:'browser'});
+let calls=0;const mf=new Miniflare({modules:true,script:compiled.outputFiles[0].text,compatibilityDate:'2026-05-15',outboundService:request=>{calls++;const date=request.url.match(/datum-von\/(\d{4}-\d{2}-(\d{2}))/);return new Response(date[2]==='06'?empty:wrap(row(date[2])));}});
+try{const results=await Promise.all(['09','10','06'].map(async day=>{const r=await mf.dispatchFetch('https://test.local/api/spiele?date=2026-10-'+day);assert.equal(r.status,200);return r.json();}));assert.deepEqual(results.map(r=>r.from),['2026-10-09','2026-10-10','2026-10-06']);assert.deepEqual(results.map(r=>r.matches.length),[1,1,0]);for(let i=0;i<2;i++)assert.equal(results[i].matches[0].date,results[i].from);await mf.dispatchFetch('https://test.local/api/spiele?date=2026-10-09');assert.equal(calls,3);assert.equal((await mf.dispatchFetch('https://test.local/api/spiele?date=2026-02-30')).status,400);console.log('PASS: bye rows, empty days, partial source failures, scores incl. 0:0, postponed/no-score matches, day shifts and independent concurrent date caches.');}finally{await mf.dispose();}
