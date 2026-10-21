@@ -17,31 +17,30 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
+    "plugins": [],
     "paths": {
       "@/*": [
         "./*"
       ]
     },
     "types": [
-      "node",
-      "@cloudflare/workers-types"
+      "node"
     ]
   },
   "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    "frontend/**/*.ts",
+    "frontend/**/*.tsx",
+    "app/page.tsx",
+    "app/platzbelegung/page.tsx",
+    "app/kabinenbelegung/page.tsx",
+    "app/ehrenamt/page.tsx",
+    "components/cabin-plan.tsx",
+    "components/upcoming-matches.tsx",
+    "components/ui/button.tsx",
+    "vite.strato.config.ts"
   ],
   "exclude": [
     "node_modules",
-    "examples"
+    "upload"
   ]
 }

@@ -46,3 +46,13 @@ next-env.d.ts
 /work/
 
 *.tsbuildinfo
+
+/config.php
+/var/
+/frontend-dist/
+/assets/
+/strato-upload.zip
+
+/upload/config.php
+/upload/var/*
+!/upload/var/.htaccess

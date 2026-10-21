@@ -1,3 +1,4 @@
+import {apiFetch as fetch,appPath} from '@/frontend/api';
 import { ArrowUpRight, CalendarDays, DoorOpen, ExternalLink, HandHelping, MapPin, Users } from 'lucide-react';
 
 const links = [
@@ -10,14 +11,14 @@ export default function Home() {
   return <div className="hub-shell">
     <header className="club-header"><div className="header-inner">
       <a className="club-brand" href="https://www.vfl-ramsdorf.de/" target="_blank" rel="noopener noreferrer"><img className="club-logo" src="https://www.vfl-ramsdorf.de/img/VfLRamsdorf.png" alt="VfL Ramsdorf Logo"/><span className="club-name">RAMSDORF<small>Vereins-App</small></span></a>
-      <span className="preview-badge">Version 0.9 · Vorschau</span>
+      <span className="preview-badge">Version 0.10 · PHP</span>
     </div></header>
     <main className="hub-main">
       <div className="hub-kicker"><span className="hub-dot"/> Gemeinsam für Ramsdorf</div>
       <h1>Was möchtest du<br/><span>heute tun?</span></h1>
       <p className="hub-intro">Die wichtigsten Vereinsinformationen an einem Ort.</p>
       <section className="hub-grid" aria-label="Vereinsbereiche">
-        {links.map(({ href, icon: Icon, eyebrow, title, text, tone, action }) => <a key={href} href={href} className={"hub-card " + tone}>
+        {links.map(({ href, icon: Icon, eyebrow, title, text, tone, action }) => <a key={href} href={appPath(href)} className={"hub-card " + tone}>
           <div className="hub-card-top"><span className="hub-icon"><Icon size={25}/></span><ArrowUpRight size={20} className="hub-arrow"/></div>
           <div className="hub-card-copy"><span className="hub-eyebrow">{eyebrow}</span><h2>{title}</h2><p>{text}</p></div>
           <span className="hub-action">{action}<ArrowUpRight size={16}/></span>

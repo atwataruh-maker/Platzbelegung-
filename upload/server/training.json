@@ -1,0 +1,633 @@
+[
+  {
+    "id": "1-D1-Junioren",
+    "day": 1,
+    "team": "D1-Junioren",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 990,
+        "end": 1080,
+        "fields": [
+          "r2"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "1-E1-Junioren",
+    "day": 1,
+    "team": "E1-Junioren",
+    "small": true,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1020,
+        "end": 1110,
+        "fields": [
+          "r3"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "1-D2-Junioren",
+    "day": 1,
+    "team": "D2-Junioren",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1050,
+        "end": 1140,
+        "fields": [
+          "k1a",
+          "k1b"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "1-D1-Juniorinnen",
+    "day": 1,
+    "team": "D1-Juniorinnen",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1050,
+        "end": 1140,
+        "fields": [
+          "k2a",
+          "k2b"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "1-D2-Juniorinnen",
+    "day": 1,
+    "team": "D2-Juniorinnen",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1080,
+        "end": 1170,
+        "fields": [
+          "r1"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "1-A-Junioren",
+    "day": 1,
+    "team": "A-Junioren",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1140,
+        "end": 1230,
+        "fields": [
+          "k1a",
+          "k1b"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "1-B-Junioren",
+    "day": 1,
+    "team": "B-Junioren",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1140,
+        "end": 1230,
+        "fields": [
+          "k2a",
+          "k2b"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2-G/F-Juniorinnen",
+    "day": 2,
+    "team": "G/F-Juniorinnen",
+    "small": true,
+    "season": "all",
+    "segments": [
+      {
+        "start": 990,
+        "end": 1050,
+        "fields": [
+          "k1a",
+          "k1b"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2-E1/E2-Juniorinnen",
+    "day": 2,
+    "team": "E1/E2-Juniorinnen",
+    "small": true,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1050,
+        "end": 1140,
+        "fields": [
+          "k2a",
+          "k2b"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2-E3-Junioren",
+    "day": 2,
+    "team": "E3-Junioren",
+    "small": true,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1050,
+        "end": 1140,
+        "fields": [
+          "r1"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2-C-Junioren",
+    "day": 2,
+    "team": "C-Junioren",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1080,
+        "end": 1170,
+        "fields": [
+          "k1a",
+          "k1b"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2-E2-Junioren",
+    "day": 2,
+    "team": "E2-Junioren",
+    "small": true,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1080,
+        "end": 1170,
+        "fields": [
+          "r2"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2-3. Herren",
+    "day": 2,
+    "team": "3. Herren",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1140,
+        "end": 1230,
+        "fields": [
+          "k2a",
+          "k2b"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2-VfL Ramsdorf Damen",
+    "day": 2,
+    "team": "VfL Ramsdorf Damen",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1140,
+        "end": 1230,
+        "fields": [
+          "r1"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2-1. Herren",
+    "day": 2,
+    "team": "1. Herren",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1170,
+        "end": 1260,
+        "fields": [
+          "k1a",
+          "k1b"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "3-D1-Junioren",
+    "day": 3,
+    "team": "D1-Junioren",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 990,
+        "end": 1080,
+        "fields": [
+          "k2a",
+          "k2b"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "3-F1/F2-Junioren",
+    "day": 3,
+    "team": "F1/F2-Junioren",
+    "small": true,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1020,
+        "end": 1080,
+        "fields": [
+          "r2",
+          "r3"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "3-C-Juniorinnen",
+    "day": 3,
+    "team": "C-Juniorinnen",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1050,
+        "end": 1140,
+        "fields": [
+          "k1a",
+          "k1b"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "3-D1-Juniorinnen",
+    "day": 3,
+    "team": "D1-Juniorinnen",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1050,
+        "end": 1140,
+        "fields": [
+          "r1"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "3-D2-Juniorinnen",
+    "day": 3,
+    "team": "D2-Juniorinnen",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1080,
+        "end": 1170,
+        "fields": [
+          "k2a",
+          "k2b"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "3-E2-Junioren",
+    "day": 3,
+    "team": "E2-Junioren",
+    "small": true,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1080,
+        "end": 1170,
+        "fields": [
+          "r2"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "3-2. Herren",
+    "day": 3,
+    "team": "2. Herren",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1140,
+        "end": 1230,
+        "fields": [
+          "k1a",
+          "k1b"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "3-Alte Herren",
+    "day": 3,
+    "team": "Alte Herren",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1170,
+        "end": 1260,
+        "fields": [
+          "k2a",
+          "k2b"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "4-D2-Junioren",
+    "day": 4,
+    "team": "D2-Junioren",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1020,
+        "end": 1110,
+        "fields": [
+          "r2"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "4-E1-Junioren",
+    "day": 4,
+    "team": "E1-Junioren",
+    "small": true,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1050,
+        "end": 1140,
+        "fields": [
+          "k1a",
+          "k1b"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "4-E3-Junioren",
+    "day": 4,
+    "team": "E3-Junioren",
+    "small": true,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1050,
+        "end": 1140,
+        "fields": [
+          "k2a",
+          "k2b"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "4-C-Junioren",
+    "day": 4,
+    "team": "C-Junioren",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1050,
+        "end": 1140,
+        "fields": [
+          "r1"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "4-1. Herren",
+    "day": 4,
+    "team": "1. Herren",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1140,
+        "end": 1230,
+        "fields": [
+          "k1a",
+          "k1b"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "4-SF Nordvelen",
+    "day": 4,
+    "team": "SF Nordvelen",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1140,
+        "end": 1230,
+        "fields": [
+          "k2a",
+          "k2b"
+        ]
+      }
+    ],
+    "activeFrom": "2026-10-01"
+  },
+  {
+    "id": "4-A-Junioren",
+    "day": 4,
+    "team": "A-Junioren",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1140,
+        "end": 1230,
+        "fields": [
+          "r1"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "4-B-Junioren",
+    "day": 4,
+    "team": "B-Junioren",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1140,
+        "end": 1230,
+        "fields": [
+          "r2"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "5-F1/F2-Junioren",
+    "day": 5,
+    "team": "F1/F2-Junioren",
+    "small": true,
+    "season": "all",
+    "segments": [
+      {
+        "start": 990,
+        "end": 1050,
+        "fields": [
+          "k2a",
+          "k2b"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "5-G-Junioren / G-F-Juniorinnen",
+    "day": 5,
+    "team": "G-Junioren / G-F-Juniorinnen",
+    "small": true,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1020,
+        "end": 1080,
+        "fields": [
+          "r3",
+          "corner"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "5-E1/E2-Juniorinnen",
+    "day": 5,
+    "team": "E1/E2-Juniorinnen",
+    "small": true,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1050,
+        "end": 1140,
+        "fields": [
+          "r1"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "5-C-Juniorinnen",
+    "day": 5,
+    "team": "C-Juniorinnen",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1050,
+        "end": 1140,
+        "fields": [
+          "r2"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "5-VfL Ramsdorf Damen",
+    "day": 5,
+    "team": "VfL Ramsdorf Damen",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1080,
+        "end": 1170,
+        "fields": [
+          "k2a",
+          "k2b"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "5-2. Herren",
+    "day": 5,
+    "team": "2. Herren",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1140,
+        "end": 1230,
+        "fields": [
+          "r1"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "5-3. Herren",
+    "day": 5,
+    "team": "3. Herren",
+    "small": false,
+    "season": "all",
+    "segments": [
+      {
+        "start": 1140,
+        "end": 1230,
+        "fields": [
+          "r2"
+        ]
+      }
+    ]
+  }
+]

@@ -1,3 +1,4 @@
+import {apiFetch as fetch,appPath} from '@/frontend/api';
 'use client';
 import { useEffect, useState } from 'react';
 import { CalendarDays, MapPin, RefreshCw, ChevronDown, Shield, ChevronLeft, ChevronRight } from 'lucide-react';

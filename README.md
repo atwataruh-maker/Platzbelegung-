@@ -1,51 +1,37 @@
-# VfL Ramsdorf Vereins-App · v0.9
+# VfL Ramsdorf Vereins-App · v0.10 · PHP/STRATO
 
-Mobile Vereins-Webapp mit Platzbelegung, Kabinenbelegung, Fußballspielen und Helferbörse.
+**Branch `strato-php`: eigenständig auf PHP-Webhosting betreibbare Vereins-App.**
 
-## Funktionen
+Platzbelegung, Kabinenbelegung, Spiele & Ergebnisse, Helferbörse und eigener Admin-Login. Mobile Oberfläche aus v0.9 übernommen. PHP verarbeitet Spiele und berechnet die Platz- und Kabinenbelegung. Gesuche werden in MySQL/MariaDB gespeichert.
 
-- Startseite mit eigenen Einstiegen für Platzbelegung, Kabinenbelegung und Ehrenamt sowie Link zur Vereinswebsite.
-- Aktueller Sommer-Belegungsplan als strukturierter Tagesplan; die Original-PDF liegt unter `public/belegungsplan-sommer-2026.pdf`.
-- Heimspiele, Ergebnisse und Tagesnavigation aus FUSSBALL.DE; automatische Ausweichplanung bei Platzkonflikten.
-- Hauptplatz mit zwei Trainingshälften als letzte Ausweichoption für die 1. Herren und Jugendteams.
-- Vier Kabinen mit festen Zuordnungen für die 1. und 2. Herren, Geschlechtertrennung, Gästen und Umkleidepuffern.
-- Freie Auswärtskabinen für Heimteams; alle gleichgeschlechtlichen Jugendteams von G bis A dürfen Kabinen teilen. Damen nutzen ausschließlich die 1. oder 2. Heimkabine allein.
-- Ehrenamtliche Gesuche anlegen, abschließen und wieder öffnen; Schreibzugriff für berechtigte Betreiber.
+## Direkt installieren
 
-## Technik und Start
+**[Installationsanleitung](INSTALLATION.md)** lesen. Das Verzeichnis **[upload/](upload/)** enthält das fertige Paket einschließlich JavaScript/CSS. Nur dessen Inhalt in ein neues Webverzeichnis hochladen, config.php einrichten und den einmaligen Installer ausführen. Node.js, Composer, Cloudflare und ChatGPT sind auf dem Zielserver nicht nötig.
 
-React/TypeScript mit Vinext/Vite und Cloudflare Worker. Persistente Helfergesuche verwenden Cloudflare D1; Schema und Migrationen sind enthalten.
+Voraussetzung: PHP >=8.2 mit curl, mbstring, PDO/pdo_mysql, MySQL 8 oder MariaDB >=10.6, HTTPS und Apache/.htaccess. Der konkrete STRATO-Tarif und die Serverkonfiguration müssen beim Betreiber geprüft werden. Kein Live-Upload auf STRATO wurde durchgeführt.
 
-Voraussetzung: Node.js ab 22.13.0 und npm.
+## Regeln
 
-```sh
-npm run install:ci
-npm run dev
-```
+- Spielbedingte Ausweichplanung und zusammenhängende Kacheln für ganze Plätze.
+- Hauptplatz als letzte Trainingsalternative für 1. Herren und Jugend, zwei Hälften.
+- 1. Herren exklusiv Heimkabine 1; 2. Herren exklusiv Heimkabine 2.
+- Damen ausschließlich allein in Heimkabine 1 oder 2.
+- Alle Jugendteams gleichen Geschlechts dürfen Kabinen teilen; Heim und Gast bleiben getrennt.
+- Freie Auswärtskabinen auch für Heimteams; unklare Zuordnungen werden angezeigt.
+- Gesuche erstellen, abschließen und wieder öffnen, nur mit Admin-Anmeldung.
 
-Build: `npm run build`. Details zu Entwicklungsprofilen, Datenbankmigrationen und der Sites-Anmeldung stehen in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
-
-Die gehostete App verwendet die Sites-Anmeldung und deren Zugriffskontrolle. Der Quellcode enthält keine Produktionsdatenbank oder Zugangsdaten. Ein GitHub-Upload richtet kein neues Hosting und keine Datenbank ein. Dieses Projekt ist eine Webapp; eine native APK oder iOS-App ist nicht enthalten.
-
-## Prüfungen
+## Entwicklung und Tests
 
 ```sh
-node scripts/check-allocation.mjs
-node scripts/check-cabins.mjs
-node scripts/check-pitch-layout.mjs
-node scripts/check-match-days.mjs
-node scripts/check-helpers.mjs
-npx tsc --noEmit --incremental false
+npm ci
+npm run typecheck
+npm test
+npm run build
+npm run package
 ```
 
-Die Regeln zur Platz- und Kabinenverteilung liegen in `lib/pitch-allocation.ts` und `lib/cabin-allocation.ts`; der Grundplan in `lib/training-plan.ts`. Spiel- und Umkleidezeiten sind dokumentierte Planungsannahmen. Bei fehlenden oder unklaren Quellenangaben zeigt die App Hinweise zur Abstimmung.
+`npm test` benötigt PHP (alternativ `PHP_BIN=/pfad/php npm test`). Die Referenztests prüfen PHP gegen die bisherige TypeScript-Implementierung. Zusätzlicher HTTP-/MySQL-Integrationstest: `node tests/http.mjs http://127.0.0.1:8080` mit ausschließlich lokaler Testinstallation und den in der Datei genannten Test-Umgebungsvariablen.
 
-## Version und Veröffentlichung
+Alle Zugangsdaten bleiben in der ignorierten `config.php`. Die Helferbörse startet leer; bestehende Produktionsdaten müssen separat übertragen werden. Die Laufzeit verwendet als externe Datenquellen weiterhin FUSSBALL.DE und die Vereinswebsite (Logos).
 
-Aktueller Stand: **v0.9 (0.9.0), 17.10.2026**. Änderungen: [CHANGELOG.md](CHANGELOG.md).
-
-GitHub-Branch: `vereinsapp-v0.8` (der beim Export vereinbarte Branchname; die enthaltene App ist v0.9).
-
-Die separat entwickelte PHP-Anwendung liegt weiterhin auf dem Branch `main` dieses GitHub-Repositories.
-
-Gehostete App: https://vfl-ramsdorf-platzbelegung.afwataruh.chatgpt.site
+Die bisherige Sites-App v0.9 liegt weiterhin auf `vereinsapp-v0.8`. Auf `main` liegt die separat entwickelte PHP-Anwendung. Dieser Branch veröffentlicht keine native APK/iOS-App.

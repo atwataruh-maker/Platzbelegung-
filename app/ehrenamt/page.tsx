@@ -1,3 +1,4 @@
+import {apiFetch as fetch,appPath} from '@/frontend/api';
 'use client';
 import { useEffect, useState, type FormEvent } from 'react';
 import { ArrowLeft, HandHelping, Plus, Check, RotateCcw, RefreshCw, Clock3, MapPin, UserRound, CalendarDays, LoaderCircle } from 'lucide-react';
@@ -68,7 +69,7 @@ export default function Ehrenamt() {
   }
   const visible = entries.filter(item => item.status === tab);
   return <div className="subpage-shell">
-    <header className="club-header"><div className="header-inner"><a className="club-brand" href="/"><img className="club-logo" src="https://www.vfl-ramsdorf.de/img/VfLRamsdorf.png" alt="VfL Ramsdorf Logo"/><span className="club-name">RAMSDORF<small>Vereins-App</small></span></a><span className="header-actions"><span className="preview-badge">Version 0.9</span><a className="back-link" href="/"><ArrowLeft size={16}/> Übersicht</a></span></div></header>
+    <header className="club-header"><div className="header-inner"><a className="club-brand" href={appPath('/')}><img className="club-logo" src="https://www.vfl-ramsdorf.de/img/VfLRamsdorf.png" alt="VfL Ramsdorf Logo"/><span className="club-name">RAMSDORF<small>Vereins-App</small></span></a><span className="header-actions"><span className="preview-badge">Version 0.10</span><a className="back-link" href={appPath('/')}><ArrowLeft size={16}/> Übersicht</a></span></div></header>
     <main className="vol-main helper-main">
       <div className="helper-heading"><div><span className="vol-kicker"><HandHelping size={16}/> Miteinander</span><h1>Ehrenamt & Helfen</h1><p>Eine Aufgabe. Dein Können. Unser Verein.</p></div>{canManage && <Button className="add-request" onClick={openForm}><Plus/> Helfer suchen</Button>}</div>
       {notice && <p className="helper-success" role="status"><Check size={18}/>{notice}</p>}
@@ -88,7 +89,7 @@ export default function Ehrenamt() {
         </TabsContent>
       </Tabs>
       <p className="helper-footnote">{canManage ? 'Du verwaltest die Gesuche. Neue Einträge und Statusänderungen werden dauerhaft gespeichert.' : 'Hier findest du offene Aufgaben und bereits abgeschlossene Projekte des Vereins.'}</p>
-      <footer className="footer"><a href="/">Zur Übersicht</a><a href="https://www.vfl-ramsdorf.de/" target="_blank" rel="noopener noreferrer">VfL-Website</a></footer>
+      <footer className="footer"><a href={appPath('/')}>Zur Übersicht</a><a href="https://www.vfl-ramsdorf.de/" target="_blank" rel="noopener noreferrer">VfL-Website</a></footer>
     </main>
     <Dialog open={dialog} onOpenChange={value => { if (!saving) setDialog(value); }}>
       <DialogContent className="helper-dialog" showCloseButton={!saving} onInteractOutside={e => e.preventDefault()}>

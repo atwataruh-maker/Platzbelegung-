@@ -1,3 +1,4 @@
+import {apiFetch as fetch,appPath} from '@/frontend/api';
 'use client';
 import {useEffect,useState} from 'react';
 import {ArrowLeft,ArrowRight,CalendarDays,Check,DoorOpen,ExternalLink,RefreshCw,AlertTriangle,LoaderCircle} from 'lucide-react';
@@ -28,9 +29,9 @@ export default function CabinPage(){
  },[day,reload]);
  const select=(value:string)=>{if(value!==day&&isMatchDate(value)){setDay(value);setData(null);setError('');}};
  const weekStart=shiftMatchDate(day,-((new Date(day+'T12:00:00Z').getUTCDay()+6)%7));
- return <div className="app-shell pitch-app cabin-page"><header className="club-header"><div className="header-inner"><a className="club-brand" href="/" aria-label="Zur Startseite"><img className="club-logo" src="https://www.vfl-ramsdorf.de/img/VfLRamsdorf.png" alt="VfL Ramsdorf"/><span className="club-name">RAMSDORF<small>Vereins-App</small></span></a><div className="header-actions"><span className="preview-badge">Version 0.9</span><Button variant="ghost" size="icon" className="refresh" onClick={()=>setReload(v=>v+1)} disabled={loading} aria-label="Kabinenbelegung aktualisieren"><RefreshCw className={loading?'spin':''}/></Button></div></div></header>
+ return <div className="app-shell pitch-app cabin-page"><header className="club-header"><div className="header-inner"><a className="club-brand" href={appPath('/')} aria-label="Zur Startseite"><img className="club-logo" src="https://www.vfl-ramsdorf.de/img/VfLRamsdorf.png" alt="VfL Ramsdorf"/><span className="club-name">RAMSDORF<small>Vereins-App</small></span></a><div className="header-actions"><span className="preview-badge">Version 0.10</span><Button variant="ghost" size="icon" className="refresh" onClick={()=>setReload(v=>v+1)} disabled={loading} aria-label="Kabinenbelegung aktualisieren"><RefreshCw className={loading?'spin':''}/></Button></div></div></header>
  <main>
-  <a href="/" className="pitch-back"><ArrowLeft size={15}/> Übersicht</a>
+  <a href={appPath('/')} className="pitch-back"><ArrowLeft size={15}/> Übersicht</a>
   <div className="page-heading"><div><p className="eyebrow">Fußball / Umziehen & Ankommen</p><h1>Kabinenbelegung</h1><p className="intro">Kabinen für Training, Heimteams und Gäste.</p></div><span className="heading-symbol"><DoorOpen size={26}/></span></div>
   <div className="pitch-date-bar"><Button variant="outline" size="icon" aria-label="Kabinenbelegung vorheriger Tag" onClick={()=>select(shiftMatchDate(day,-1))}><ArrowLeft size={17}/></Button><label><CalendarDays size={17}/><input type="date" min="2000-01-01" max="2100-12-31" aria-label="Datum der Kabinenbelegung" value={day} onChange={e=>select(e.target.value)}/></label><Button variant="outline" size="icon" aria-label="Kabinenbelegung nächster Tag" onClick={()=>select(shiftMatchDate(day,1))}><ArrowRight size={17}/></Button><Button variant="outline" onClick={()=>select(sevenDays().from)}>Heute</Button></div>
   <div className="pitch-week" aria-label="Tag dieser Woche">{Array.from({length:7},(_,i)=>{const d=shiftMatchDate(weekStart,i);return <button key={d} onClick={()=>select(d)} aria-pressed={d===day} className={d===day?'active':''}><span>{['Mo','Di','Mi','Do','Fr','Sa','So'][i]}</span><strong>{Number(d.slice(-2))}</strong></button>;})}</div>

@@ -1,5 +1,17 @@
 # Änderungen
 
+## v0.10 — 21.10.2026 · PHP/STRATO
+
+- PHP-Backend für Spiele, Ergebnisse sowie Platz- und Kabinenverteilung.
+- MySQL/MariaDB für Helfergesuche; eigener Admin-Login mit Session, Passwort-Hashing, CSRF-Schutz und Anmeldebegrenzung.
+- Mobile React-Oberfläche als fertige Browser-Dateien; kein Node.js oder Cloudflare auf dem Zielserver.
+- Einmaliger gesicherter Web-Installer, Unterstützung für Subdomains und Unterverzeichnisse.
+- Fertiges upload/-Paket und deutsche Installationsanleitung.
+- 140 PHP/TypeScript-Vergleichstests sowie HTTP-/MariaDB-Tests für Installation, Anmeldung und Gesuche.
+- Live-Abruf geprüft: 19 Spiele, davon 11 lesbare Ergebnisse (15.–21.10.2026); Unterverzeichnis-Routing und Cache geprüft.
+- Kein Live-Deployment auf STRATO; Abnahme im konkreten Hosting-Paket und auf Mobilgeräten bleibt erforderlich.
+
+
 ## v0.9 — 17.10.2026
 
 - Vollständigen Stand der mobilen VfL-Ramsdorf-Vereinsapp für GitHub bereitgestellt.

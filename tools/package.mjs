@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root=process.cwd(),out=path.join(root,'upload');
+if(!fs.existsSync('frontend-dist/index.html'))throw new Error('Run npm run build first.');
+fs.rmSync(out,{recursive:true,force:true});fs.mkdirSync(out,{recursive:true});
+for(const name of ['index.php','install.php','.htaccess','config.example.php','server','frontend-dist','INSTALLATION.md'])fs.cpSync(path.join(root,name),path.join(out,name),{recursive:true});
+fs.cpSync('frontend-dist/assets',path.join(out,'assets'),{recursive:true});
+fs.rmSync(path.join(out,'frontend-dist/assets'),{recursive:true});
+for(const name of ['favicon.svg','apple-touch-icon.png','icon-512.png','belegungsplan-sommer-2026.pdf'])fs.copyFileSync('public/'+name,path.join(out,name));
+fs.mkdirSync(path.join(out,'var'),{recursive:true});fs.writeFileSync(path.join(out,'var','.htaccess'),'Require all denied\n');
+for(const folder of ['server','frontend-dist'])fs.writeFileSync(path.join(out,folder,'.htaccess'),'Require all denied\n');
+fs.copyFileSync('frontend-dist/index.html',path.join(out,'frontend-dist/index.html'));
+console.log('Ready: upload/ contains all PHP files and prebuilt browser assets. No Node.js/Composer needed on the server.');
