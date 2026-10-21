@@ -1,4 +1,4 @@
-# VfL Ramsdorf Vereins-App · v0.10 · PHP/STRATO
+# VfL Ramsdorf Vereins-App · v0.10.1 · PHP/STRATO
 
 **Branch `strato-php`: eigenständig auf PHP-Webhosting betreibbare Vereins-App.**
 

@@ -26,13 +26,13 @@ function teamLabel(match: Match) {
 function FixtureCard({ match }: { match: Match }) {
   const label = teamLabel(match);
   return <Collapsible asChild><li className="fixture-card">
-    <CollapsibleTrigger className="fixture-trigger" aria-label={`${label.label}: ${match.home} gegen ${match.away}, ${match.result ? `${match.result.home} zu ${match.result.away}, ${match.result.confirmed ? 'bestätigtes Ergebnis' : 'gemeldeter Spielstand'}` : `${match.time} Uhr`}. Details anzeigen`}>
+    <CollapsibleTrigger className="fixture-trigger" aria-label={`${label.label}: ${match.home} gegen ${match.away}, ${match.result ? `${match.result.home} zu ${match.result.away}, ${match.resultStale ? 'letzter bekannter Spielstand' : match.result.confirmed ? 'bestätigtes Ergebnis' : 'gemeldeter Spielstand'}` : `${match.time} Uhr`}. Details anzeigen`}>
       <span className="fixture-label" title={label.label}><strong>{label.title}</strong><small>{label.subtitle}</small></span>
       <span className="fixture-team"><TeamLogo src={match.homeLogo}/><span>{match.home}</span></span>
-      <span className="fixture-kickoff">{match.result ? <><strong className="fixture-result">{match.result.home}:{match.result.away}</strong><span>{match.result.confirmed ? 'Endstand' : 'Gemeldet'}</span></> : <time dateTime={/^\d{2}:\d{2}$/.test(match.time) ? `${match.date}T${match.time}` : match.date}>{match.time}</time>}<span>{match.location === 'Vereinsduell' ? 'Vereinsduell' : match.location}</span>{match.status && <strong className="fixture-status">{match.status}</strong>}<ChevronDown size={14} className="fixture-chevron" aria-hidden="true"/></span>
+      <span className="fixture-kickoff">{match.result ? <><strong className="fixture-result">{match.result.home}:{match.result.away}</strong><span>{match.resultStale ? 'Letzter Stand' : match.result.confirmed ? 'Endstand' : 'Gemeldet'}</span></> : <time dateTime={/^\d{2}:\d{2}$/.test(match.time) ? `${match.date}T${match.time}` : match.date}>{match.time}</time>}<span>{match.location === 'Vereinsduell' ? 'Vereinsduell' : match.location}</span>{match.status && <strong className="fixture-status">{match.status}</strong>}<ChevronDown size={14} className="fixture-chevron" aria-hidden="true"/></span>
       <span className="fixture-team"><TeamLogo src={match.awayLogo}/><span>{match.away}</span></span>
     </CollapsibleTrigger>
-    <CollapsibleContent className="fixture-details"><p>{match.category} · {match.competition}</p><p>Anstoß: {match.time}{match.result ? ` · ${match.result.confirmed ? 'Bestätigtes Ergebnis' : 'Gemeldeter Spielstand'}: ${match.result.home}:${match.result.away}` : match.status ? ` · ${match.status}` : match.resultUnavailable ? ' · Ergebnisabruf nicht verfügbar' : ' · Kein Ergebnis verfügbar'}</p>{match.venue && <p className="fixture-venue"><MapPin size={15}/>{match.venue}</p>}<a href={match.url} target="_blank" rel="noopener noreferrer">Spieldetails auf FUSSBALL.DE</a></CollapsibleContent>
+    <CollapsibleContent className="fixture-details"><p>{match.category} · {match.competition}</p>{match.resultStale && match.resultRetrievedAt && <p>Letzter erfolgreicher Ergebnisabruf: {new Date(match.resultRetrievedAt).toLocaleString('de-DE', {timeZone:'Europe/Berlin'})} Uhr</p>}<p>Anstoß: {match.time}{match.result ? ` · ${match.resultStale ? 'Letzter bekannter Spielstand' : match.result.confirmed ? 'Bestätigtes Ergebnis' : 'Gemeldeter Spielstand'}: ${match.result.home}:${match.result.away}` : match.status ? ` · ${match.status}` : match.resultUnavailable ? ' · Ergebnisabruf nicht verfügbar' : ' · Kein Ergebnis verfügbar'}</p>{match.venue && <p className="fixture-venue"><MapPin size={15}/>{match.venue}</p>}<a href={match.url} target="_blank" rel="noopener noreferrer">Spieldetails auf FUSSBALL.DE</a></CollapsibleContent>
   </li></Collapsible>;
 }
 export function UpcomingMatches({selectedDate: externalDate, onDateChange, refreshKey = 0, onRefresh}: {selectedDate?: string | null; onDateChange?: (date: string | null) => void; refreshKey?: number; onRefresh?: () => void} = {}) {
@@ -61,9 +61,10 @@ export function UpcomingMatches({selectedDate: externalDate, onDateChange, refre
       } catch { if (!controller.signal.aborted) setError('Die Spiele sind gerade nicht erreichbar. Bitte erneut laden oder bei FUSSBALL.DE nachsehen.'); }
       finally { if (!controller.signal.aborted) setLoading(false); }
     })();
-    const interval = setInterval(() => setReload(v => v + 1), 5 * 60 * 1000);
-    return () => { controller.abort(); clearInterval(interval); };
+    return () => controller.abort();
   }, [reload, selectedDate, refreshKey]);
+  const retryResults = Boolean(visibleData?.matches.some(m=>m.resultUnavailable));
+  useEffect(()=>{const timer=setInterval(()=>setReload(v=>v+1),retryResults?30_000:300_000);return()=>clearInterval(timer);},[retryResults]);
   const shown = visibleData?.matches.slice(0, 5) ?? [];
   const remaining = visibleData?.matches.slice(5) ?? [];
   function groups(matches: Match[]) {
@@ -79,7 +80,7 @@ export function UpcomingMatches({selectedDate: externalDate, onDateChange, refre
       <Button variant={!selectedDate ? 'default' : 'outline'} onClick={() => selectDay(null)}>7 Tage</Button>
     </div>
     {!!visibleData?.omittedRows && <p className="match-warning">{visibleData.omittedRows} Einträge der Quelle konnten nicht gelesen werden. Die übrigen Spiele werden angezeigt.</p>}
-    {visibleData?.matches.some(m=>m.resultUnavailable) && <p className="match-warning">Einige Spielstände sind gerade nicht lesbar. Bitte erneut laden oder das Spiel bei FUSSBALL.DE öffnen.</p>}
+    {visibleData?.matches.some(m=>m.resultUnavailable) && <p className="match-warning">Einige Spielstände konnten nicht aktualisiert werden. Wir versuchen es automatisch erneut. Vorhandene Werte sind als „Letzter Stand“ gekennzeichnet.</p>}
     {loading && !visibleData && <p className="match-message" role="status">Spiele werden von FUSSBALL.DE geladen …</p>}
     {error && <div className="match-warning" role="alert">{error} <Button variant="ghost" onClick={() => onRefresh ? onRefresh() : setReload(v => v + 1)} disabled={loading}>Erneut laden</Button></div>}
     {visibleData && (visibleData.stale || error) && <p className="match-warning">Letzter verfügbarer Stand – Änderungen sind möglicherweise noch nicht enthalten.</p>}

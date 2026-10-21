@@ -1,4 +1,4 @@
-# VfL Ramsdorf · STRATO-Installation (v0.10)
+# VfL Ramsdorf · STRATO-Installation (v0.10.1)
 
 Die App läuft auf PHP und MySQL/MariaDB. Cloudflare, ChatGPT-Anmeldung und Node.js auf dem Webserver sind nicht erforderlich. Für Spiele und Logos werden weiterhin FUSSBALL.DE und die Vereinswebsite abgerufen. Das öffentliche GitHub-Repository enthält nur Quellcode und ein leeres Installationspaket, keine Passwörter oder bestehenden Helfergesuche.
 
@@ -50,6 +50,7 @@ Das Paket startet mit einer **leeren Helferbörse**. Ein automatischer Export au
 
 ## 5. Laufender Betrieb
 
+- Bei unlesbaren Ergebnissen erfolgt alle 30 Sekunden ein neuer Versuch. Bereits bekannte Spielstände bleiben höchstens 24 Stunden sichtbar und werden als „Letzter Stand“ markiert.
 - Spiele werden beim Seitenaufruf abgerufen, serverseitig 5 Minuten zwischengespeichert und bei geöffneter App alle 5 Minuten aktualisiert. Ein Cronjob ist **nicht erforderlich**.
 - Bei Quellenfehlern werden vorhandene Spieldaten höchstens 24 Stunden als **veraltet** angezeigt. Ohne nutzbare Spieldaten pausieren automatische Platzverschiebungen.
 - Trainingsplan: `server/training.json`, Original-PDF: `belegungsplan-sommer-2026.pdf`. Beides gemeinsam bei Saisonwechsel aktualisieren; die JSON-Zeiten sind Minuten nach Mitternacht.

@@ -1,6 +1,6 @@
 export const CLUB_ID = '00ES8GN8QS00004CVV0AG08LVUPGND5I';
 export const CLUB_URL = `https://www.fussball.de/verein/vfl-ramsdorf-westfalen/-/id/${CLUB_ID}`;
-export type Match = { id: string; date: string; time: string; category: string; competition: string; home: string; away: string; homeLogo?: string; awayLogo?: string; venue: string; location: 'Heim' | 'Auswärts' | 'Vereinsduell'; status: string; url: string; result?: { home: number; away: number; confirmed: boolean }; resultUnavailable?: boolean };
+export type Match = { id: string; date: string; time: string; category: string; competition: string; home: string; away: string; homeLogo?: string; awayLogo?: string; venue: string; location: 'Heim' | 'Auswärts' | 'Vereinsduell'; status: string; url: string; result?: { home: number; away: number; confirmed: boolean }; resultUnavailable?: boolean; resultStale?: boolean; resultRetrievedAt?: string };
 export type MatchSchedule = { from: string; to: string; matches: Match[]; retrievedAt: string; provisional: boolean; stale: boolean; omittedRows?: number };
 export function sevenDays(now = new Date()) {
   const from = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Berlin', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);

@@ -51,25 +51,26 @@ final class Http {
   // No user-supplied target URLs, redirects, credentials or arbitrary proxy endpoints.
   $p=parse_url($url);if(($p['scheme']??'')!=='https'||($p['host']??'')!=='www.fussball.de'||isset($p['user'])||isset($p['port']))throw new \RuntimeException('Disallowed source');
   $ch=curl_init($url);$body='';curl_setopt_array($ch,[CURLOPT_FOLLOWLOCATION=>false,CURLOPT_CONNECTTIMEOUT=>min(10,$timeout),CURLOPT_TIMEOUT=>$timeout,CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS,CURLOPT_SSL_VERIFYPEER=>true,CURLOPT_SSL_VERIFYHOST=>2,CURLOPT_USERAGENT=>'VfL-Ramsdorf-Vereinsapp/0.10',CURLOPT_HTTPHEADER=>['Accept: text/html, application/octet-stream'],CURLOPT_WRITEFUNCTION=>function($ch,$chunk)use(&$body,$limit){if(strlen($body)+strlen($chunk)>$limit)return 0;$body.=$chunk;return strlen($chunk);}]);
-  $ok=curl_exec($ch);$status=curl_getinfo($ch,CURLINFO_RESPONSE_CODE);$error=curl_error($ch);curl_close($ch);if(!$ok||$status<200||$status>=300)throw new \RuntimeException('Source unavailable: '.$status.($error?' ('.$error.')':''));return $body;
+  $ok=curl_exec($ch);$status=curl_getinfo($ch,CURLINFO_RESPONSE_CODE);$error=curl_error($ch);curl_close($ch);if(!$ok||$status<200||$status>=300)throw new \RuntimeException('Source unavailable: '.$status.($error?' ('.$error.')':''),$status);return $body;
  }
 }
 final class Cache {
- public static function remember(string $key,int $fresh,int $stale,callable $load,bool $markStale=true):array{
+ public static function remember(string $key,int|callable $fresh,int $stale,callable $load,bool $markStale=true):array{
   if(!preg_match('/^[a-zA-Z0-9-]{1,100}$/D',$key))throw new \RuntimeException('Invalid cache key');
+  $ttl=fn(array $data):int=>is_int($fresh)?$fresh:$fresh($data);
   $dir=App::storage().'/cache';$path=$dir.'/'.$key.'.json';$old=is_file($path)?json_decode(file_get_contents($path),true):null;$age=time()-($old['time']??0);
-  if($old&&$age<$fresh)return $old['data'];
+  if($old&&$age<$ttl($old['data']))return $old['data'];
   $lock=fopen($path.'.lock','c');if(!$lock)throw new \RuntimeException('Cache unavailable');
   $deadline=microtime(true)+20;
   while(!flock($lock,LOCK_EX|LOCK_NB)){
    // Initial page loads ask for fixtures and allocation together: share the first refresh.
    usleep(100000);clearstatcache(true,$path);$updated=is_file($path)?json_decode(file_get_contents($path),true):null;
-   if($updated&&time()-$updated['time']<$fresh){fclose($lock);return $updated['data'];}
+   if($updated&&time()-$updated['time']<$ttl($updated['data'])){fclose($lock);return $updated['data'];}
    if(microtime(true)>=$deadline){fclose($lock);if($old&&$age<$stale)return $markStale?array_replace($old['data'],['stale'=>true]):$old['data'];throw new \RuntimeException('Refresh pending');}
   }
   clearstatcache(true,$path);$updated=is_file($path)?json_decode(file_get_contents($path),true):null;
-  if($updated&&time()-$updated['time']<$fresh){flock($lock,LOCK_UN);fclose($lock);return $updated['data'];}
-  try{$data=$load();$tmp=tempnam($dir,'write-');if($tmp===false)throw new \RuntimeException('Cache unavailable');try{if(file_put_contents($tmp,json_encode(['time'=>time(),'data'=>$data],JSON_THROW_ON_ERROR))===false||!rename($tmp,$path))throw new \RuntimeException('Cache write failed');}finally{if(is_file($tmp))unlink($tmp);}return $data;}
+  if($updated&&time()-$updated['time']<$ttl($updated['data'])){flock($lock,LOCK_UN);fclose($lock);return $updated['data'];}
+  try{$data=$load($old['data']??null);$tmp=tempnam($dir,'write-');if($tmp===false)throw new \RuntimeException('Cache unavailable');try{if(file_put_contents($tmp,json_encode(['time'=>time(),'data'=>$data],JSON_THROW_ON_ERROR))===false||!rename($tmp,$path))throw new \RuntimeException('Cache write failed');}finally{if(is_file($tmp))unlink($tmp);}return $data;}
   catch(\Throwable $e){if($old&&$age<$stale)return $markStale?array_replace($old['data'],['stale'=>true]):$old['data'];throw $e;}
   finally{flock($lock,LOCK_UN);fclose($lock);}
  }

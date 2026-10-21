@@ -33,13 +33,42 @@ final class Matches {
   }
   if($omittedRows&&!$matches)throw new \RuntimeException('No readable match rows');$unique=[];foreach($matches as $m)if($m['date']>=$from&&$m['date']<=$to)$unique[$m['id']]=$m;$matches=array_values($unique);usort($matches,fn($a,$b)=>strcmp($a['date'].' '.$a['time'],$b['date'].' '.$b['time']));return compact('matches','provisional','omittedRows');
  }
+ // Attribute order is not fixed by FUSSBALL.DE.
+ public static function fontIds(string $html):array{
+  preg_match_all('~<span\b([^>]*)>~i',$html,$tags);$ids=[];
+  foreach($tags[1] as $attributes)if(preg_match('/class="[^"\r\n]*\bscore-(?:left|right)\b[^"\r\n]*"/i',$attributes)&&preg_match('/data-obfuscation="([a-z0-9]+)"/i',$attributes,$id))$ids[$id[1]]=true;
+  if(count($ids)>8)throw new \RuntimeException('Unexpected font count');return array_keys($ids);
+ }
+ public static function resolveFonts(string $html,callable $fetch):array{
+  $fonts=[];$deadline=microtime(true)+18;
+  foreach(self::fontIds($html) as $id){
+   try{$fonts[$id]=Cache::remember('font-'.$id,604800,604800,function()use($id,$fetch,$deadline){
+    for($attempt=0;$attempt<2;$attempt++){
+     $remaining=(int)floor($deadline-microtime(true));if($remaining<1)throw new \RuntimeException('Score font time budget exceeded');
+     try{return ScoreFont::decode($fetch('https://www.fussball.de/export.fontface/-/format/ttf/id/'.$id.'/type/font',1000000,min(8,$remaining)));}
+     catch(\Throwable $e){if($attempt===1||!in_array($e->getCode(),[0,408,500,502,503,504],true))throw $e;}
+    }
+   },false);}catch(\Throwable $e){error_log('VfL score font '.$id.': '.$e->getMessage());}
+  }return $fonts;
+ }
+ public static function keepKnownResults(array $current,?array $previous):array{
+  $known=[];foreach($previous['matches']??[] as $m)$known[$m['id']]=$m;
+  foreach($current['matches'] as &$m){
+   $old=$known[$m['id']]??null;$at=$old['resultRetrievedAt']??$previous['retrievedAt']??'';
+   if(empty($m['resultUnavailable'])||!empty($m['status'])||!isset($old['result'])||!$at||time()-(strtotime($at)?:0)>86400)continue;
+   foreach(['date','time','home','away'] as $field)if(($m[$field]??null)!==($old[$field]??null))continue 2;
+   $m['result']=$old['result'];$m['resultStale']=true;$m['resultRetrievedAt']=$at;
+  }unset($m);return $current;
+ }
  public static function load(string $from,string $to):array{
   if(random_int(1,20)===1)Cache::prune();
-  return Cache::remember('matches-'.$from.'-'.$to,300,86400,function()use($from,$to){
-   $html=Http::get(self::source($from,$to),2000000,15);$fonts=[];
-   preg_match_all('/<span\b[^>]*data-obfuscation="([a-z0-9]+)"[^>]*class="score-(?:left|right)"/',$html,$ids);$ids=array_unique($ids[1]);if(count($ids)>8)throw new \RuntimeException('Unexpected font count');
-   foreach($ids as $id){try{$fonts[$id]=Cache::remember('font-'.$id,86400,604800,fn()=>ScoreFont::decode(Http::get('https://www.fussball.de/export.fontface/-/format/ttf/id/'.$id.'/type/font',1000000,15)),false);}catch(\Throwable){/* Unknown glyphs remain unknown; never guess a score. */}}
-   return array_merge(self::parse($html,$from,$to),['from'=>$from,'to'=>$to,'retrievedAt'=>gmdate('c'),'stale'=>false]);
+  $fresh=fn(array $data):int=>array_filter($data['matches']??[],fn($m)=>!empty($m['resultUnavailable']))?30:300;
+  return Cache::remember('matches-v2-'.$from.'-'.$to,$fresh,86400,function(?array $previous)use($from,$to){
+   // Keep the exact HTML/font pair across a failed font fetch; do not request a new font ID on every retry.
+   $source=Cache::remember('source-'.$from.'-'.$to,300,0,fn()=>['html'=>Http::get(self::source($from,$to),2000000,12),'retrievedAt'=>gmdate('c')]);
+   $fonts=self::resolveFonts($source['html'],fn($url,$limit,$timeout)=>Http::get($url,$limit,$timeout));
+   $data=array_merge(self::parse($source['html'],$from,$to,$fonts),['from'=>$from,'to'=>$to,'retrievedAt'=>$source['retrievedAt'],'stale'=>false]);
+   return self::keepKnownResults($data,$previous);
   });
  }
 }

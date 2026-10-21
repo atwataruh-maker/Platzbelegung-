@@ -1,5 +1,16 @@
 # Änderungen
 
+## v0.10.1 — 21.10.2026 · Helferzugang und Ergebnisabruf
+
+- Sichtbarer Anmeldezugang direkt auf der Helferseite; Admin-Rechte bleiben erforderlich.
+- CSRF-Token vor Schreibaktionen erneuern, ohne Gesuche automatisch doppelt abzusenden.
+- Ergebnis-Schriften bei vorübergehenden Netzwerkfehlern einmal erneut abrufen; Fehler ins Serverprotokoll schreiben.
+- Quell-HTML separat puffern, damit ein fehlgeschlagener Schriftabruf mit derselben Schriftkennung wiederholt wird.
+- Unvollständige Ergebnisse nach 30 Sekunden erneut prüfen; erfolgreiche Abrufe weiterhin 5 Minuten puffern.
+- Bei vorübergehenden Fehlern vorhandene Spielstände maximal 24 Stunden als „Letzter Stand“ mit Abrufzeit anzeigen. Keine Übernahme für verlegte, abgesagte oder geänderte Spiele.
+- 140 Regelvergleiche plus Tests zu Ausfällen, Wiederholungen, Cache und CSRF bestanden. Live-Test: alle vier Ergebnisse vom 18.10. lesbar.
+- Produktives Anlegen von Gesuchen ohne Admin-Zugang nicht geprüft; Update muss auf dem Webspace installiert werden.
+
 ## v0.10 — 21.10.2026 · PHP/STRATO
 
 - PHP-Backend für Spiele, Ergebnisse sowie Platz- und Kabinenverteilung.
