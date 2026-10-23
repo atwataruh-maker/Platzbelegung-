@@ -1,5 +1,13 @@
 # Änderungen
 
+## v0.10.2 — 23.10.2026 · Mittwochsbelegung
+
+- Wiederkehrend ab Mittwoch, 28.10.: C- und D1-Juniorinnen bevorzugt in die große 1. Heimkabine, D1- und E2-Junioren in die 3. Heimkabine.
+- Anschlussbelegungen werden mitberechnet: Alte Herren im regulären Mittwochsplan ab 19:15 in der 1. Heimkabine.
+- Feste Herrenbelegungen, alleinige Damennutzung und Geschlechtertrennung bleiben verbindlich. Bei nötigen Abweichungen erscheint ein Hinweis im Kabinenplan.
+- Vor dem 28.10. und an anderen Wochentagen keine neue Sonderregel.
+- 158 PHP/TypeScript-Vergleiche einschließlich mehrerer Mittwoche und zusätzlicher Herren-/Damenbelegungen erfolgreich.
+
 ## v0.10.1 — 21.10.2026 · Helferzugang und Ergebnisabruf
 
 - Sichtbarer Anmeldezugang direkt auf der Helferseite; Admin-Rechte bleiben erforderlich.

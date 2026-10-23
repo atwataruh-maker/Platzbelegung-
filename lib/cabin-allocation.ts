@@ -17,7 +17,7 @@ export type CabinBooking={
  id:string;team:string;clubTeam?:string;category?:string;gender:Gender;start:number;end:number;room:CabinId|null;
  fixed:CabinId|null;guest:boolean;shareEligible:boolean;sharingWith?:string[];activities:string[];sourceIds:string[];reason?:string;
 };
-export type CabinPlan={bookings:CabinBooking[];confirmed:boolean;conflicts:string[]};
+export type CabinPlan={bookings:CabinBooking[];confirmed:boolean;conflicts:string[];notes?:string[]};
 const concurrent=(a:CabinBooking,b:CabinBooking)=>a.start<b.end&&b.start<a.end;
 
 function fixedTraining(team:string):CabinId|null{
@@ -53,10 +53,18 @@ function ownTrainingTeam(team:string,category:string,trainingNames:string[]):str
  const names=youth?[`${youth[1]}${number}-${youth[2]}`,...(number===1?[`${youth[1]}-${youth[2]}`]:[])]:category==='Herren'?[`${number}. Herren`]:category==='Frauen'&&number===1?['VfL Ramsdorf Damen']:category==='Altherren'&&number===1?['Alte Herren']:[];
  return names.find(n=>trainingNames.includes(n));
 }
-function candidates(b:CabinBooking):CabinId[]{
+// Recurring trainer feedback: simultaneous girls' teams need the larger room.
+function wednesdayRoom(b:CabinBooking,date:string):CabinId|null{
+ if(date<'2026-10-28'||new Date(date+'T12:00:00Z').getUTCDay()!==3||b.guest||b.fixed||b.activities.length!==1||b.activities[0]!=='Training')return null;
+ if(['C-Juniorinnen','D1-Juniorinnen'].includes(b.team))return 'home1';
+ if(['D1-Junioren','E2-Junioren'].includes(b.team))return 'shared';
+ return null;
+}
+function candidates(b:CabinBooking,date:string):CabinId[]{
  if(b.fixed)return [b.fixed];
  if(isHomeWomensTeam(b))return ['home1','home2'];
- return b.guest?['away1','shared']:['shared','home1','home2','away1'];
+ const regular:CabinId[]=b.guest?['away1','shared']:['shared','home1','home2','away1'];
+ const preferred=wednesdayRoom(b,date);return preferred?[preferred,...regular.filter(r=>r!==preferred)]:regular;
 }
 
 export function allocateCabins(allocation:Allocation,schedule:MatchSchedule|null):CabinPlan{
@@ -92,9 +100,10 @@ export function allocateCabins(allocation:Allocation,schedule:MatchSchedule|null
   else merged.push({...request});
  }
  const fixed=merged.filter(b=>b.fixed&&b.gender!=='unknown').map(b=>({...b,room:b.fixed}));
- const pending=merged.filter(b=>!b.fixed&&b.gender!=='unknown').map(b=>({b,rooms:candidates(b).filter(room=>!fixed.some(f=>f.room===room&&concurrent(b,f)))}));
+ const pending=merged.filter(b=>!b.fixed&&b.gender!=='unknown').map(b=>({b,rooms:candidates(b,allocation.date).filter(room=>!fixed.some(f=>f.room===room&&concurrent(b,f)))}));
  // Fixed cabins first; protect guests, then fixtures, then maximize assigned training.
  pending.sort((a,b)=>Number(b.b.guest)-Number(a.b.guest)||Number(b.b.activities.some(x=>x!=='Training'))-Number(a.b.activities.some(x=>x!=='Training'))||a.rooms.length-b.rooms.length||a.b.start-b.b.start||a.b.id.localeCompare(b.b.id));
+ const preferencePenalty=4*(pending.length+1)**2;
  const weight=pending.length+1;
  const scores=pending.map(({b})=>Number(b.guest)*weight*weight+Number(b.activities.some(x=>x!=='Training'))*weight+1);
  const remaining=Array(pending.length+1).fill(0);
@@ -108,7 +117,7 @@ export function allocateCabins(allocation:Allocation,schedule:MatchSchedule|null
   const {b,rooms}=pending[i];
   for(const room of rooms){
    const neighbours=placed.filter(p=>p.room===room&&concurrent(b,p));
-   if(neighbours.every(p=>canShare(b,p)))search(i+1,[...placed,{...b,room}],[...picked,room],score+scores[i],cost+candidates(b).indexOf(room)+neighbours.length*4);
+   if(neighbours.every(p=>canShare(b,p)))search(i+1,[...placed,{...b,room}],[...picked,room],score+scores[i],cost+candidates(b,allocation.date).indexOf(room)+neighbours.length*4+(wednesdayRoom(b,allocation.date)&&room!==wednesdayRoom(b,allocation.date)?preferencePenalty:0));
   }
   search(i+1,placed,[...picked,null],score,cost);
  }
@@ -121,5 +130,8 @@ export function allocateCabins(allocation:Allocation,schedule:MatchSchedule|null
   conflicts.push(`${b.team}${b.category?' · '+b.category:''} · ${clock(b.start)}–${clock(b.end)}: ${b.reason}`);
  }
  assigned.sort((a,b)=>a.start-b.start||a.team.localeCompare(b.team)||a.id.localeCompare(b.id));
- return {bookings:assigned,confirmed:allocation.automatic,conflicts};
+ const regular=assigned.filter(b=>wednesdayRoom(b,allocation.date));
+ const notes=regular.length?['Mittwochsregel: C- und D1-Juniorinnen nutzen bevorzugt die 1. Heimkabine, D1- und E2-Junioren die 3. Heimkabine.']:[];
+ for(const b of regular)if(b.room!==wednesdayRoom(b,allocation.date))notes.push(`${b.team}: Die Mittwochszuordnung ist wegen anderer Belegungen nicht möglich. ${b.room?'Bitte die zugeteilte Kabine im Tagesplan beachten.':'Bitte mit der Kabinenkoordination abstimmen.'}`);
+ return {bookings:assigned,confirmed:allocation.automatic,conflicts,...(notes.length?{notes}:{})};
 }

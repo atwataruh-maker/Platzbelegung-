@@ -125,3 +125,29 @@ for(const team of ['C-Juniorinnen','G/F-Juniorinnen','A-Junioren']){
 a=allocate(date,schedule([game('turf','B-Junioren')]),true,[training('1. Herren'),training('B-Junioren',BACK)]);
 assert.ok(a.bookings.filter(b=>b.kind==='training').every(b=>b.segments.every(s=>!s.fields.some(f=>MAIN.includes(f)))));
 console.log('PASS: fixed first/second team cabins, guests/overflow, gender separation, mixed groups, unknown gender, capacity conflicts, time buffers, merged reservations, stale/cancelled/away/moved fixtures; main-pitch halves, eligibility, final fallback, match blocking.');
+
+// Recurring room swap requested by trainers from Wednesday 28 October onwards.
+const weeklyRooms={'C-Juniorinnen':'home1','D1-Juniorinnen':'home1','D1-Junioren':'shared','E2-Junioren':'shared'};
+for(const day of ['2026-10-28','2026-11-04','2026-11-11']){
+ const s={...schedule(),from:day,to:day};
+ const a=allocate(day,s,true);const c=allocateCabins(a,s);noRoomClashes(c);
+ for(const [team,room] of Object.entries(weeklyRooms))assert.equal(c.bookings.find(b=>b.team===team)?.room,room,`${day}: ${team}`);
+ assert.equal(c.bookings.find(b=>b.team==='2. Herren').room,'home2');
+ assert.equal(c.bookings.find(b=>b.team==='Alte Herren').room,'home1','Alte Herren follow the girls, without overlapping E2');
+ assert.equal(c.conflicts.length,0);assert.match(c.notes[0],/Mittwochsregel/);
+ if(day==='2026-10-28')console.log('Wednesday assignment:',c.bookings.map(b=>`${b.team}: ${b.room} ${b.start}-${b.end}`).join('; '));
+ // Fixed first men's room remains protected if they add an overlapping session.
+ const withFirst={...a,bookings:[...a.bookings,{id:'extra-first',kind:'training',title:'1. Herren',segments:[{start:1050,end:1140,fields:MAIN}]}]};
+ const constrained=allocateCabins(withFirst,s);noRoomClashes(constrained);
+ assert.equal(constrained.bookings.find(b=>b.team==='1. Herren').room,'home1');
+ for(const team of ['C-Juniorinnen','D1-Juniorinnen'])assert.notEqual(constrained.bookings.find(b=>b.team===team).room,'home1');
+ assert.ok(constrained.notes.some(n=>n.includes('wegen anderer Belegungen')));
+ // Adult women still have an exclusive home cabin.
+ const withWomen={...a,bookings:[...a.bookings,{id:'extra-women',kind:'training',title:'VfL Ramsdorf Damen',segments:[{start:1050,end:1140,fields:MAIN}]}]};
+ const womenPlan=allocateCabins(withWomen,s);noRoomClashes(womenPlan);
+ const w=womenPlan.bookings.find(b=>b.team==='VfL Ramsdorf Damen');assert.ok(['home1','home2'].includes(w.room));assert.equal(w.sharingWith.length,0);
+}
+for(const day of ['2026-10-21','2026-10-27','2026-10-29']){
+ const s={...schedule(),from:day,to:day};assert.equal(allocateCabins(allocate(day,s,true),s).notes,undefined,'No Wednesday override before start or on other weekdays');
+}
+console.log('PASS: recurring Wednesday room swap, subsequent Alte Herren booking, fixed senior cabins, women and fallback notices.');
