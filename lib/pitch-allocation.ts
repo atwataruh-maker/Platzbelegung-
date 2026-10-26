@@ -22,6 +22,7 @@ function seniorMain(m:Match){
  return ['','I','II','III','1','2','3'].includes(suffix.toUpperCase());
 }
 export function allocate(date:string,schedule:MatchSchedule|null,sourceUsable:boolean,template:Training[]=trainingsFor(date)):Allocation{
+ template=template.map(t=>t.team==='SF Nordvelen'?{...t,team:'Nordvelen'}:t);
  const result:Allocation={date,bookings:[],changes:[],conflicts:[],warnings:[],automatic:false};
  const originals:Booking[]=template.map(t=>({id:t.id,kind:'training',title:t.team,segments:t.segments}));
  const reserves:Booking[]=reservesFor(date).map((s,i)=>({id:'reserve-'+i,kind:'reserve',title:'Spielreserve',segments:[s]}));

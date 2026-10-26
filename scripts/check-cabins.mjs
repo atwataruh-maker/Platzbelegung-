@@ -48,7 +48,7 @@ p=plan([training('C-Junioren')],[game('same-youth','C-Junioren')]);assert.equal(
 p=plan([training('D1-Junioren'),training('D2-Junioren',BACK)],[game('second-youth','D-Junioren',{home:'VfL Ramsdorf II'})]);assert.equal(p.bookings.filter(b=>!b.guest).length,2);assert.equal(p.bookings.find(b=>b.team==='D2-Junioren').activities.length,2);assert.equal(p.bookings.find(b=>b.team==='D1-Junioren').activities.length,1);noRoomClashes(p);
 p=plan([training('G-Junioren / G-F-Juniorinnen')]);
 assert.equal(p.bookings.length,2);assert.deepEqual(p.bookings.map(b=>b.gender).sort(),['female','male']);assert.notEqual(p.bookings[0].room,p.bookings[1].room);noRoomClashes(p);
-p=plan([training('SF Nordvelen')]);assert.equal(p.bookings[0].room,'away1');assert.equal(p.bookings[0].gender,'unknown');assert.equal(p.bookings[0].shareEligible,false);assert.equal(p.conflicts.length,0);
+p=plan([training('Nordvelen')]);assert.equal(p.bookings[0].room,'away1');assert.equal(p.bookings[0].gender,'unknown');assert.equal(p.bookings[0].shareEligible,false);assert.equal(p.conflicts.length,0);
 p=plan([training('Unbekannter Verein')]);assert.equal(p.bookings[0].room,null);assert.match(p.conflicts[0],/Geschlechtszuordnung/);
 // Home youth teams can use all four cabins without guests, with genders separate.
 p=plan([training('1. Herren'),training('2. Herren',BACK),training('A-Junioren',['r1']),training('C-Juniorinnen',['r2'])]);
@@ -83,7 +83,7 @@ assert.equal(p.bookings[0].room,p.bookings[1].room);noRoomClashes(p);
 for(const extra of [{location:'Auswärts'},{status:'Ausfall'},{status:'Absetzung'},{status:'Verlegt: 20.10.2026 17:00'}])assert.equal(plan([],[game('ignore','Herren',extra)]).bookings.length,0);
 assert.equal(plan([training('1. Herren')],[],{stale:true}).confirmed,false);
 const emptyAllocation=allocate(date,null,true,[training('1. Herren')]);assert.equal(allocateCabins(emptyAllocation,null).confirmed,false);
-// Full-week data, including the mixed Friday group and exclusive SF Nordvelen entry.
+// Full-week data, including the mixed Friday group and exclusive Nordvelen entry.
 for(let day=19;day<=25;day++){
  const d=`2026-10-${day}`,s={...schedule(),from:d,to:d};const a=allocate(d,s,true);p=allocateCabins(a,s);noRoomClashes(p);
  const sessions=TRAINING.filter(t=>t.day===new Date(d+'T12:00Z').getUTCDay());
@@ -97,7 +97,7 @@ for(const d of ['2026-10-15','2026-10-16']){
  p=allocateCabins(allocate(d,s,true),s);noRoomClashes(p);
  assert.ok(p.bookings.filter(b=>b.gender!=='unknown').every(b=>b.room),d+' all known teams must fit');
  if(d.endsWith('15')){
-  assert.equal(p.bookings.filter(b=>!b.room).length,0);assert.notEqual(p.bookings.find(b=>b.team==='SF Nordvelen').room,'away1');assert.deepEqual(p.bookings.find(b=>b.team==='SF Nordvelen').sharingWith,[]);
+  assert.equal(p.bookings.filter(b=>!b.room).length,0);assert.notEqual(p.bookings.find(b=>b.team==='Nordvelen').room,'away1');assert.deepEqual(p.bookings.find(b=>b.team==='Nordvelen').sharingWith,[]);
   assert.equal(p.bookings.find(b=>b.team==='1. Herren').room,'home1');
   assert.equal(p.bookings.find(b=>b.team==='RSV Borken').room,'away1');
   assert.ok(['A-Junioren','B-Junioren'].every(t=>p.bookings.find(b=>b.team===t).sharingWith.length));
@@ -117,7 +117,7 @@ for(let i=0;i<a.bookings.length;i++)for(let j=i+1;j<a.bookings.length;j++)assert
 a=allocate(date,schedule([game('turf','B-Junioren'),game('main')]),true,[training('1. Herren'),training('B-Junioren',BACK),...busyGrass]);
 assert.equal(a.bookings.filter(b=>b.kind==='training'&&!b.segments.length).length,2);assert.deepEqual(a.bookings.find(b=>b.id==='match-main').segments[0].fields,MAIN);
 // Other adult teams cannot take the stadium; girls are eligible just like boys.
-for(const team of ['2. Herren','3. Herren','SF Nordvelen','VfL Ramsdorf Damen']){
+for(const team of ['2. Herren','3. Herren','Nordvelen','VfL Ramsdorf Damen']){
  a=allocate(date,schedule([game('turf','B-Junioren')]),true,[training(team),...busyGrass]);assert.equal(a.bookings.find(b=>b.id===team).segments.length,0);
 }
 for(const team of ['C-Juniorinnen','G/F-Juniorinnen','A-Junioren']){
@@ -156,13 +156,16 @@ console.log('PASS: recurring Wednesday room swap, subsequent Alte Herren booking
 // Nordvelen shares the grounds, always an exclusive room and no guessed gender.
 for(const day of ['2026-10-29','2026-11-05']){
  const s={...schedule(),from:day,to:day};const a=allocate(day,s,true);const c=allocateCabins(a,s);noRoomClashes(c);
- const nord=c.bookings.find(b=>b.team==='SF Nordvelen');assert.equal(nord.room,'away1');assert.equal(nord.start,1125);assert.equal(nord.end,1245);assert.equal(nord.gender,'unknown');assert.equal(nord.shareEligible,false);assert.deepEqual(nord.sharingWith,[]);assert.equal(c.conflicts.length,0);assert.equal(c.notes,undefined);
+ const nord=c.bookings.find(b=>b.team==='Nordvelen');assert.equal(nord.room,'away1');assert.equal(nord.start,1125);assert.equal(nord.end,1245);assert.equal(nord.gender,'unknown');assert.equal(nord.shareEligible,false);assert.deepEqual(nord.sharingWith,[]);assert.equal(c.conflicts.length,0);assert.equal(c.notes,undefined);
  // A real visiting side takes the away cabin; Nordvelen must move, not share.
  const match=game('nord-clash','Herren',{date:day,time:'19:00'});const busy={...s,matches:[match]};const moved=allocateCabins(allocate(day,busy,true),busy);noRoomClashes(moved);
- const n=moved.bookings.find(b=>b.team==='SF Nordvelen');assert.ok(n.room);assert.notEqual(n.room,'away1');assert.deepEqual(n.sharingWith,[]);assert.equal(moved.bookings.find(b=>b.guest).room,'away1');assert.ok(moved.notes.some(n=>n.includes('SF Nordvelen')&&n.includes('Wegen eines Spiels')&&n.includes('1. Auswärtskabine')));
+ const n=moved.bookings.find(b=>b.team==='Nordvelen');assert.ok(n.room);assert.notEqual(n.room,'away1');assert.deepEqual(n.sharingWith,[]);assert.equal(moved.bookings.find(b=>b.guest).room,'away1');assert.ok(moved.notes.some(n=>n.includes('Nordvelen')&&n.includes('Wegen eines Spiels')&&n.includes('1. Auswärtskabine')));
 }
 // No free cabin: keep Nordvelen unassigned instead of mixing or guessing a gender.
-p=plan([training('1. Herren'),training('2. Herren'),training('3. Herren'),training('Alte Herren'),training('SF Nordvelen')]);noRoomClashes(p);
+p=plan([training('1. Herren'),training('2. Herren'),training('3. Herren'),training('Alte Herren'),training('Nordvelen')]);noRoomClashes(p);
 for(const b of p.bookings.filter(b=>b.room))assert.deepEqual(b.sharingWith,[]);
 assert.ok(p.conflicts.length);for(const b of p.bookings.filter(b=>!b.room))assert.match(b.reason,/Keine konfliktfreie/);
 console.log('PASS: Nordvelen exclusive away room, repeated Thursdays, guest priority and concrete move alerts; unknown teams still require clarification.');
+
+// Old installed training files remain compatible without overwriting local edits.
+p=plan([training('SF Nordvelen')]);assert.equal(p.bookings[0].team,'Nordvelen');assert.equal(p.bookings[0].room,'away1');assert.equal(p.bookings[0].playerCount,10);assert.equal(p.bookings[0].teamCount,1);

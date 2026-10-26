@@ -15,7 +15,7 @@ export const GENDER_LABEL:Record<Gender,string>={male:'Jungen / Männer',female:
 export const CABIN_TIMES={trainingBefore:15,trainingAfter:15,matchAfterPitch:15};
 export type CabinBooking={
  id:string;team:string;clubTeam?:string;category?:string;gender:Gender;start:number;end:number;room:CabinId|null;
- fixed:CabinId|null;guest:boolean;shareEligible:boolean;sharingWith?:string[];activities:string[];sourceIds:string[];reason?:string;
+ playerCount?:number;teamCount?:number;fixed:CabinId|null;guest:boolean;shareEligible:boolean;sharingWith?:string[];activities:string[];sourceIds:string[];reason?:string;
 };
 export type CabinPlan={bookings:CabinBooking[];confirmed:boolean;conflicts:string[];notes?:string[]};
 const concurrent=(a:CabinBooking,b:CabinBooking)=>a.start<b.end&&b.start<a.end;
@@ -56,7 +56,7 @@ function ownTrainingTeam(team:string,category:string,trainingNames:string[]):str
 // Nordvelen shares our sports grounds, but always receives a cabin to itself.
 // Its gender is deliberately not inferred from the club name.
 export function isGroundsUser(b:CabinBooking):boolean{
- return b.team==='SF Nordvelen'&&!b.guest&&b.activities.length===1&&b.activities[0]==='Training';
+ return ['Nordvelen','SF Nordvelen'].includes(b.team)&&!b.guest&&b.activities.length===1&&b.activities[0]==='Training';
 }
 function preferredRoom(b:CabinBooking,date:string):CabinId|null{
  return isGroundsUser(b)?'away1':wednesdayRoom(b,date);
@@ -132,6 +132,7 @@ export function allocateCabins(allocation:Allocation,schedule:MatchSchedule|null
  }
  search(0,[],[],0,0);
  const assigned:CabinBooking[]=[...fixed,...pending.map(({b},i)=>({...b,room:best[i]??null})),...merged.filter(b=>b.gender==='unknown'&&!isGroundsUser(b))];
+ for(const b of assigned)if(isGroundsUser(b)){b.team='Nordvelen';b.playerCount=10;b.teamCount=1;}
  const conflicts:string[]=[];
  for(const b of assigned){
   if(b.room){b.sharingWith=assigned.filter(other=>other.id!==b.id&&other.room===b.room&&concurrent(b,other)).map(other=>other.team);continue;}

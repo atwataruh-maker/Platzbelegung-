@@ -7,7 +7,7 @@ final class Cabins {
  private static function youth(string $s):bool{if(!preg_match('/^(.+)-Junior(?:en|innen)$/Di',$s,$m))return false;foreach(preg_split('/\s*[\/-]\s*/',$m[1]) as $part)if(!preg_match('/^[A-G]\d*$/Di',$part))return false;return true;}
  private static function share(array $a,array $b):bool{return $a['shareEligible']&&$b['shareEligible']&&$a['gender']!=='unknown'&&$a['gender']===$b['gender']&&$a['guest']===$b['guest']&&!$a['fixed']&&!$b['fixed'];}
  private static function women(array $b):bool{return !$b['guest']&&$b['gender']==='female'&&!$b['shareEligible']&&(($b['category']??'')==='Frauen'||preg_match('/\b(Damen|Frauen)\b/i',$b['team']));}
- private static function groundsUser(array $b):bool{return $b['team']==='SF Nordvelen'&&!$b['guest']&&$b['activities']===['Training'];}
+ private static function groundsUser(array $b):bool{return in_array($b['team'],['Nordvelen','SF Nordvelen'],true)&&!$b['guest']&&$b['activities']===['Training'];}
  private static function preferredRoom(array $b,string $date):?string{return self::groundsUser($b)?'away1':self::wednesdayRoom($b,$date);}
  private static function roomName(string $room):string{return ['home1'=>'1. Heimkabine','home2'=>'2. Heimkabine','shared'=>'3. Heim- / 2. Auswärtskabine','away1'=>'1. Auswärtskabine'][$room];}
  private static function wednesdayRoom(array $b,string $date):?string{
@@ -61,7 +61,7 @@ final class Cabins {
     if($ok)$search($i+1,[...$placed,array_replace($b,['room'=>$room])],[...$picked,$room],$score+$scores[$i],$cost+($b['guest']&&$room!=='away1'?$guestPreferencePenalty:0)+array_search($room,self::rooms($b,$date),true)+count($neighbours)*4+(self::preferredRoom($b,$date)&&$room!==self::preferredRoom($b,$date)?$preferencePenalty:0));
    }$search($i+1,$placed,[...$picked,null],$score,$cost);
   };$search(0,[],[],0,0);
-  $assigned=$fixed;foreach($pending as $i=>$p)$assigned[]=array_replace($p['b'],['room'=>$best[$i]??null]);$assigned=[...$assigned,...$unknown];$conflicts=[];
+  $assigned=$fixed;foreach($pending as $i=>$p)$assigned[]=array_replace($p['b'],['room'=>$best[$i]??null]);$assigned=[...$assigned,...$unknown];foreach($assigned as &$entry)if(self::groundsUser($entry)){$entry['team']='Nordvelen';$entry['playerCount']=10;$entry['teamCount']=1;}unset($entry);$conflicts=[];
   foreach($assigned as $i=>$b){if($b['room']){$assigned[$i]['sharingWith']=array_values(array_column(array_filter($assigned,fn($o)=>$o['id']!==$b['id']&&$o['room']===$b['room']&&self::concurrent($b,$o)),'team'));continue;}
    $reason=$b['gender']==='unknown'&&!self::groundsUser($b)?'Geschlechtszuordnung fehlt in der Quelle. Bitte mit der Kabinenkoordination klären.':(self::women($b)?'Für die Damen ist weder die 1. noch die 2. Heimkabine im gesamten Zeitraum allein verfügbar. Bitte mit der Kabinenkoordination abstimmen.':'Keine konfliktfreie Kabinenzuordnung für den gesamten Zeitraum ermittelt. Bitte mit der Kabinenkoordination abstimmen.');
    $assigned[$i]['reason']=$reason;$conflicts[]=$b['team'].(isset($b['category'])?' · '.$b['category']:'').' · '.Planning::clock($b['start']).'–'.Planning::clock($b['end']).': '.$reason;

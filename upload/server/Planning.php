@@ -24,7 +24,7 @@ final class Planning {
   if($t['team']==='1. Herren'||preg_match('/Junior(?:en|innen)/i',$t['team']))$options=[...$options,['main1'],['main2']];return $options;
  }
  public static function allocate(string $date,?array $schedule,bool $sourceUsable=true,?array $template=null):array{
-  $template??=self::trainings($date);$result=['date'=>$date,'bookings'=>[],'changes'=>[],'conflicts'=>[],'warnings'=>[],'automatic'=>false];
+  $template??=self::trainings($date);$template=array_map(fn($t)=>$t['team']==='SF Nordvelen'?array_replace($t,['team'=>'Nordvelen']):$t,$template);$result=['date'=>$date,'bookings'=>[],'changes'=>[],'conflicts'=>[],'warnings'=>[],'automatic'=>false];
   $originals=array_map(fn($t)=>self::booking($t,$t['segments']),$template);$reserves=[];
   if((new \DateTimeImmutable($date))->format('w')==='5')foreach([[990,1230,self::FRONT],[1050,1080,self::BACK],[1170,1230,self::BACK]] as $i=>[$start,$end,$fields])$reserves[]=['id'=>'reserve-'.$i,'kind'=>'reserve','title'=>'Spielreserve','segments'=>[self::seg($start,$end,$fields)]];
   $inRange=$schedule&&$schedule['from']<=$date&&$schedule['to']>=$date;

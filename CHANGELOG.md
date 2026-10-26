@@ -1,5 +1,11 @@
 # Änderungen
 
+## v0.10.4 — 26.10.2026 · Nordvelen
+
+- Einheitlicher Name „Nordvelen“ in Platz- und Kabinenbelegung.
+- Eine Mannschaft mit 10 Spielern hinterlegt und kompakt angezeigt.
+- Bestehende Trainingsdateien mit altem Namen bleiben kompatibel. Kabinenregeln unverändert.
+
 ## v0.10.3 — 26.10.2026 · Nordvelen und übersichtliche Kabinenansicht
 
 - SF Nordvelen als Platzmitnutzer: im regulären Donnerstagsplan 18:45–20:45 Uhr allein in der 1. Auswärtskabine. Keine Annahme zu Geschlecht oder Altersklasse erforderlich.

@@ -41,7 +41,7 @@ export const TRAINING:Training[]=[
  t(4,'E3-Junioren','17:30','19:00',BACK),
  t(4,'C-Junioren','17:30','19:00',['r1']),
  t(4,'1. Herren','19:00','20:30',FRONT),
- {...t(4,'SF Nordvelen','19:00','20:30',BACK),activeFrom:'2026-10-01'},
+ {...t(4,'Nordvelen','19:00','20:30',BACK),id:'4-SF Nordvelen',activeFrom:'2026-10-01'},
  t(4,'A-Junioren','19:00','20:30',['r1']),
  t(4,'B-Junioren','19:00','20:30',['r2']),
  t(5,'F1/F2-Junioren','16:30','17:30',BACK),
