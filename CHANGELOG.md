@@ -1,5 +1,11 @@
 # Änderungen
 
+## v0.10.6 — 26.10.2026 · E3 bei Nordvelen
+
+- E3-Junioren donnerstags ab 29.10. in der 1. Auswärtskabine bei Nordvelen statt in der 2. Heimkabine.
+- Ausdrücklich erlaubte Überschneidung 18:45–19:15 Uhr nur für diese beiden Trainingsteams in der 1. Auswärtskabine. Andere Tage, Spiele und Ausweichkabinen erhalten keine Ausnahme.
+- Spielgäste haben weiterhin Vorrang; konkrete Abweichungen werden angezeigt.
+
 ## v0.10.5 — 26.10.2026 · Donnerstagsbelegung
 
 - Ab 29.10. donnerstags E1 und E3 bevorzugt in der 2. Heimkabine, B-Junioren in der 3. Heim- / 2. Auswärtskabine.

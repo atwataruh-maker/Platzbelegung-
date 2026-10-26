@@ -41,7 +41,10 @@ function youthSharing(label:string):boolean{
 export function isHomeWomensTeam(b:CabinBooking):boolean{
  return !b.guest&&b.gender==='female'&&!b.shareEligible&&(b.category==='Frauen'||/\b(Damen|Frauen)\b/i.test(b.team));
 }
-function canShare(a:CabinBooking,b:CabinBooking):boolean{
+function canShare(a:CabinBooking,b:CabinBooking,date:string,room:CabinId):boolean{
+ // Explicit approval applies only to this pair's Thursday training in the away cabin.
+ const e3=(t:CabinBooking)=>t.team==='E3-Junioren'&&!t.guest&&!t.fixed&&t.gender==='male'&&t.activities.length===1&&t.activities[0]==='Training';
+ if(date>='2026-10-29'&&new Date(date+'T12:00:00Z').getUTCDay()===4&&room==='away1'&&((isGroundsUser(a)&&e3(b))||(isGroundsUser(b)&&e3(a))))return true;
  return a.shareEligible&&b.shareEligible&&a.gender!=='unknown'&&a.gender===b.gender&&a.guest===b.guest&&!a.fixed&&!b.fixed;
 }
 function ownTrainingTeam(team:string,category:string,trainingNames:string[]):string|undefined{
@@ -53,7 +56,7 @@ function ownTrainingTeam(team:string,category:string,trainingNames:string[]):str
  const names=youth?[`${youth[1]}${number}-${youth[2]}`,...(number===1?[`${youth[1]}-${youth[2]}`]:[])]:category==='Herren'?[`${number}. Herren`]:category==='Frauen'&&number===1?['VfL Ramsdorf Damen']:category==='Altherren'&&number===1?['Alte Herren']:[];
  return names.find(n=>trainingNames.includes(n));
 }
-// Nordvelen shares our sports grounds, but always receives a cabin to itself.
+// Nordvelen shares our grounds; only the explicitly approved E3 Thursday pairing may share.
 // Its gender is deliberately not inferred from the club name.
 export function isGroundsUser(b:CabinBooking):boolean{
  return ['Nordvelen','SF Nordvelen'].includes(b.team)&&!b.guest&&b.activities.length===1&&b.activities[0]==='Training';
@@ -64,7 +67,8 @@ function preferredRoom(b:CabinBooking,date:string):CabinId|null{
 // Thursday trainer adjustment; game and exclusive-room constraints still take priority.
 function thursdayRoom(b:CabinBooking,date:string):CabinId|null{
  if(date<'2026-10-29'||new Date(date+'T12:00:00Z').getUTCDay()!==4||b.guest||b.fixed||b.activities.length!==1||b.activities[0]!=='Training')return null;
- if(['E1-Junioren','E3-Junioren','A-Junioren'].includes(b.team))return 'home2';
+ if(b.team==='E3-Junioren')return 'away1';
+ if(['E1-Junioren','A-Junioren'].includes(b.team))return 'home2';
  return ['B-Junioren','C-Junioren'].includes(b.team)?'shared':null;
 }
 // Recurring trainer feedback: simultaneous girls' teams need the larger room.
@@ -132,7 +136,7 @@ export function allocateCabins(allocation:Allocation,schedule:MatchSchedule|null
   const {b,rooms}=pending[i];
   for(const room of rooms){
    const neighbours=placed.filter(p=>p.room===room&&concurrent(b,p));
-   if(neighbours.every(p=>canShare(b,p)))search(i+1,[...placed,{...b,room}],[...picked,room],score+scores[i],cost+(b.guest&&room!=='away1'?guestPreferencePenalty:0)+candidates(b,allocation.date).indexOf(room)+neighbours.length*4+(preferredRoom(b,allocation.date)&&room!==preferredRoom(b,allocation.date)?preferencePenalty:0));
+   if(neighbours.every(p=>canShare(b,p,allocation.date,room)))search(i+1,[...placed,{...b,room}],[...picked,room],score+scores[i],cost+(b.guest&&room!=='away1'?guestPreferencePenalty:0)+candidates(b,allocation.date).indexOf(room)+neighbours.length*4+(preferredRoom(b,allocation.date)&&room!==preferredRoom(b,allocation.date)?preferencePenalty:0));
   }
   search(i+1,placed,[...picked,null],score,cost);
  }

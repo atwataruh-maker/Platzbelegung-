@@ -5,14 +5,18 @@ final class Cabins {
  private static function concurrent(array $a,array $b):bool{return $a['start']<$b['end']&&$b['start']<$a['end'];}
  private static function gender(string $s):string{$f=(bool)preg_match('/Juniorinnen|Damen|Frauen/i',$s);$m=(bool)preg_match('/Junioren|Herren|Männer/i',$s);return $f===$m?'unknown':($f?'female':'male');}
  private static function youth(string $s):bool{if(!preg_match('/^(.+)-Junior(?:en|innen)$/Di',$s,$m))return false;foreach(preg_split('/\s*[\/-]\s*/',$m[1]) as $part)if(!preg_match('/^[A-G]\d*$/Di',$part))return false;return true;}
- private static function share(array $a,array $b):bool{return $a['shareEligible']&&$b['shareEligible']&&$a['gender']!=='unknown'&&$a['gender']===$b['gender']&&$a['guest']===$b['guest']&&!$a['fixed']&&!$b['fixed'];}
+ private static function share(array $a,array $b,string $date,string $room):bool{
+  $e3=fn($t)=>$t['team']==='E3-Junioren'&&!$t['guest']&&!$t['fixed']&&$t['gender']==='male'&&$t['activities']===['Training'];
+  if($date>='2026-10-29'&&(new \DateTimeImmutable($date.'T12:00:00Z'))->format('N')==='4'&&$room==='away1'&&((self::groundsUser($a)&&$e3($b))||(self::groundsUser($b)&&$e3($a))))return true;
+  return $a['shareEligible']&&$b['shareEligible']&&$a['gender']!=='unknown'&&$a['gender']===$b['gender']&&$a['guest']===$b['guest']&&!$a['fixed']&&!$b['fixed'];}
  private static function women(array $b):bool{return !$b['guest']&&$b['gender']==='female'&&!$b['shareEligible']&&(($b['category']??'')==='Frauen'||preg_match('/\b(Damen|Frauen)\b/i',$b['team']));}
  private static function groundsUser(array $b):bool{return in_array($b['team'],['Nordvelen','SF Nordvelen'],true)&&!$b['guest']&&$b['activities']===['Training'];}
  private static function preferredRoom(array $b,string $date):?string{return self::groundsUser($b)?'away1':(self::thursdayRoom($b,$date)??self::wednesdayRoom($b,$date));}
  private static function roomName(string $room):string{return ['home1'=>'1. Heimkabine','home2'=>'2. Heimkabine','shared'=>'3. Heim- / 2. Auswärtskabine','away1'=>'1. Auswärtskabine'][$room];}
  private static function thursdayRoom(array $b,string $date):?string{
   if($date<'2026-10-29'||(new \DateTimeImmutable($date.'T12:00:00Z'))->format('N')!=='4'||$b['guest']||$b['fixed']||$b['activities']!==['Training'])return null;
-  if(in_array($b['team'],['E1-Junioren','E3-Junioren','A-Junioren'],true))return 'home2';return in_array($b['team'],['B-Junioren','C-Junioren'],true)?'shared':null;
+  if($b['team']==='E3-Junioren')return 'away1';
+  if(in_array($b['team'],['E1-Junioren','A-Junioren'],true))return 'home2';return in_array($b['team'],['B-Junioren','C-Junioren'],true)?'shared':null;
  }
  private static function wednesdayRoom(array $b,string $date):?string{
   if($date<'2026-10-28'||(new \DateTimeImmutable($date.'T12:00:00Z'))->format('N')!=='3'||$b['guest']||$b['fixed']||$b['activities']!==['Training'])return null;
@@ -61,7 +65,7 @@ final class Cabins {
   $search=function($i,$placed,$picked,$score,$cost)use(&$search,&$best,&$bestScore,&$bestCost,&$nodes,$pending,$scores,$remaining,$date,$preferencePenalty,$guestPreferencePenalty){
    if(++$nodes>50000)return;$maximum=$score+$remaining[$i];if($maximum<$bestScore||($maximum===$bestScore&&$cost>=$bestCost))return;
    if($i===count($pending)){$best=$picked;$bestScore=$score;$bestCost=$cost;return;}
-   $b=$pending[$i]['b'];foreach($pending[$i]['rooms'] as $room){$neighbours=array_values(array_filter($placed,fn($p)=>$p['room']===$room&&self::concurrent($b,$p)));$ok=true;foreach($neighbours as $n)if(!self::share($b,$n)){$ok=false;break;}
+   $b=$pending[$i]['b'];foreach($pending[$i]['rooms'] as $room){$neighbours=array_values(array_filter($placed,fn($p)=>$p['room']===$room&&self::concurrent($b,$p)));$ok=true;foreach($neighbours as $n)if(!self::share($b,$n,$date,$room)){$ok=false;break;}
     if($ok)$search($i+1,[...$placed,array_replace($b,['room'=>$room])],[...$picked,$room],$score+$scores[$i],$cost+($b['guest']&&$room!=='away1'?$guestPreferencePenalty:0)+array_search($room,self::rooms($b,$date),true)+count($neighbours)*4+(self::preferredRoom($b,$date)&&$room!==self::preferredRoom($b,$date)?$preferencePenalty:0));
    }$search($i+1,$placed,[...$picked,null],$score,$cost);
   };$search(0,[],[],0,0);

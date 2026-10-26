@@ -9,7 +9,8 @@ const schedule=(matches=[])=>({from:date,to:date,matches,retrievedAt:'2026-10-19
 function plan(teams=[],matches=[],extra={}){const s={...schedule(matches),...extra};return allocateCabins(allocate(date,s,true,teams),s);}
 function noRoomClashes(p){for(let i=0;i<p.bookings.length;i++)for(let j=i+1;j<p.bookings.length;j++){
  const a=p.bookings[i],b=p.bookings[j];
- assert.ok(!a.room||a.room!==b.room||a.start>=b.end||b.start>=a.end||(a.shareEligible&&b.shareEligible&&a.gender!=='unknown'&&a.gender===b.gender&&a.guest===b.guest&&!a.fixed&&!b.fixed),`${a.team} / ${b.team} overlap in ${a.room}`);
+ const approvedPair=a.room==='away1'&&b.room==='away1'&&[a.team,b.team].sort().join('|')==='E3-Junioren|Nordvelen'&&[a,b].every(t=>!t.guest&&!t.fixed&&t.activities.length===1&&t.activities[0]==='Training');
+ assert.ok(!a.room||a.room!==b.room||a.start>=b.end||b.start>=a.end||approvedPair||(a.shareEligible&&b.shareEligible&&a.gender!=='unknown'&&a.gender===b.gender&&a.guest===b.guest&&!a.fixed&&!b.fixed),`${a.team} / ${b.team} overlap in ${a.room}`);
 }}
 let p=plan([training('1. Herren'),training('2. Herren',BACK)]);
 assert.equal(p.bookings.find(b=>b.team==='1. Herren').room,'home1');
@@ -153,10 +154,10 @@ for(const day of ['2026-10-21','2026-10-27','2026-10-29']){
 }
 console.log('PASS: recurring Wednesday room swap, subsequent Alte Herren booking, fixed senior cabins, women and fallback notices.');
 
-// Nordvelen shares the grounds, always an exclusive room and no guessed gender.
+// Nordvelen shares only with E3 in the approved Thursday away-cabin pairing.
 for(const day of ['2026-10-29','2026-11-05']){
  const s={...schedule(),from:day,to:day};const a=allocate(day,s,true);const c=allocateCabins(a,s);noRoomClashes(c);
- const nord=c.bookings.find(b=>b.team==='Nordvelen');assert.equal(nord.room,'away1');assert.equal(nord.start,1125);assert.equal(nord.end,1245);assert.equal(nord.gender,'unknown');assert.equal(nord.shareEligible,false);assert.deepEqual(nord.sharingWith,[]);assert.equal(c.conflicts.length,0);assert.equal(c.notes,undefined);
+ const nord=c.bookings.find(b=>b.team==='Nordvelen');assert.equal(nord.room,'away1');assert.equal(nord.start,1125);assert.equal(nord.end,1245);assert.equal(nord.gender,'unknown');assert.equal(nord.shareEligible,false);assert.deepEqual(nord.sharingWith,['E3-Junioren']);assert.equal(c.conflicts.length,0);assert.equal(c.notes,undefined);
  // A real visiting side takes the away cabin; Nordvelen must move, not share.
  const match=game('nord-clash','Herren',{date:day,time:'19:00'});const busy={...s,matches:[match]};const moved=allocateCabins(allocate(day,busy,true),busy);noRoomClashes(moved);
  const n=moved.bookings.find(b=>b.team==='Nordvelen');assert.ok(n.room);assert.notEqual(n.room,'away1');assert.deepEqual(n.sharingWith,[]);assert.equal(moved.bookings.find(b=>b.guest).room,'away1');assert.ok(moved.notes.some(n=>n.includes('Nordvelen')&&n.includes('Wegen eines Spiels')&&n.includes('1. Auswärtskabine')));
@@ -170,17 +171,17 @@ console.log('PASS: Nordvelen exclusive away room, repeated Thursdays, guest prio
 // Old installed training files remain compatible without overwriting local edits.
 p=plan([training('SF Nordvelen')]);assert.equal(p.bookings[0].team,'Nordvelen');assert.equal(p.bookings[0].room,'away1');assert.equal(p.bookings[0].playerCount,10);assert.equal(p.bookings[0].teamCount,1);
 
-// Thursday preference: E1/E3 share home2 with A; B moves alongside C to shared.
+// Thursday preference: E1 with A, E3 with Nordvelen, B alongside C.
 for(const day of ['2026-10-29','2026-11-05','2026-11-12']){
  const s={...schedule(),from:day,to:day};const a=allocate(day,s,true);const c=allocateCabins(a,s);noRoomClashes(c);
- for(const [team,room] of Object.entries({'E1-Junioren':'home2','E3-Junioren':'home2','A-Junioren':'home2','B-Junioren':'shared','C-Junioren':'shared','1. Herren':'home1','Nordvelen':'away1'}))assert.equal(c.bookings.find(b=>b.team===team)?.room,room,`${day}: ${team}`);
+ for(const [team,room] of Object.entries({'E1-Junioren':'home2','E3-Junioren':'away1','A-Junioren':'home2','B-Junioren':'shared','C-Junioren':'shared','1. Herren':'home1','Nordvelen':'away1'}))assert.equal(c.bookings.find(b=>b.team===team)?.room,room,`${day}: ${team}`);
  assert.equal(c.conflicts.length,0);assert.equal(c.notes,undefined);
  if(day==='2026-10-29')console.log('Thursday assignment:',c.bookings.map(b=>`${b.team}: ${b.room} ${b.start}-${b.end}`).join('; '));
  // The second men's fixed room still wins, even when added on Thursday.
  const extra={id:'extra-second',kind:'training',title:'2. Herren',segments:[{start:1050,end:1230,fields:MAIN}]};
  const moved=allocateCabins({...a,bookings:[...a.bookings,extra]},s);noRoomClashes(moved);
  assert.equal(moved.bookings.find(b=>b.team==='2. Herren').room,'home2');
- for(const team of ['E1-Junioren','E3-Junioren']){const b=moved.bookings.find(b=>b.team===team);assert.ok(b.room);assert.notEqual(b.room,'home2');assert.ok(moved.notes.some(n=>n.startsWith(team)&&n.includes('Wegen anderer Belegungen')));}
+ for(const team of ['E1-Junioren']){const b=moved.bookings.find(b=>b.team===team);assert.ok(b.room);assert.notEqual(b.room,'home2');assert.ok(moved.notes.some(n=>n.startsWith(team)&&n.includes('Wegen anderer Belegungen')));}
  // A second men's home game similarly relocates the two youth teams with a game notice.
  const fixture=game('thursday-second','Herren',{date:day,time:'18:00',home:'VfL Ramsdorf II'});const busy={...s,matches:[fixture]};const matchPlan=allocateCabins(allocate(day,busy,true),busy);noRoomClashes(matchPlan);
  assert.equal(matchPlan.bookings.find(b=>b.team==='2. Herren').room,'home2');
@@ -192,3 +193,25 @@ for(const day of ['2026-10-22','2026-10-26']){
  assert.equal(c.bookings.find(b=>b.team==='E1-Junioren').room,'shared');assert.equal(c.bookings.find(b=>b.team==='B-Junioren').room,'home2');
 }
 console.log('PASS: repeated Thursday preferences, fixed second men and game displacement, unaffected earlier dates and other weekdays.');
+
+// Sharing exception is narrow: Thursday training only, exact pair, away1 only.
+for(const day of ['2026-10-22','2026-10-29','2026-10-30','2026-11-05']){
+ const s={...schedule(),from:day,to:day};
+ const teams=[training('Nordvelen',BACK,1140,1230),training('E3-Junioren',FRONT,1050,1140)];
+ const c=allocateCabins(allocate(day,s,true,teams),s);const n=c.bookings.find(b=>b.team==='Nordvelen');const e=c.bookings.find(b=>b.team==='E3-Junioren');
+ const approved=['2026-10-29','2026-11-05'].includes(day);
+ assert.equal(n.room===e.room,approved);assert.deepEqual(n.sharingWith,approved?['E3-Junioren']:[]);assert.equal(n.gender,'unknown');
+ if(approved){assert.equal(n.room,'away1');assert.equal(Math.max(n.start,e.start),1125);assert.equal(Math.min(n.end,e.end),1155);}
+}
+for(const other of ['E1-Junioren','E3-Juniorinnen','3. Herren','Unbekannt']){
+ const day='2026-10-29',s={...schedule(),from:day,to:day};
+ const c=allocateCabins(allocate(day,s,true,[training('Nordvelen',BACK,1140,1230),training('E3-Junioren',FRONT,1050,1140),training(other,['r1'],1050,1140)]),s);
+ const n=c.bookings.find(b=>b.team==='Nordvelen');assert.deepEqual(n.sharingWith,['E3-Junioren']);assert.notEqual(c.bookings.find(b=>b.team===other).room,n.room);
+}
+// A visiting E3 team in a match must not use the training-only exception.
+{
+ const day='2026-10-29',s={...schedule([game('e3-guest','E-Junioren',{date:'2026-10-29',time:'19:00',away:'E3-Junioren'})]),from:day,to:day};
+ const c=allocateCabins(allocate(day,s,true,[training('Nordvelen',BACK,1140,1230)]),s);
+ const n=c.bookings.find(b=>b.team==='Nordvelen'),g=c.bookings.find(b=>b.guest);assert.equal(g.room,'away1');assert.notEqual(n.room,g.room);assert.deepEqual(n.sharingWith,[]);
+}
+console.log('PASS: E3/Nordvelen Thursday overlap; no exception for earlier dates, other weekdays, other teams or game guests.');
