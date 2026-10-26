@@ -1,5 +1,14 @@
 # Änderungen
 
+## v0.10.3 — 26.10.2026 · Nordvelen und übersichtliche Kabinenansicht
+
+- SF Nordvelen als Platzmitnutzer: im regulären Donnerstagsplan 18:45–20:45 Uhr allein in der 1. Auswärtskabine. Keine Annahme zu Geschlecht oder Altersklasse erforderlich.
+- Gastteams von Spielen behalten Vorrang in der 1. Auswärtskabine. Nordvelen weicht bei Bedarf auf eine andere freie Kabine aus und teilt grundsätzlich nicht mit anderen Teams.
+- Konkrete Kabinenverschiebungen durch Spiele werden gegenüber dem regulären Trainingsplan ermittelt und oben mit Zeit, alter und neuer Kabine angezeigt.
+- Allgemeine Regeln gesammelt unten im aufklappbaren Bereich. Wiederholte Erklärungen, Erfolgsbanner und das allgemeine Mittwochs-Banner entfernt; Konflikte und ein unvollständiger Spielabgleich bleiben erkennbar.
+- 170 PHP/TypeScript-Vergleiche sowie Tests zum Ergebnisabruf und zu Sitzungstoken erfolgreich.
+- Update-Paket kumulativ für Version 0.10 bis 0.10.2.
+
 ## v0.10.2 — 23.10.2026 · Mittwochsbelegung
 
 - Wiederkehrend ab Mittwoch, 28.10.: C- und D1-Juniorinnen bevorzugt in die große 1. Heimkabine, D1- und E2-Junioren in die 3. Heimkabine.

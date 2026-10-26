@@ -1,4 +1,4 @@
-# VfL Ramsdorf · STRATO-Installation (v0.10.2)
+# VfL Ramsdorf · STRATO-Installation (v0.10.3)
 
 Die App läuft auf PHP und MySQL/MariaDB. Cloudflare, ChatGPT-Anmeldung und Node.js auf dem Webserver sind nicht erforderlich. Für Spiele und Logos werden weiterhin FUSSBALL.DE und die Vereinswebsite abgerufen. Das öffentliche GitHub-Repository enthält nur Quellcode und ein leeres Installationspaket, keine Passwörter oder bestehenden Helfergesuche.
 
@@ -54,7 +54,7 @@ Das Paket startet mit einer **leeren Helferbörse**. Ein automatischer Export au
 - Spiele werden beim Seitenaufruf abgerufen, serverseitig 5 Minuten zwischengespeichert und bei geöffneter App alle 5 Minuten aktualisiert. Ein Cronjob ist **nicht erforderlich**.
 - Bei Quellenfehlern werden vorhandene Spieldaten höchstens 24 Stunden als **veraltet** angezeigt. Ohne nutzbare Spieldaten pausieren automatische Platzverschiebungen.
 - Trainingsplan: `server/training.json`, Original-PDF: `belegungsplan-sommer-2026.pdf`. Beides gemeinsam bei Saisonwechsel aktualisieren; die JSON-Zeiten sind Minuten nach Mitternacht.
-- SF Nordvelen bleibt bei den Kabinen ungeklärt, solange die Geschlechtszuordnung fehlt. Keine automatische Annahme.
+- SF Nordvelen nutzt unseren Platz mit und erhält zum Training bevorzugt die 1. Auswärtskabine allein. Spielgäste haben Vorrang. Bei Überschneidungen wird eine andere freie Kabine gesucht; unbekanntes Geschlecht wird nicht geraten und Nordvelen teilt keine Kabine.
 - Regelmäßig Datenbank und `config.php` sicher außerhalb des Webspace sichern; PHP aktuell halten.
 - Neue Version: Datenbank sichern, Upload-Dateien austauschen, **config.php und var/ erhalten**, Installer nicht erneut hochladen. Datenbankschema-Änderungen immer anhand der Versionshinweise prüfen.
 - Bei Problemen Serverfehlerprotokoll lesen. Besucher erhalten keine Zugangsdaten oder Datenbankfehler.

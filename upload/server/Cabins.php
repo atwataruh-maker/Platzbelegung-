@@ -7,12 +7,15 @@ final class Cabins {
  private static function youth(string $s):bool{if(!preg_match('/^(.+)-Junior(?:en|innen)$/Di',$s,$m))return false;foreach(preg_split('/\s*[\/-]\s*/',$m[1]) as $part)if(!preg_match('/^[A-G]\d*$/Di',$part))return false;return true;}
  private static function share(array $a,array $b):bool{return $a['shareEligible']&&$b['shareEligible']&&$a['gender']!=='unknown'&&$a['gender']===$b['gender']&&$a['guest']===$b['guest']&&!$a['fixed']&&!$b['fixed'];}
  private static function women(array $b):bool{return !$b['guest']&&$b['gender']==='female'&&!$b['shareEligible']&&(($b['category']??'')==='Frauen'||preg_match('/\b(Damen|Frauen)\b/i',$b['team']));}
+ private static function groundsUser(array $b):bool{return $b['team']==='SF Nordvelen'&&!$b['guest']&&$b['activities']===['Training'];}
+ private static function preferredRoom(array $b,string $date):?string{return self::groundsUser($b)?'away1':self::wednesdayRoom($b,$date);}
+ private static function roomName(string $room):string{return ['home1'=>'1. Heimkabine','home2'=>'2. Heimkabine','shared'=>'3. Heim- / 2. Auswärtskabine','away1'=>'1. Auswärtskabine'][$room];}
  private static function wednesdayRoom(array $b,string $date):?string{
   if($date<'2026-10-28'||(new \DateTimeImmutable($date.'T12:00:00Z'))->format('N')!=='3'||$b['guest']||$b['fixed']||$b['activities']!==['Training'])return null;
   if(in_array($b['team'],['C-Juniorinnen','D1-Juniorinnen'],true))return 'home1';
   if(in_array($b['team'],['D1-Junioren','E2-Junioren'],true))return 'shared';return null;
  }
- private static function rooms(array $b,string $date):array{if($b['fixed'])return [$b['fixed']];if(self::women($b))return ['home1','home2'];$regular=$b['guest']?['away1','shared']:['shared','home1','home2','away1'];$preferred=self::wednesdayRoom($b,$date);return $preferred?[$preferred,...array_values(array_filter($regular,fn($r)=>$r!==$preferred))]:$regular;}
+ private static function rooms(array $b,string $date):array{if($b['fixed'])return [$b['fixed']];if(self::women($b))return ['home1','home2'];$regular=self::groundsUser($b)?['away1','shared','home2','home1']:($b['guest']?['away1','shared']:['shared','home1','home2','away1']);$preferred=self::preferredRoom($b,$date);return $preferred?[$preferred,...array_values(array_filter($regular,fn($r)=>$r!==$preferred))]:$regular;}
  private static function ownTeam(string $team,string $category,array $names):?string{
   if(!preg_match('/^VfL\s+Ramsdorf(?:\s+(I|II|III|IV|[1-9]\d*))?$/Di',$team,$m))return null;
   $suffix=strtoupper($m[1]??'1');$n=['I'=>1,'II'=>2,'III'=>3,'IV'=>4][$suffix]??(int)$suffix;
@@ -20,7 +23,7 @@ final class Cabins {
   else $choices=$category==='Herren'?["$n. Herren"]:($category==='Frauen'&&$n===1?['VfL Ramsdorf Damen']:($category==='Altherren'&&$n===1?['Alte Herren']:[]));
   foreach($choices as $c)if(in_array($c,$names,true))return $c;return null;
  }
- public static function allocate(array $allocation,?array $schedule):array{
+ public static function allocate(array $allocation,?array $schedule,bool $includeChanges=true):array{
   $date=$allocation['date'];$requests=[];$trainingNames=array_column(array_filter($allocation['bookings'],fn($b)=>$b['kind']==='training'),'title');
   foreach($allocation['bookings'] as $b){
    if($b['kind']==='reserve')continue;$segments=$b['segments']?:($b['original']??[]);if(!$segments)continue;
@@ -43,28 +46,36 @@ final class Cabins {
    if($same!==null){$b=&$merged[$same];$b['start']=min($b['start'],$r['start']);$b['end']=max($b['end'],$r['end']);if(!isset($b['category'])&&isset($r['category']))$b['category']=$r['category'];$b['shareEligible']=$b['shareEligible']&&$r['shareEligible'];$b['activities']=array_values(array_unique([...$b['activities'],...$r['activities']]));$b['sourceIds']=[...$b['sourceIds'],...$r['sourceIds']];unset($b);}else $merged[]=$r;
   }
   $fixed=[];$pending=[];$unknown=[];
-  foreach($merged as $b){if($b['gender']==='unknown')$unknown[]=$b;elseif($b['fixed']){$b['room']=$b['fixed'];$fixed[]=$b;}}
-  foreach($merged as $b)if(!$b['fixed']&&$b['gender']!=='unknown'){
+  foreach($merged as $b){if($b['gender']==='unknown'&&!self::groundsUser($b))$unknown[]=$b;elseif($b['fixed']){$b['room']=$b['fixed'];$fixed[]=$b;}}
+  foreach($merged as $b)if(!$b['fixed']&&($b['gender']!=='unknown'||self::groundsUser($b))){
    $rooms=array_values(array_filter(self::rooms($b,$date),function($room)use($b,$fixed){foreach($fixed as $f)if($f['room']===$room&&self::concurrent($b,$f))return false;return true;}));
    $pending[]=['b'=>$b,'rooms'=>$rooms,'game'=>(bool)array_diff($b['activities'],['Training'])];
   }
   usort($pending,fn($a,$b)=>(int)$b['b']['guest']<=>(int)$a['b']['guest']?:(int)$b['game']<=>(int)$a['game']?:count($a['rooms'])<=>count($b['rooms'])?:$a['b']['start']<=>$b['b']['start']?:strcmp($a['b']['id'],$b['b']['id']));
   $weight=count($pending)+1;$scores=array_map(fn($p)=>(int)$p['b']['guest']*$weight*$weight+(int)$p['game']*$weight+1,$pending);$remaining=array_fill(0,count($pending)+1,0);for($i=count($pending)-1;$i>=0;$i--)$remaining[$i]=$remaining[$i+1]+$scores[$i];
-  $preferencePenalty=4*(count($pending)+1)**2;$best=[];$bestScore=-1;$bestCost=PHP_INT_MAX;$nodes=0;
-  $search=function($i,$placed,$picked,$score,$cost)use(&$search,&$best,&$bestScore,&$bestCost,&$nodes,$pending,$scores,$remaining,$date,$preferencePenalty){
+  $preferencePenalty=4*(count($pending)+1)**2;$guestPreferencePenalty=(count($pending)+1)*($preferencePenalty+4*(count($pending)+1));$best=[];$bestScore=-1;$bestCost=PHP_INT_MAX;$nodes=0;
+  $search=function($i,$placed,$picked,$score,$cost)use(&$search,&$best,&$bestScore,&$bestCost,&$nodes,$pending,$scores,$remaining,$date,$preferencePenalty,$guestPreferencePenalty){
    if(++$nodes>50000)return;$maximum=$score+$remaining[$i];if($maximum<$bestScore||($maximum===$bestScore&&$cost>=$bestCost))return;
    if($i===count($pending)){$best=$picked;$bestScore=$score;$bestCost=$cost;return;}
    $b=$pending[$i]['b'];foreach($pending[$i]['rooms'] as $room){$neighbours=array_values(array_filter($placed,fn($p)=>$p['room']===$room&&self::concurrent($b,$p)));$ok=true;foreach($neighbours as $n)if(!self::share($b,$n)){$ok=false;break;}
-    if($ok)$search($i+1,[...$placed,array_replace($b,['room'=>$room])],[...$picked,$room],$score+$scores[$i],$cost+array_search($room,self::rooms($b,$date),true)+count($neighbours)*4+(self::wednesdayRoom($b,$date)&&$room!==self::wednesdayRoom($b,$date)?$preferencePenalty:0));
+    if($ok)$search($i+1,[...$placed,array_replace($b,['room'=>$room])],[...$picked,$room],$score+$scores[$i],$cost+($b['guest']&&$room!=='away1'?$guestPreferencePenalty:0)+array_search($room,self::rooms($b,$date),true)+count($neighbours)*4+(self::preferredRoom($b,$date)&&$room!==self::preferredRoom($b,$date)?$preferencePenalty:0));
    }$search($i+1,$placed,[...$picked,null],$score,$cost);
   };$search(0,[],[],0,0);
   $assigned=$fixed;foreach($pending as $i=>$p)$assigned[]=array_replace($p['b'],['room'=>$best[$i]??null]);$assigned=[...$assigned,...$unknown];$conflicts=[];
   foreach($assigned as $i=>$b){if($b['room']){$assigned[$i]['sharingWith']=array_values(array_column(array_filter($assigned,fn($o)=>$o['id']!==$b['id']&&$o['room']===$b['room']&&self::concurrent($b,$o)),'team'));continue;}
-   $reason=$b['gender']==='unknown'?'Geschlechtszuordnung fehlt in der Quelle. Bitte mit der Kabinenkoordination klären.':(self::women($b)?'Für die Damen ist weder die 1. noch die 2. Heimkabine im gesamten Zeitraum allein verfügbar. Bitte mit der Kabinenkoordination abstimmen.':'Keine konfliktfreie Kabinenzuordnung für den gesamten Zeitraum ermittelt. Bitte mit der Kabinenkoordination abstimmen.');
+   $reason=$b['gender']==='unknown'&&!self::groundsUser($b)?'Geschlechtszuordnung fehlt in der Quelle. Bitte mit der Kabinenkoordination klären.':(self::women($b)?'Für die Damen ist weder die 1. noch die 2. Heimkabine im gesamten Zeitraum allein verfügbar. Bitte mit der Kabinenkoordination abstimmen.':'Keine konfliktfreie Kabinenzuordnung für den gesamten Zeitraum ermittelt. Bitte mit der Kabinenkoordination abstimmen.');
    $assigned[$i]['reason']=$reason;$conflicts[]=$b['team'].(isset($b['category'])?' · '.$b['category']:'').' · '.Planning::clock($b['start']).'–'.Planning::clock($b['end']).': '.$reason;
   }
-  usort($assigned,fn($a,$b)=>$a['start']<=>$b['start']?:strcmp($a['team'],$b['team'])?:strcmp($a['id'],$b['id']));$regular=array_values(array_filter($assigned,fn($b)=>self::wednesdayRoom($b,$date)));$notes=$regular?['Mittwochsregel: C- und D1-Juniorinnen nutzen bevorzugt die 1. Heimkabine, D1- und E2-Junioren die 3. Heimkabine.']:[];
-  foreach($regular as $b)if($b['room']!==self::wednesdayRoom($b,$date))$notes[]=$b['team'].': Die Mittwochszuordnung ist wegen anderer Belegungen nicht möglich. '.($b['room']?'Bitte die zugeteilte Kabine im Tagesplan beachten.':'Bitte mit der Kabinenkoordination abstimmen.');
+  usort($assigned,fn($a,$b)=>$a['start']<=>$b['start']?:strcmp($a['team'],$b['team'])?:strcmp($a['id'],$b['id']));$notes=[];$announced=[];
+  if($includeChanges&&array_filter($allocation['bookings'],fn($b)=>$b['kind']==='match')){
+   $baseline=self::allocate(array_replace($allocation,['bookings'=>array_values(array_filter($allocation['bookings'],fn($b)=>$b['kind']==='training'))]),null,false);
+   foreach($assigned as $b){$old=null;foreach($baseline['bookings'] as $o)if($o['id']===$b['id']){$old=$o;break;}
+    if($b['activities']!==['Training']||!($old['room']??null)||!$b['room']||$b['room']===$old['room'])continue;
+    $notes[]=$b['team'].' · '.Planning::clock($b['start']).'–'.Planning::clock($b['end']).': Wegen eines Spiels von '.self::roomName($old['room']).' in '.self::roomName($b['room']).' verlegt.';$announced[$b['id']]=true;
+   }
+  }
+  if($includeChanges)foreach($assigned as $b){$preferred=self::preferredRoom($b,$date);if($preferred&&$b['room']&&$b['room']!==$preferred&&!isset($announced[$b['id']]))$notes[]=$b['team'].' · '.Planning::clock($b['start']).'–'.Planning::clock($b['end']).': Wegen anderer Belegungen von '.self::roomName($preferred).' in '.self::roomName($b['room']).' verlegt.';}
+
   return array_merge(['bookings'=>$assigned,'confirmed'=>$allocation['automatic'],'conflicts'=>$conflicts],$notes?['notes'=>$notes]:[]);
  }
 }

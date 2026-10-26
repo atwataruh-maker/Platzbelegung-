@@ -53,6 +53,14 @@ function ownTrainingTeam(team:string,category:string,trainingNames:string[]):str
  const names=youth?[`${youth[1]}${number}-${youth[2]}`,...(number===1?[`${youth[1]}-${youth[2]}`]:[])]:category==='Herren'?[`${number}. Herren`]:category==='Frauen'&&number===1?['VfL Ramsdorf Damen']:category==='Altherren'&&number===1?['Alte Herren']:[];
  return names.find(n=>trainingNames.includes(n));
 }
+// Nordvelen shares our sports grounds, but always receives a cabin to itself.
+// Its gender is deliberately not inferred from the club name.
+export function isGroundsUser(b:CabinBooking):boolean{
+ return b.team==='SF Nordvelen'&&!b.guest&&b.activities.length===1&&b.activities[0]==='Training';
+}
+function preferredRoom(b:CabinBooking,date:string):CabinId|null{
+ return isGroundsUser(b)?'away1':wednesdayRoom(b,date);
+}
 // Recurring trainer feedback: simultaneous girls' teams need the larger room.
 function wednesdayRoom(b:CabinBooking,date:string):CabinId|null{
  if(date<'2026-10-28'||new Date(date+'T12:00:00Z').getUTCDay()!==3||b.guest||b.fixed||b.activities.length!==1||b.activities[0]!=='Training')return null;
@@ -63,11 +71,11 @@ function wednesdayRoom(b:CabinBooking,date:string):CabinId|null{
 function candidates(b:CabinBooking,date:string):CabinId[]{
  if(b.fixed)return [b.fixed];
  if(isHomeWomensTeam(b))return ['home1','home2'];
- const regular:CabinId[]=b.guest?['away1','shared']:['shared','home1','home2','away1'];
- const preferred=wednesdayRoom(b,date);return preferred?[preferred,...regular.filter(r=>r!==preferred)]:regular;
+ const regular:CabinId[]=isGroundsUser(b)?['away1','shared','home2','home1']:b.guest?['away1','shared']:['shared','home1','home2','away1'];
+ const preferred=preferredRoom(b,date);return preferred?[preferred,...regular.filter(r=>r!==preferred)]:regular;
 }
 
-export function allocateCabins(allocation:Allocation,schedule:MatchSchedule|null):CabinPlan{
+export function allocateCabins(allocation:Allocation,schedule:MatchSchedule|null,includeChanges=true):CabinPlan{
  const requests:CabinBooking[]=[];
  const trainingNames=allocation.bookings.filter(b=>b.kind==='training').map(b=>b.title);
  for(const b of allocation.bookings){
@@ -100,10 +108,11 @@ export function allocateCabins(allocation:Allocation,schedule:MatchSchedule|null
   else merged.push({...request});
  }
  const fixed=merged.filter(b=>b.fixed&&b.gender!=='unknown').map(b=>({...b,room:b.fixed}));
- const pending=merged.filter(b=>!b.fixed&&b.gender!=='unknown').map(b=>({b,rooms:candidates(b,allocation.date).filter(room=>!fixed.some(f=>f.room===room&&concurrent(b,f)))}));
+ const pending=merged.filter(b=>!b.fixed&&(b.gender!=='unknown'||isGroundsUser(b))).map(b=>({b,rooms:candidates(b,allocation.date).filter(room=>!fixed.some(f=>f.room===room&&concurrent(b,f)))}));
  // Fixed cabins first; protect guests, then fixtures, then maximize assigned training.
  pending.sort((a,b)=>Number(b.b.guest)-Number(a.b.guest)||Number(b.b.activities.some(x=>x!=='Training'))-Number(a.b.activities.some(x=>x!=='Training'))||a.rooms.length-b.rooms.length||a.b.start-b.b.start||a.b.id.localeCompare(b.b.id));
  const preferencePenalty=4*(pending.length+1)**2;
+ const guestPreferencePenalty=(pending.length+1)*(preferencePenalty+4*(pending.length+1));
  const weight=pending.length+1;
  const scores=pending.map(({b})=>Number(b.guest)*weight*weight+Number(b.activities.some(x=>x!=='Training'))*weight+1);
  const remaining=Array(pending.length+1).fill(0);
@@ -117,21 +126,34 @@ export function allocateCabins(allocation:Allocation,schedule:MatchSchedule|null
   const {b,rooms}=pending[i];
   for(const room of rooms){
    const neighbours=placed.filter(p=>p.room===room&&concurrent(b,p));
-   if(neighbours.every(p=>canShare(b,p)))search(i+1,[...placed,{...b,room}],[...picked,room],score+scores[i],cost+candidates(b,allocation.date).indexOf(room)+neighbours.length*4+(wednesdayRoom(b,allocation.date)&&room!==wednesdayRoom(b,allocation.date)?preferencePenalty:0));
+   if(neighbours.every(p=>canShare(b,p)))search(i+1,[...placed,{...b,room}],[...picked,room],score+scores[i],cost+(b.guest&&room!=='away1'?guestPreferencePenalty:0)+candidates(b,allocation.date).indexOf(room)+neighbours.length*4+(preferredRoom(b,allocation.date)&&room!==preferredRoom(b,allocation.date)?preferencePenalty:0));
   }
   search(i+1,placed,[...picked,null],score,cost);
  }
  search(0,[],[],0,0);
- const assigned:CabinBooking[]=[...fixed,...pending.map(({b},i)=>({...b,room:best[i]??null})),...merged.filter(b=>b.gender==='unknown')];
+ const assigned:CabinBooking[]=[...fixed,...pending.map(({b},i)=>({...b,room:best[i]??null})),...merged.filter(b=>b.gender==='unknown'&&!isGroundsUser(b))];
  const conflicts:string[]=[];
  for(const b of assigned){
   if(b.room){b.sharingWith=assigned.filter(other=>other.id!==b.id&&other.room===b.room&&concurrent(b,other)).map(other=>other.team);continue;}
-  b.reason=b.gender==='unknown'?'Geschlechtszuordnung fehlt in der Quelle. Bitte mit der Kabinenkoordination klären.':isHomeWomensTeam(b)?'Für die Damen ist weder die 1. noch die 2. Heimkabine im gesamten Zeitraum allein verfügbar. Bitte mit der Kabinenkoordination abstimmen.':'Keine konfliktfreie Kabinenzuordnung für den gesamten Zeitraum ermittelt. Bitte mit der Kabinenkoordination abstimmen.';
+  b.reason=b.gender==='unknown'&&!isGroundsUser(b)?'Geschlechtszuordnung fehlt in der Quelle. Bitte mit der Kabinenkoordination klären.':isHomeWomensTeam(b)?'Für die Damen ist weder die 1. noch die 2. Heimkabine im gesamten Zeitraum allein verfügbar. Bitte mit der Kabinenkoordination abstimmen.':'Keine konfliktfreie Kabinenzuordnung für den gesamten Zeitraum ermittelt. Bitte mit der Kabinenkoordination abstimmen.';
   conflicts.push(`${b.team}${b.category?' · '+b.category:''} · ${clock(b.start)}–${clock(b.end)}: ${b.reason}`);
  }
  assigned.sort((a,b)=>a.start-b.start||a.team.localeCompare(b.team)||a.id.localeCompare(b.id));
- const regular=assigned.filter(b=>wednesdayRoom(b,allocation.date));
- const notes=regular.length?['Mittwochsregel: C- und D1-Juniorinnen nutzen bevorzugt die 1. Heimkabine, D1- und E2-Junioren die 3. Heimkabine.']:[];
- for(const b of regular)if(b.room!==wednesdayRoom(b,allocation.date))notes.push(`${b.team}: Die Mittwochszuordnung ist wegen anderer Belegungen nicht möglich. ${b.room?'Bitte die zugeteilte Kabine im Tagesplan beachten.':'Bitte mit der Kabinenkoordination abstimmen.'}`);
+ const notes:string[]=[];const announced=new Set<string>();
+ const roomName=(room:CabinId)=>CABINS.find(c=>c.id===room)!.name;
+ // Compare with the same day's training-only plan to report actual match-related moves.
+ if(includeChanges&&allocation.bookings.some(b=>b.kind==='match')){
+  const baseline=allocateCabins({...allocation,bookings:allocation.bookings.filter(b=>b.kind==='training')},null,false);
+  for(const b of assigned){
+   const old=baseline.bookings.find(o=>o.id===b.id);
+   if(b.activities.length!==1||b.activities[0]!=='Training'||!old?.room||!b.room||b.room===old.room)continue;
+   notes.push(`${b.team} · ${clock(b.start)}–${clock(b.end)}: Wegen eines Spiels von ${roomName(old.room)} in ${roomName(b.room)} verlegt.`);announced.add(b.id);
+  }
+ }
+ if(includeChanges)for(const b of assigned){
+  const preferred=preferredRoom(b,allocation.date);
+  if(preferred&&b.room&&b.room!==preferred&&!announced.has(b.id))notes.push(`${b.team} · ${clock(b.start)}–${clock(b.end)}: Wegen anderer Belegungen von ${roomName(preferred)} in ${roomName(b.room)} verlegt.`);
+ }
+
  return {bookings:assigned,confirmed:allocation.automatic,conflicts,...(notes.length?{notes}:{})};
 }
