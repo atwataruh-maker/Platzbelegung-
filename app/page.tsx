@@ -11,7 +11,7 @@ export default function Home() {
   return <div className="hub-shell">
     <header className="club-header"><div className="header-inner">
       <a className="club-brand" href="https://www.vfl-ramsdorf.de/" target="_blank" rel="noopener noreferrer"><img className="club-logo" src="https://www.vfl-ramsdorf.de/img/VfLRamsdorf.png" alt="VfL Ramsdorf Logo"/><span className="club-name">RAMSDORF<small>Vereins-App</small></span></a>
-      <span className="preview-badge">Version 0.10.4 · PHP</span>
+      <span className="preview-badge">Version 0.10.5 · PHP</span>
     </div></header>
     <main className="hub-main">
       <div className="hub-kicker"><span className="hub-dot"/> Gemeinsam für Ramsdorf</div>

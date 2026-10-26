@@ -1,5 +1,11 @@
 # Änderungen
 
+## v0.10.5 — 26.10.2026 · Donnerstagsbelegung
+
+- Ab 29.10. donnerstags E1 und E3 bevorzugt in der 2. Heimkabine, B-Junioren in der 3. Heim- / 2. Auswärtskabine.
+- Spiele, feste Herrenkabinen und Geschlechtertrennung behalten Vorrang. Nur nötige Abweichungen erzeugen Hinweise.
+- Regel gesammelt am Seitenende; Mittwochsregel und Nordvelens Zuordnung bleiben erhalten.
+
 ## v0.10.4 — 26.10.2026 · Nordvelen
 
 - Einheitlicher Name „Nordvelen“ in Platz- und Kabinenbelegung.

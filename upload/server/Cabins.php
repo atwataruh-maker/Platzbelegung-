@@ -8,8 +8,12 @@ final class Cabins {
  private static function share(array $a,array $b):bool{return $a['shareEligible']&&$b['shareEligible']&&$a['gender']!=='unknown'&&$a['gender']===$b['gender']&&$a['guest']===$b['guest']&&!$a['fixed']&&!$b['fixed'];}
  private static function women(array $b):bool{return !$b['guest']&&$b['gender']==='female'&&!$b['shareEligible']&&(($b['category']??'')==='Frauen'||preg_match('/\b(Damen|Frauen)\b/i',$b['team']));}
  private static function groundsUser(array $b):bool{return in_array($b['team'],['Nordvelen','SF Nordvelen'],true)&&!$b['guest']&&$b['activities']===['Training'];}
- private static function preferredRoom(array $b,string $date):?string{return self::groundsUser($b)?'away1':self::wednesdayRoom($b,$date);}
+ private static function preferredRoom(array $b,string $date):?string{return self::groundsUser($b)?'away1':(self::thursdayRoom($b,$date)??self::wednesdayRoom($b,$date));}
  private static function roomName(string $room):string{return ['home1'=>'1. Heimkabine','home2'=>'2. Heimkabine','shared'=>'3. Heim- / 2. Auswärtskabine','away1'=>'1. Auswärtskabine'][$room];}
+ private static function thursdayRoom(array $b,string $date):?string{
+  if($date<'2026-10-29'||(new \DateTimeImmutable($date.'T12:00:00Z'))->format('N')!=='4'||$b['guest']||$b['fixed']||$b['activities']!==['Training'])return null;
+  if(in_array($b['team'],['E1-Junioren','E3-Junioren','A-Junioren'],true))return 'home2';return in_array($b['team'],['B-Junioren','C-Junioren'],true)?'shared':null;
+ }
  private static function wednesdayRoom(array $b,string $date):?string{
   if($date<'2026-10-28'||(new \DateTimeImmutable($date.'T12:00:00Z'))->format('N')!=='3'||$b['guest']||$b['fixed']||$b['activities']!==['Training'])return null;
   if(in_array($b['team'],['C-Juniorinnen','D1-Juniorinnen'],true))return 'home1';

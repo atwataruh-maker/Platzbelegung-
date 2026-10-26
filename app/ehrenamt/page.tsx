@@ -69,7 +69,7 @@ export default function Ehrenamt() {
   }
   const visible = entries.filter(item => item.status === tab);
   return <div className="subpage-shell">
-    <header className="club-header"><div className="header-inner"><a className="club-brand" href={appPath('/')}><img className="club-logo" src="https://www.vfl-ramsdorf.de/img/VfLRamsdorf.png" alt="VfL Ramsdorf Logo"/><span className="club-name">RAMSDORF<small>Vereins-App</small></span></a><span className="header-actions"><span className="preview-badge">Version 0.10.4</span><a className="back-link" href={appPath('/')}><ArrowLeft size={16}/> Übersicht</a></span></div></header>
+    <header className="club-header"><div className="header-inner"><a className="club-brand" href={appPath('/')}><img className="club-logo" src="https://www.vfl-ramsdorf.de/img/VfLRamsdorf.png" alt="VfL Ramsdorf Logo"/><span className="club-name">RAMSDORF<small>Vereins-App</small></span></a><span className="header-actions"><span className="preview-badge">Version 0.10.5</span><a className="back-link" href={appPath('/')}><ArrowLeft size={16}/> Übersicht</a></span></div></header>
     <main className="vol-main helper-main">
       <div className="helper-heading"><div><span className="vol-kicker"><HandHelping size={16}/> Miteinander</span><h1>Ehrenamt & Helfen</h1><p>Eine Aufgabe. Dein Können. Unser Verein.</p></div>{canManage ? <Button className="add-request" onClick={openForm}><Plus/> Helfer suchen</Button> : <a className="admin-go" href={appPath('/admin')}>Anmelden & Gesuch erstellen →</a>}</div>
       {!loading && !canManage && <p className="helper-footnote">Zum Anlegen und Abschließen von Gesuchen bitte mit dem Vereins-Admin-Konto anmelden. Die Zugangsdaten erhältst du vom Webseiten-Admin.</p>}

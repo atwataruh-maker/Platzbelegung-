@@ -59,7 +59,13 @@ export function isGroundsUser(b:CabinBooking):boolean{
  return ['Nordvelen','SF Nordvelen'].includes(b.team)&&!b.guest&&b.activities.length===1&&b.activities[0]==='Training';
 }
 function preferredRoom(b:CabinBooking,date:string):CabinId|null{
- return isGroundsUser(b)?'away1':wednesdayRoom(b,date);
+ return isGroundsUser(b)?'away1':thursdayRoom(b,date)??wednesdayRoom(b,date);
+}
+// Thursday trainer adjustment; game and exclusive-room constraints still take priority.
+function thursdayRoom(b:CabinBooking,date:string):CabinId|null{
+ if(date<'2026-10-29'||new Date(date+'T12:00:00Z').getUTCDay()!==4||b.guest||b.fixed||b.activities.length!==1||b.activities[0]!=='Training')return null;
+ if(['E1-Junioren','E3-Junioren','A-Junioren'].includes(b.team))return 'home2';
+ return ['B-Junioren','C-Junioren'].includes(b.team)?'shared':null;
 }
 // Recurring trainer feedback: simultaneous girls' teams need the larger room.
 function wednesdayRoom(b:CabinBooking,date:string):CabinId|null{

@@ -169,3 +169,26 @@ console.log('PASS: Nordvelen exclusive away room, repeated Thursdays, guest prio
 
 // Old installed training files remain compatible without overwriting local edits.
 p=plan([training('SF Nordvelen')]);assert.equal(p.bookings[0].team,'Nordvelen');assert.equal(p.bookings[0].room,'away1');assert.equal(p.bookings[0].playerCount,10);assert.equal(p.bookings[0].teamCount,1);
+
+// Thursday preference: E1/E3 share home2 with A; B moves alongside C to shared.
+for(const day of ['2026-10-29','2026-11-05','2026-11-12']){
+ const s={...schedule(),from:day,to:day};const a=allocate(day,s,true);const c=allocateCabins(a,s);noRoomClashes(c);
+ for(const [team,room] of Object.entries({'E1-Junioren':'home2','E3-Junioren':'home2','A-Junioren':'home2','B-Junioren':'shared','C-Junioren':'shared','1. Herren':'home1','Nordvelen':'away1'}))assert.equal(c.bookings.find(b=>b.team===team)?.room,room,`${day}: ${team}`);
+ assert.equal(c.conflicts.length,0);assert.equal(c.notes,undefined);
+ if(day==='2026-10-29')console.log('Thursday assignment:',c.bookings.map(b=>`${b.team}: ${b.room} ${b.start}-${b.end}`).join('; '));
+ // The second men's fixed room still wins, even when added on Thursday.
+ const extra={id:'extra-second',kind:'training',title:'2. Herren',segments:[{start:1050,end:1230,fields:MAIN}]};
+ const moved=allocateCabins({...a,bookings:[...a.bookings,extra]},s);noRoomClashes(moved);
+ assert.equal(moved.bookings.find(b=>b.team==='2. Herren').room,'home2');
+ for(const team of ['E1-Junioren','E3-Junioren']){const b=moved.bookings.find(b=>b.team===team);assert.ok(b.room);assert.notEqual(b.room,'home2');assert.ok(moved.notes.some(n=>n.startsWith(team)&&n.includes('Wegen anderer Belegungen')));}
+ // A second men's home game similarly relocates the two youth teams with a game notice.
+ const fixture=game('thursday-second','Herren',{date:day,time:'18:00',home:'VfL Ramsdorf II'});const busy={...s,matches:[fixture]};const matchPlan=allocateCabins(allocate(day,busy,true),busy);noRoomClashes(matchPlan);
+ assert.equal(matchPlan.bookings.find(b=>b.team==='2. Herren').room,'home2');
+ for(const team of ['E1-Junioren','E3-Junioren']){assert.notEqual(matchPlan.bookings.find(b=>b.team===team).room,'home2');assert.ok(matchPlan.notes?.some(n=>n.startsWith(team)&&n.includes('Wegen eines Spiels')));}
+}
+// The recurring Thursday adjustment does not rewrite earlier dates or other weekdays.
+for(const day of ['2026-10-22','2026-10-26']){
+ const s={...schedule(),from:day,to:day};const c=allocateCabins(allocate(day,s,true,TRAINING.filter(t=>t.day===4)),s);noRoomClashes(c);
+ assert.equal(c.bookings.find(b=>b.team==='E1-Junioren').room,'shared');assert.equal(c.bookings.find(b=>b.team==='B-Junioren').room,'home2');
+}
+console.log('PASS: repeated Thursday preferences, fixed second men and game displacement, unaffected earlier dates and other weekdays.');
