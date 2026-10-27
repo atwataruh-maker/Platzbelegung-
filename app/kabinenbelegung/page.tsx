@@ -12,7 +12,7 @@ type DayPlan={date:string;cabins:CabinData;warnings:string[];matchesRetrievedAt:
 const label=(date:string)=>new Intl.DateTimeFormat('de-DE',{weekday:'long',day:'2-digit',month:'long',timeZone:'Europe/Berlin'}).format(new Date(date+'T12:00:00Z'));
 
 export default function CabinPage(){
- const [day,setDay]=useState(()=>sevenDays().from);
+ const [day,setDay]=useState(()=>{const q=new URLSearchParams(window.location.search).get('date');return q&&isMatchDate(q)?q:sevenDays().from;});
  const [reload,setReload]=useState(0),[data,setData]=useState<DayPlan|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState('');
  const current=data?.date===day?data:null;
  useEffect(()=>{
@@ -29,7 +29,7 @@ export default function CabinPage(){
  },[day,reload]);
  const select=(value:string)=>{if(value!==day&&isMatchDate(value)){setDay(value);setData(null);setError('');}};
  const weekStart=shiftMatchDate(day,-((new Date(day+'T12:00:00Z').getUTCDay()+6)%7));
- return <div className="app-shell pitch-app cabin-page"><header className="club-header"><div className="header-inner"><a className="club-brand" href={appPath('/')} aria-label="Zur Startseite"><img className="club-logo" src="https://www.vfl-ramsdorf.de/img/VfLRamsdorf.png" alt="VfL Ramsdorf"/><span className="club-name">RAMSDORF<small>Vereins-App</small></span></a><div className="header-actions"><span className="preview-badge">Version 0.10.6</span><Button variant="ghost" size="icon" className="refresh" onClick={()=>setReload(v=>v+1)} disabled={loading} aria-label="Kabinenbelegung aktualisieren"><RefreshCw className={loading?'spin':''}/></Button></div></div></header>
+ return <div className="app-shell pitch-app cabin-page"><header className="club-header"><div className="header-inner"><a className="club-brand" href={appPath('/')} aria-label="Zur Startseite"><img className="club-logo" src="https://www.vfl-ramsdorf.de/img/VfLRamsdorf.png" alt="VfL Ramsdorf"/><span className="club-name">RAMSDORF<small>Vereins-App</small></span></a><div className="header-actions"><span className="preview-badge">Version 0.10.7</span><Button variant="ghost" size="icon" className="refresh" onClick={()=>setReload(v=>v+1)} disabled={loading} aria-label="Kabinenbelegung aktualisieren"><RefreshCw className={loading?'spin':''}/></Button></div></div></header>
  <main>
   <a href={appPath('/')} className="pitch-back"><ArrowLeft size={15}/> Übersicht</a>
   <div className="page-heading"><div><p className="eyebrow">Fußball / Umziehen & Ankommen</p><h1>Kabinenbelegung</h1><p className="intro">Kabinen für Training, Heimteams und Gäste.</p></div><span className="heading-symbol"><DoorOpen size={26}/></span></div>

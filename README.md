@@ -1,4 +1,4 @@
-# VfL Ramsdorf Vereins-App · v0.10.6 · PHP/STRATO
+# VfL Ramsdorf Vereins-App · v0.10.7 · PHP/STRATO
 
 **Branch `strato-php`: eigenständig auf PHP-Webhosting betreibbare Vereins-App.**
 
@@ -35,3 +35,7 @@ npm run package
 Alle Zugangsdaten bleiben in der ignorierten `config.php`. Die Helferbörse startet leer; bestehende Produktionsdaten müssen separat übertragen werden. Die Laufzeit verwendet als externe Datenquellen weiterhin FUSSBALL.DE und die Vereinswebsite (Logos).
 
 Die bisherige Sites-App v0.9 liegt weiterhin auf `vereinsapp-v0.8`. Auf `main` liegt die separat entwickelte PHP-Anwendung. Dieser Branch veröffentlicht keine native APK/iOS-App.
+
+## Tagesbanner auf der Hauptseite
+
+Drei Bildbanner zeigen heutige Spiele, Platz- und Kabinenverschiebungen. Automatischer Wechsel alle fünf Sekunden, Wischen und Pause. Bei unvollständigem Spielabgleich wird keine reguläre Belegung bestätigt. Updates: siehe `UPDATE-0.10.7.md`.

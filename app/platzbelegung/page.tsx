@@ -37,7 +37,7 @@ function BookingCard({booking,style,wide=false}:{booking:Booking;style?:CSSPrope
  </li>;
 }
 export default function PitchPage(){
- const [date,setDate]=useState<string|null>(()=>sevenDays().from);
+ const [date,setDate]=useState<string|null>(()=>{const q=new URLSearchParams(window.location.search).get('date');return q&&isMatchDate(q)?q:sevenDays().from;});
  const [reload,setReload]=useState(0),[data,setData]=useState<DayPlan|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState('');
  const today=sevenDays().from,day=date??today;
  const current=data?.date===day?data:null;
@@ -56,7 +56,7 @@ export default function PitchPage(){
  const select=(value:string|null)=>{if(value!==date){setDate(value);if((value??today)!==day){setData(null);setError('');}}};
  const weekStart=shiftMatchDate(day,-((new Date(day+'T12:00:00Z').getUTCDay()+6)%7));
  const trainings=current?.bookings.filter(b=>b.kind==='training')??[];
- return <div className="app-shell pitch-app"><header className="club-header"><div className="header-inner"><a className="club-brand" href={appPath('/')} aria-label="Zur Startseite"><img className="club-logo" src="https://www.vfl-ramsdorf.de/img/VfLRamsdorf.png" alt="VfL Ramsdorf"/><span className="club-name">RAMSDORF<small>Vereins-App</small></span></a><div className="header-actions"><span className="preview-badge">Version 0.10.6</span><Button variant="ghost" size="icon" className="refresh" onClick={()=>setReload(v=>v+1)} disabled={loading} aria-label="Belegung und Spiele aktualisieren"><RefreshCw className={loading?'spin':''}/></Button></div></div></header>
+ return <div className="app-shell pitch-app"><header className="club-header"><div className="header-inner"><a className="club-brand" href={appPath('/')} aria-label="Zur Startseite"><img className="club-logo" src="https://www.vfl-ramsdorf.de/img/VfLRamsdorf.png" alt="VfL Ramsdorf"/><span className="club-name">RAMSDORF<small>Vereins-App</small></span></a><div className="header-actions"><span className="preview-badge">Version 0.10.7</span><Button variant="ghost" size="icon" className="refresh" onClick={()=>setReload(v=>v+1)} disabled={loading} aria-label="Belegung und Spiele aktualisieren"><RefreshCw className={loading?'spin':''}/></Button></div></div></header>
  <main>
   <a href={appPath('/')} className="pitch-back"><ArrowLeft size={15}/> Übersicht</a>
   <div className="page-heading"><div><p className="eyebrow">Fußball / Plätze & Training</p><h1>Platzbelegung</h1><p className="intro">Ein Tag. Alle Plätze. Änderungen im Blick.</p></div><span className="heading-symbol"><MapPin size={26}/></span></div>

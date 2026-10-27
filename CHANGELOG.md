@@ -1,5 +1,13 @@
 # Änderungen
 
+## v0.10.7 — 27.10.2026 · Heute beim VfL
+
+- Neue Hauptseite mit echtem lokalem Vereinslogo, drei Bildbannern, kompakten Schnellzugriffen und Direktlink zur Vereinswebsite.
+- Automatischer Wechsel alle fünf Sekunden, manuelle Auswahl, Wischen und Pause; berücksichtigt reduzierte Bewegung, Fokus und Sichtbarkeit.
+- Tagesaktuelle Spiele, Platz- und Kabinenverschiebungen aus einer gemeinsamen PHP-Abfrage. Vollständige, leere, vorläufige und fehlgeschlagene Abgleiche werden getrennt dargestellt.
+- Datumsgebundene Direktlinks, Aktualisierung und Tageswechsel in Europe/Berlin. Keine Änderungen an der Belegungslogik.
+- Generierte Symbolbilder lokal gebündelt, keine externen Fotodienste.
+
 ## v0.10.6 — 26.10.2026 · E3 bei Nordvelen
 
 - E3-Junioren donnerstags ab 29.10. in der 1. Auswärtskabine bei Nordvelen statt in der 2. Heimkabine.

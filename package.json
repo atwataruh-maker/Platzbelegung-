@@ -1,6 +1,6 @@
 {
   "name": "vfl-ramsdorf-vereinsapp",
-  "version": "0.10.6",
+  "version": "0.10.7",
   "private": true,
   "engines": {
     "node": ">=22.13.0"
@@ -9,7 +9,7 @@
     "dev": "vite --config vite.strato.config.ts",
     "build": "vite build --config vite.strato.config.ts",
     "package": "node tools/package.mjs",
-    "test": "node tests/parity.mjs && node tests/reliability.mjs",
+    "test": "node tests/parity.mjs && node tests/reliability.mjs && node tests/home.mjs && node tests/today-http.mjs",
     "typecheck": "tsc --noEmit --incremental false"
   },
   "dependencies": {
