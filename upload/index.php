@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-use Vfl\{App,Auth,Helpers,Matches,Planning,Cabins};
+use Vfl\{App,Auth,Helpers,Matches,Planning,Cabins,Recent,Bomber};
 try{
  require __DIR__.'/server/bootstrap.php';$nonce=App::headers();
  $path=parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH);$base=App::base();
@@ -10,6 +10,11 @@ try{
  if($route==='/api/auth')Auth::handle($method);
  if($route==='/api/helfer')Helpers::handle($method);
  if($method!=='GET'&&$method!=='HEAD')App::json(['error'=>'Methode nicht erlaubt.'],405);
+ if(in_array($route,['/api/ergebnisse','/api/bomber'],true)){
+  session_write_close();
+  try{App::json($route==='/api/bomber'?Bomber::load():Recent::load());}
+  catch(Throwable $e){error_log('VfL homepage source: '.$e->getMessage());App::json(['error'=>'Die Quelle ist derzeit nicht erreichbar. Bitte erneut versuchen.'],502);}
+ }
  if(in_array($route,['/api/spiele','/api/belegung','/api/heute'],true)){
   $selected=$_GET['date']??null;if($selected!==null&&(!is_string($selected)||!Planning::validDate($selected)))App::json(['error'=>'Bitte ein gültiges Datum auswählen.'],400);
   $from=$selected??date('Y-m-d');$to=$selected||$route!=='/api/spiele'?$from:(new DateTimeImmutable($from))->modify('+6 days')->format('Y-m-d');
@@ -20,7 +25,7 @@ try{
   $a=Planning::allocate($from,$schedule);$a['cabins']=Cabins::allocate($a,$schedule);$a['source']=['state'=>'verified','origin'=>'upload','checkedAt'=>'2026-10-16T05:19:08.343157+00:00'];$a['season']='Aktuelle Saison · Sommerplan';$a['matchesRetrievedAt']=$schedule['retrievedAt']??null;if($route==='/api/heute')App::json(['date'=>$from,'schedule'=>$schedule,'allocation'=>$a]);App::json($a);
  }
  if($route==='/api/plan'){header('Location: '.$base.'/belegungsplan-sommer-2026.pdf',true,302);exit;}
- if(!in_array($route,['/','/platzbelegung','/kabinenbelegung','/ehrenamt','/admin'],true)){http_response_code(404);echo 'Seite nicht gefunden.';exit;}
+ if(!in_array($route,['/','/platzbelegung','/kabinenbelegung','/ehrenamt','/bomber','/admin'],true)){http_response_code(404);echo 'Seite nicht gefunden.';exit;}
  $html=file_get_contents(__DIR__.'/frontend-dist/index.html');
  if($html===false)throw new RuntimeException('Frontend-Build fehlt. Bitte das vollständige Upload-Paket verwenden.');
  $public=['base'=>$base,'csrf'=>$_SESSION['csrf'],'legalUrl'=>App::config('legal_url'),'privacyUrl'=>App::config('privacy_url')];

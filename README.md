@@ -1,14 +1,16 @@
-# VfL Ramsdorf Vereins-App · v0.10.7 · PHP/STRATO
+# VfL Ramsdorf Vereins-App · v0.11.0 · PHP/STRATO
 
 **Branch `strato-php`: eigenständig auf PHP-Webhosting betreibbare Vereins-App.**
 
-Platzbelegung, Kabinenbelegung, Spiele & Ergebnisse, Helferbörse und eigener Admin-Login. Mobile Oberfläche aus v0.9 übernommen. PHP verarbeitet Spiele und berechnet die Platz- und Kabinenbelegung. Gesuche werden in MySQL/MariaDB gespeichert.
+Platzbelegung, Kabinenbelegung, Spiele & Ergebnisse, Helferbörse und eigener Admin-Login. Neue Startseite mit Tageshinweisen, Ergebnissen der letzten 48 Stunden und aktuellem Bomber. PHP verarbeitet Spiele und berechnet die Platz- und Kabinenbelegung. Gesuche werden in MySQL/MariaDB gespeichert.
+
+**Bestehende Installation aktualisieren:** [Update 0.11.0](UPDATE-0.11.0.md) · [Fertiges Update-ZIP](vfl-update-0.11.0.zip).
 
 ## Direkt installieren
 
 **[Installationsanleitung](INSTALLATION.md)** lesen. Das Verzeichnis **[upload/](upload/)** enthält das fertige Paket einschließlich JavaScript/CSS. Nur dessen Inhalt in ein neues Webverzeichnis hochladen, config.php einrichten und den einmaligen Installer ausführen. Node.js, Composer, Cloudflare und ChatGPT sind auf dem Zielserver nicht nötig.
 
-Voraussetzung: PHP >=8.2 mit curl, mbstring, PDO/pdo_mysql, MySQL 8 oder MariaDB >=10.6, HTTPS und Apache/.htaccess. Der konkrete STRATO-Tarif und die Serverkonfiguration müssen beim Betreiber geprüft werden. Kein Live-Upload auf STRATO wurde durchgeführt.
+Voraussetzung: PHP >=8.2 mit curl, mbstring, DOM/XML, PDO/pdo_mysql, MySQL 8 oder MariaDB >=10.6, HTTPS und Apache/.htaccess. Der konkrete STRATO-Tarif und die Serverkonfiguration müssen beim Betreiber geprüft werden. Kein Live-Upload auf STRATO wurde durchgeführt.
 
 ## Regeln
 

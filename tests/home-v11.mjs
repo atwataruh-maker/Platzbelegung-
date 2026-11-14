@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import {build} from 'esbuild';
+const b=await build({stdin:{contents:"export * from './lib/home-results';",resolveDir:process.cwd()},bundle:true,write:false,format:'esm'});
+const {recentMatches,scoreLabel,incomplete,teamKey,safeMatchLink}=await import('data:text/javascript;base64,'+Buffer.from(b.outputFiles[0].text).toString('base64'));
+const now=new Date('2026-11-14T18:00:00Z');
+const m=(id,kickoffAt,extra={})=>({id,kickoffAt,...extra});
+const rows=[m('old','2026-11-12T18:59:59+01:00'),m('boundary','2026-11-12T19:00:00+01:00'),m('recent','2026-11-14T18:00:00+01:00'),m('now','2026-11-14T19:00:00+01:00'),m('future','2026-11-14T19:01:00+01:00'),m('unknown','')];
+assert.deepEqual(recentMatches({matches:rows},now).map(m=>m.id),['now','recent','boundary']);
+assert.deepEqual(recentMatches(null,now),[]);
+// The window remains 48 elapsed hours across Berlin's autumn DST switch.
+assert.equal(recentMatches({matches:[m('dst','2026-10-23T12:59:59+02:00')]},new Date('2026-10-25T12:00:00+01:00')).length,0);
+assert.equal(scoreLabel({status:'Ausfall',result:{home:0,away:0}}),'Ausfall');
+assert.equal(scoreLabel({result:{home:0,away:0,confirmed:true}}),'Bestätigtes Ergebnis');
+assert.equal(scoreLabel({result:{home:3,away:1,confirmed:false}}),'Vorläufiger Spielstand');
+assert.equal(scoreLabel({result:{home:3,away:1,confirmed:true},resultStale:true}),'Letzter bekannter Stand');
+assert.equal(scoreLabel({}),'Ergebnis noch nicht verfügbar');
+assert.equal(incomplete(null),true);assert.equal(incomplete({stale:false,provisional:false,omittedRows:0}),false);assert.equal(incomplete({omittedRows:1}),true);
+assert.equal(teamKey({category:'Herren',home:'Gast',away:'VfL Ramsdorf II'}),'Herren|VfL Ramsdorf II');
+assert.equal(safeMatchLink('javascript:alert(1)'),'https://www.fussball.de/');
+console.log('PASS: exact rolling 48h boundary, DST, future/unknown times, ordering, 0:0, status, stale/unconfirmed results, team selection and safe links.');

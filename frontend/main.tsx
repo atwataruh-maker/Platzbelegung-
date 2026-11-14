@@ -5,6 +5,8 @@ import Pitch from '@/app/platzbelegung/page';
 import Cabins from '@/app/kabinenbelegung/page';
 import Helpers from '@/app/ehrenamt/page';
 import Admin from './admin';
+import Bomber from '@/app/bomber/page';
+import {ClubNavigation} from '@/components/club-navigation';
 import {appPath} from './api';
 import '@/app/globals.css';
 import './strato.css';
@@ -13,5 +15,5 @@ class ErrorBoundary extends Component<{children:ReactNode},{failed:boolean}>{
  render(){return this.state.failed?<main><h1>Ansicht konnte nicht geladen werden</h1><p>Bitte lade die Seite neu.</p><a href={appPath('/')}>Zur Übersicht</a></main>:this.props.children;}
 }
 const path=location.pathname.slice((window.VFL?.base??'').length).replace(/\/$/,'')||'/';
-const Page=({'/':Home,'/index.php':Home,'/platzbelegung':Pitch,'/kabinenbelegung':Cabins,'/ehrenamt':Helpers,'/admin':Admin} as Record<string,()=>ReactNode>)[path]??Home;
-createRoot(document.getElementById('root')!).render(<ErrorBoundary><Page/><nav className="legal-links" aria-label="Verwaltung und Rechtliches"><a href={appPath('/admin')}>Admin-Anmeldung</a>{window.VFL?.legalUrl?.startsWith('https://')&&<a href={window.VFL.legalUrl}>Impressum</a>}{window.VFL?.privacyUrl?.startsWith('https://')&&<a href={window.VFL.privacyUrl}>Datenschutz</a>}</nav></ErrorBoundary>);
+const Page=({'/':Home,'/index.php':Home,'/platzbelegung':Pitch,'/kabinenbelegung':Cabins,'/ehrenamt':Helpers,'/admin':Admin,'/bomber':Bomber} as Record<string,()=>ReactNode>)[path]??Home;
+createRoot(document.getElementById('root')!).render(<ErrorBoundary><Page/><ClubNavigation path={path}/><nav className="legal-links" aria-label="Verwaltung und Rechtliches"><a href={appPath('/admin')}>Admin-Anmeldung</a>{window.VFL?.legalUrl?.startsWith('https://')&&<a href={window.VFL.legalUrl}>Impressum</a>}{window.VFL?.privacyUrl?.startsWith('https://')&&<a href={window.VFL.privacyUrl}>Datenschutz</a>}</nav></ErrorBoundary>);

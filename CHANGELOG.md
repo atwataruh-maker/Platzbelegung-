@@ -1,5 +1,12 @@
 # Änderungen
 
+## v0.11.0 — 14.11.2026 · Neue Startseite, Ergebnisse und Bomber
+
+- Freigegebenes blau-weißes Design mit Logo/Wasserzeichen, Tageshinweisen und dauerhaftem Schnellzugriff.
+- Spielergebnisse der letzten 48 Stunden mit exakter Zeitgrenze, Status- und Fehlerhinweisen sowie Mannschaftsfilter.
+- Bomber als letzter Reiter; aktuelle PDF automatisch aus der offiziellen Vereinswebsite.
+- Bestehende Belegungsregeln bleiben erhalten. Fertiges STRATO-Update: [Anleitung](UPDATE-0.11.0.md).
+
 ## v0.10.7 — 27.10.2026 · Heute beim VfL
 
 - Neue Hauptseite mit echtem lokalem Vereinslogo, drei Bildbannern, kompakten Schnellzugriffen und Direktlink zur Vereinswebsite.

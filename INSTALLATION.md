@@ -1,11 +1,11 @@
-# VfL Ramsdorf · STRATO-Installation (v0.10.7)
+# VfL Ramsdorf · STRATO-Installation (v0.11.0)
 
 Die App läuft auf PHP und MySQL/MariaDB. Cloudflare, ChatGPT-Anmeldung und Node.js auf dem Webserver sind nicht erforderlich. Für Spiele und Logos werden weiterhin FUSSBALL.DE und die Vereinswebsite abgerufen. Das öffentliche GitHub-Repository enthält nur Quellcode und ein leeres Installationspaket, keine Passwörter oder bestehenden Helfergesuche.
 
 ## 1. Voraussetzungen prüfen
 
 - STRATO-Webhosting mit PHP **8.2 oder neuer** (geprüft mit PHP 8.3).
-- PHP-Erweiterungen **curl, mbstring, PDO und pdo_mysql**, JSON und Sessions.
+- PHP-Erweiterungen **curl, mbstring, DOM/XML, PDO und pdo_mysql**, JSON und Sessions.
 - MySQL 8 oder MariaDB 10.6+; eine eigene leere Datenbank wird empfohlen.
 - Apache mit `mod_rewrite`, `.htaccess`, `Require all denied` und Options-Regeln. Das tatsächliche Paket muss der Webseiten-Admin prüfen.
 - HTTPS-Zertifikat und ausgehende HTTPS-Verbindungen zu `www.fussball.de`.

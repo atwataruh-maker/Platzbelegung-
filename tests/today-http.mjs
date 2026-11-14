@@ -14,5 +14,16 @@ try{
  response=await fetch('http://127.0.0.1:4187/app/api/heute?date=2026-02-30');assert.equal(response.status,400);
  // Existing day-plan endpoint remains compatible.
  data=await (await fetch('http://127.0.0.1:4187/app/api/belegung?date='+date)).json();assert.ok(Array.isArray(data.cabins.bookings));assert.equal(data.date,date);
+ // New homepage endpoints work below /app and retain exact elapsed-time filtering.
+ const now=new Date(),berlin=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit'});
+ const from=berlin.format(new Date(now.getTime()-48*3600000)),to=berlin.format(now);
+ const kickoff=new Date(now.getTime()-2*3600000),kickoffDate=berlin.format(kickoff),kickoffTime=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Berlin',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(kickoff);
+ fs.writeFileSync(path.join(root,`var/cache/matches-v2-${from}-${to}.json`),JSON.stringify({time:Math.floor(Date.now()/1000),data:{...base,from,to,matches:[{id:'result',date:kickoffDate,time:kickoffTime,result:{home:0,away:0,confirmed:true}}]}}));
+ data=await (await fetch('http://127.0.0.1:4187/app/api/ergebnisse')).json();assert.equal(data.matches.length,1);assert.equal(data.matches[0].result.home,0);assert.ok(data.matches[0].kickoffAt);assert.equal(Date.parse(data.until)-Date.parse(data.since),48*3600000);
+ fs.writeFileSync(path.join(root,'var/cache/bomber-current.json'),JSON.stringify({time:Math.floor(Date.now()/1000),data:{url:'https://www.vfl-ramsdorf.de/bomber/test.pdf',label:'Testausgabe',stale:false}}));
+ data=await (await fetch('http://127.0.0.1:4187/app/api/bomber')).json();assert.equal(data.label,'Testausgabe');
+ fs.mkdirSync(path.join(root,'frontend-dist'));fs.writeFileSync(path.join(root,'frontend-dist/index.html'),'<html><head></head><body>Bomber route</body></html>');
+ response=await fetch('http://127.0.0.1:4187/app/bomber');assert.equal(response.status,200);assert.match(await response.text(),/window.VFL/);
+ console.log('PASS: /app/api/ergebnisse rolling window and 0:0, /app/api/bomber metadata, and /app/bomber route.');
  console.log('PASS: PHP /app/api/heute day-only schedule, shared allocation, partial source, invalid date and existing API compatibility.');
 }finally{server.kill();fs.rmSync(root,{recursive:true,force:true});}
