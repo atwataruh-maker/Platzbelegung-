@@ -1,5 +1,13 @@
 # Änderungen
 
+## v0.13.1 — 16.11.2026 · Breitensport-Termine
+
+- Sportabzeichen nur noch an den veröffentlichten Abnahmeterminen 2026 (Aushang auf der Vereinswebsite) statt jede Woche; vergangene Termine durchgestrichen, Hinweis auf neue Termine. Ort ergänzt: Wulfkampstadion (Holthausener Str. 18).
+- Neuer Bereich „Nächste Termine“ im Wochenplan, z. B. Übergabefeier Sportabzeichen am 22.11.2026 ab 15 Uhr in der Ramsdorfer Burg. Einzeltermine und Veranstaltungen auch im Kalenderexport.
+- Aqua Fitness (donnerstags 17:15–17:45 Uhr, Freibad Ramsdorf) ergänzt, nur während der Freibadsaison (Mai–September) im Wochenplan.
+- Leichtathletik mit Ansprechpartnerin Jennifer Roßkamp, max. 10 Kinder je Gruppe, Anmeldung erforderlich.
+- STRATO-Update: [Anleitung](UPDATE-0.13.1.md).
+
 ## v0.13.0 — 15.11.2026 · Breitensport
 
 - Neuer Reiter „Sport“ zwischen „Kabinen“ und „Helfen“. Die Startseite bleibt unverändert.

@@ -3,8 +3,11 @@
 export type Group = 'kinder' | 'erwachsene' | 'senioren';
 export type Person = { name: string; phone?: string; email?: string };
 export type Contact = Person & { role: string };
-export type Session = { day: number; start: string; end: string; venue?: string; audience?: string; leader?: string; months?: number[]; note?: string; course?: string };
-export type Offer = { id: string; title: string; area: string; groups: Group[]; intro: string; url: string; leaders: Person[]; sessions: Session[] };
+/** Weekly session; with `dates` it only takes place on those dates (e.g. Sportabzeichen-Abnahme). */
+export type Session = { day: number; start: string; end: string; venue?: string; audience?: string; leader?: string; months?: number[]; dates?: string[]; note?: string; course?: string };
+/** One-off event without weekly rhythm (e.g. Übergabefeier). */
+export type ClubEvent = { date: string; start: string; end?: string; title: string; venue?: string; note?: string };
+export type Offer = { id: string; title: string; area: string; groups: Group[]; intro: string; url: string; leaders: Person[]; sessions: Session[]; events?: ClubEvent[] };
 export type Course = { id: number; title: string; url: string; image: string | null; teaser: string[]; leader: string | null; startDate: string | null; endDate: string | null; ongoing: boolean;
   units: number | null; venue: string | null; priceMember: number | null; priceGuest: number | null; seatsLeft: number | null; bookingUrl: string | null; detailsMissing?: boolean };
 export type CourseFeed = { courses: Course[]; retrievedAt: string; stale?: boolean; source: string };
@@ -57,10 +60,24 @@ export function sessionsFor(data: BreitensportData | null | undefined, date: str
   if (!data) return [];
   const day = weekday(date), month = Number(date.slice(5, 7));
   return data.offers.filter(o => group === 'alle' || o.groups.includes(group)).flatMap(offer => offer.sessions
-    .filter(s => s.day === day && (!s.months || s.months.includes(month)) && (!s.course || courseRuns(data.courses, s.course, date)))
+    .filter(s => s.day === day && (!s.months || s.months.includes(month)) && (!s.dates || s.dates.includes(date)) && (!s.course || courseRuns(data.courses, s.course, date)))
     .map(session => ({ offer, session, course: courseFor(data.courses, session.course) })))
     .sort((a, b) => a.session.start.localeCompare(b.session.start) || a.session.end.localeCompare(b.session.end) || a.offer.title.localeCompare(b.offer.title, 'de'));
 }
+export type Upcoming = { offer: Offer; date: string; start: string; end?: string; title: string; venue?: string; note?: string; kind: 'event' | 'termin' };
+/** Dated appointments and events from today on (until `days` ahead), earliest first. */
+export function upcoming(data: BreitensportData | null | undefined, today: string, days = 60, limit = 3): Upcoming[] {
+  if (!data) return [];
+  const until = addDays(today, days), items: Upcoming[] = [];
+  for (const offer of data.offers) {
+    for (const e of offer.events ?? []) items.push({ offer, ...e, kind: 'event' });
+    for (const s of offer.sessions) for (const date of s.dates ?? []) items.push({ offer, date, start: s.start, end: s.end, title: offer.title + (s.audience ? ' · ' + s.audience : ''), venue: s.venue, kind: 'termin' });
+  }
+  return items.filter(i => i.date >= today && i.date <= until).sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start)).slice(0, limit);
+}
+/** Weekly sessions repeat; dated sessions and events only count while they are still ahead. */
+export const hasCalendar = (offer: Offer, today: string) =>
+  offer.sessions.some(s => !s.dates || s.dates.some(d => d >= today)) || (offer.events ?? []).some(e => e.date >= today);
 export type Timing = 'done' | 'now' | 'upcoming';
 export function timing(session: Session, date: string, today: string, nowMinutes: number): Timing {
   if (date < today) return 'done';
@@ -87,28 +104,35 @@ export function activeCourses(feed: CourseFeed | null | undefined, today: string
 
 const icsText = (value: string) => value.replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/[,;]/g, m => '\\' + m);
 const BYDAY = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
-/** Weekly calendar entries for every session of an offer, starting at the next occurrence. */
+/** Calendar entries: weekly sessions from the next occurrence, upcoming dated sessions and events individually. */
 export function ics(offer: Offer, today: string, feed?: CourseFeed | null): string {
   const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//VfL Ramsdorf//Vereins-App//DE', 'CALSCALE:GREGORIAN',
     'BEGIN:VTIMEZONE', 'TZID:Europe/Berlin',
     'BEGIN:DAYLIGHT', 'TZOFFSETFROM:+0100', 'TZOFFSETTO:+0200', 'TZNAME:CEST', 'DTSTART:19700329T020000', 'RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU', 'END:DAYLIGHT',
     'BEGIN:STANDARD', 'TZOFFSETFROM:+0200', 'TZOFFSETTO:+0100', 'TZNAME:CET', 'DTSTART:19701025T030000', 'RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU', 'END:STANDARD',
     'END:VTIMEZONE'];
+  const stamp = (date: string, time: string) => date.replace(/-/g, '') + 'T' + time.replace(':', '') + '00';
+  const now = 'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
+  const single = (uid: string, date: string, start: string, end: string, summary: string, venue?: string, description?: string) => lines.push('BEGIN:VEVENT', `UID:${uid}@vfl-ramsdorf-app`, now,
+    `DTSTART;TZID=Europe/Berlin:${stamp(date, start)}`, `DTEND;TZID=Europe/Berlin:${stamp(date, end)}`, 'SUMMARY:' + icsText(summary),
+    ...(venue ? ['LOCATION:' + icsText(venue + ', Ramsdorf')] : []), ...(description ? ['DESCRIPTION:' + icsText(description)] : []), 'END:VEVENT');
+  (offer.events ?? []).filter(e => e.date >= today).forEach((e, i) => {
+    const end = e.end ?? `${String(Math.min(23, Number(e.start.slice(0, 2)) + 2)).padStart(2, '0')}:${e.start.slice(3)}`;
+    single(`${offer.id}-event-${i}-${e.date}`, e.date, e.start, end, e.title + ' · VfL Ramsdorf', e.venue, [e.note ?? '', offer.url].filter(Boolean).join('\n'));
+  });
   offer.sessions.forEach((s, i) => {
+    const summary = `${offer.title}${s.audience ? ' (' + s.audience + ')' : ''} · VfL Ramsdorf`, description = [s.leader ? 'Übungsleitung: ' + s.leader : '', s.note ?? '', offer.url].filter(Boolean).join('\n');
+    if (s.dates) { s.dates.filter(d => d >= today).forEach(d => single(`${offer.id}-${i}-${d}`, d, s.start, s.end, summary, s.venue, description)); return; }
     const course = courseFor(feed, s.course);
     let first = today;
     if (course?.startDate && course.startDate > first) first = course.startDate;
     while (weekday(first) !== s.day || (s.months && !s.months.includes(Number(first.slice(5, 7))))) first = addDays(first, 1);
-    const stamp = (date: string, time: string) => date.replace(/-/g, '') + 'T' + time.replace(':', '') + '00';
     let rule = `RRULE:FREQ=WEEKLY;BYDAY=${BYDAY[s.day]}`;
     if (s.months) rule += ';BYMONTH=' + s.months.join(',');
     if (course && !course.ongoing && course.endDate) rule += ';UNTIL=' + course.endDate.replace(/-/g, '') + 'T235959Z';
-    lines.push('BEGIN:VEVENT', `UID:${offer.id}-${i}@vfl-ramsdorf-app`, 'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z',
+    lines.push('BEGIN:VEVENT', `UID:${offer.id}-${i}@vfl-ramsdorf-app`, now,
       `DTSTART;TZID=Europe/Berlin:${stamp(first, s.start)}`, `DTEND;TZID=Europe/Berlin:${stamp(first, s.end)}`, rule,
-      'SUMMARY:' + icsText(`${offer.title}${s.audience ? ' (' + s.audience + ')' : ''} · VfL Ramsdorf`),
-      ...(s.venue ? ['LOCATION:' + icsText(s.venue + ', Ramsdorf')] : []),
-      'DESCRIPTION:' + icsText([s.leader ? 'Übungsleitung: ' + s.leader : '', s.note ?? '', offer.url].filter(Boolean).join('\n')),
-      'END:VEVENT');
+      'SUMMARY:' + icsText(summary), ...(s.venue ? ['LOCATION:' + icsText(s.venue + ', Ramsdorf')] : []), 'DESCRIPTION:' + icsText(description), 'END:VEVENT');
   });
   lines.push('END:VCALENDAR');
   return lines.join('\r\n') + '\r\n';

@@ -3,8 +3,8 @@ import {CalendarPlus,ChevronLeft,ChevronRight,ExternalLink,Mail,MapPin,Phone,Ref
 import {appPath} from '@/frontend/api';
 import {ClubHeader} from '@/components/club-header';
 import {usePublicData} from '@/hooks/use-public-data';
-import {GROUPS,DAY_NAMES,DAY_SHORT,activeCourses,berlinDate,berlinMinutes,courseFor,defaultDay,euro,ics,initials,mailHref,safeClubLink,seats,sessionsFor,shortDate,telHref,timing,weekDays,weekday,
- type BreitensportData,type Course,type Entry,type Group,type Offer,type Person} from '@/lib/breitensport';
+import {GROUPS,DAY_NAMES,DAY_SHORT,activeCourses,hasCalendar,upcoming,berlinDate,berlinMinutes,courseFor,defaultDay,euro,ics,initials,mailHref,safeClubLink,seats,sessionsFor,shortDate,telHref,timing,weekDays,weekday,
+ type BreitensportData,type Session,type Upcoming,type Course,type Entry,type Group,type Offer,type Person} from '@/lib/breitensport';
 import clubLogo from '@/frontend/assets/vfl-logo.png';
 import '../home.css';
 import './sport.css';
@@ -50,11 +50,13 @@ function Plan({data,loading,error,retry}:{data:BreitensportData|null;loading:boo
  // Follow the calendar when the app stays open overnight.
  useEffect(()=>{if(!weekDays(today).includes(date))setDate(defaultDay(today));},[today]);
  const entries=useMemo(()=>sessionsFor(data,date,group),[data,date,group]);
+ const next=useMemo(()=>upcoming(data,today).filter(i=>group==='alle'||i.offer.groups.includes(group)),[data,today,group]);
  const label=`${DAY_NAMES[weekday(date)]}, ${shortDate(date)}`;
  return <><Hero view="plan" intro="Kurse, Kinder-, Senioren- und Mannschaftssport außerhalb des Fußballs.">
    <div className="sport-days" role="group" aria-label="Wochentag wählen">{days.map(d=><button type="button" key={d} aria-pressed={d===date} onClick={()=>setDate(d)}>{DAY_SHORT[weekday(d)]}<small>{shortDate(d)}</small></button>)}</div></Hero>
   <div className="home-sections">
    <section className="daily-panel sport-filter" aria-label="Zielgruppe"><div className="sport-chips">{GROUPS.map(g=><button type="button" key={g.id} aria-pressed={group===g.id} onClick={()=>setGroup(g.id)}>{g.label}</button>)}</div></section>
+   {next.length>0&&<section aria-labelledby="sport-next"><div className="section-heading"><h2 id="sport-next">Nächste Termine</h2></div>{next.map(i=><UpcomingRow key={i.offer.id+i.date+i.start} item={i}/>)}</section>}
    <section aria-labelledby="sport-day"><div className="section-heading"><h2 id="sport-day">{label}</h2>{data&&<span>{entries.length} {entries.length===1?'Angebot':'Angebote'}</span>}</div>
     <Status loading={loading&&!data} error={error&&!data} retry={retry} label="Breitensport-Angebote"/>
     {data&&!entries.length&&<p className="home-message">{group==='alle'?'An diesem Tag gibt es keine Breitensport-Angebote.':'An diesem Tag gibt es für diese Zielgruppe keine Angebote.'}</p>}
@@ -92,10 +94,18 @@ function Courses({data,loading,error,retry}:{data:BreitensportData|null;loading:
    <a className="home-website" href={WEBSITE+'/kurse'} target="_blank" rel="noopener noreferrer">Kurse auf der Vereinswebsite<ExternalLink size={17}/></a></div></>;
 }
 
+const longDate=(date:string)=>new Intl.DateTimeFormat('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(date+'T12:00:00Z'));
+function DateList({session,today}:{session:Session;today:string}){
+ return <span className="sport-dates" aria-label="Termine">{session.dates!.map(d=><span key={d} className={d<today?'sport-past':undefined}>{shortDate(d)}</span>)}</span>;
+}
+function UpcomingRow({item}:{item:Upcoming}){
+ return <a className="sport-offer sport-upcoming" href={offerLink(item.offer.id)}><span className="sport-time"><b>{DAY_SHORT[weekday(item.date)]} {shortDate(item.date)}</b><small>{item.end?`${item.start}–${item.end}`:`${item.start} Uhr`}</small></span>
+  <span className="sport-offer-copy"><strong>{item.title}</strong><span className="sport-meta">{item.venue??item.offer.title}</span></span><ChevronRight size={18} className="sport-chevron"/></a>;
+}
 /** "Donnerstag 16:30, 18:00, 19:00 Uhr · Freitag 16:30 Uhr" */
 function leaderTimes(offer:Offer,name:string){
- const byDay=new Map<number,string[]>();for(const s of offer.sessions)if(s.leader===name)byDay.set(s.day,[...(byDay.get(s.day)??[]),s.start]);
- return [...byDay].sort((a,b)=>((a[0]+6)%7)-((b[0]+6)%7)).map(([d,t])=>`${DAY_NAMES[d]} ${[...new Set(t)].sort().join(', ')} Uhr`).join(' · ')||undefined;
+ const byDay=new Map<number,string[]>();for(const s of offer.sessions)if(s.leader===name&&!s.dates)byDay.set(s.day,[...(byDay.get(s.day)??[]),s.start]);
+ return [...byDay].sort((a,b)=>((a[0]+6)%7)-((b[0]+6)%7)).map(([d,t])=>`${DAY_NAMES[d]} ${[...new Set(t)].sort().join(', ')} Uhr`).join(' · ')||(offer.sessions.some(s=>s.leader===name&&s.dates)?'Infos und Anmeldung':undefined);
 }
 function Detail({id,data,loading,error,retry}:{id:string;data:BreitensportData|null;loading:boolean;error:boolean;retry:()=>void}){
  const today=berlinDate(useNow());const offer:Offer|undefined=data?.offers.find(o=>o.id===id);
@@ -105,15 +115,19 @@ function Detail({id,data,loading,error,retry}:{id:string;data:BreitensportData|n
  const venues=[...new Set(offer.sessions.map(s=>s.venue).filter((v):v is string=>Boolean(v)))];
  const download=()=>{const blob=new Blob([ics(offer,today,data?.courses)],{type:'text/calendar;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=offer.id+'.ics';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);};
  const sorted=[...offer.sessions].sort((a,b)=>((a.day+6)%7)-((b.day+6)%7)||a.start.localeCompare(b.start));
+ const allDated=sorted.length>0&&sorted.every(s=>s.dates),datesAhead=sorted.some(s=>s.dates?.some(d=>d>=today));
+ const events=[...(offer.events??[])].sort((a,b)=>a.date.localeCompare(b.date));
  return <><section className="home-hero sport-hero"><img className="crest-watermark" src={clubLogo} alt="" aria-hidden="true"/>{back}<time>{offer.area}</time><h1>{offer.title}</h1><p>{offer.intro}</p></section>
   <div className="home-sections">
-   <section className="sport-panel" aria-labelledby="sport-times"><h2 id="sport-times">Trainingszeiten</h2>{sorted.map((s,i)=>{const course=courseFor(data?.courses,s.course);return <div className="sport-session" key={i}>
+   <section className="sport-panel" aria-labelledby="sport-times"><h2 id="sport-times">{allDated?'Termine':'Trainingszeiten'}</h2>{sorted.map((s,i)=>{const course=courseFor(data?.courses,s.course);return <div className="sport-session" key={i}>
     <b>{DAY_NAMES[s.day]} · {s.start}–{s.end} Uhr</b>{s.audience&&<span className="sport-age">{s.audience}</span>}
-    <span>{[s.venue??'Ort beim Ansprechpartner erfragen',s.leader].filter(Boolean).join(' · ')}</span>{s.note&&<span className="sport-note">{s.note}</span>}{course&&<span className="sport-session-course"><SeatBadge course={course}/><a href={safeClubLink(course.bookingUrl??course.url)} target="_blank" rel="noopener noreferrer">Kurs auf der Website<ExternalLink size={13}/></a></span>}</div>;})}</section>
+    <span>{[s.venue??'Ort beim Ansprechpartner erfragen',s.leader].filter(Boolean).join(' · ')}</span>{s.dates&&<DateList session={s} today={today}/>}{s.note&&<span className="sport-note">{s.note}</span>}{course&&<span className="sport-session-course"><SeatBadge course={course}/><a href={safeClubLink(course.bookingUrl??course.url)} target="_blank" rel="noopener noreferrer">Kurs auf der Website<ExternalLink size={13}/></a></span>}</div>;})}
+    {allDated&&!datesAhead&&<p className="sport-dates-over">Alle Termine {sorted[0]?.dates?.[0]?.slice(0,4)} sind vorbei. Neue Termine folgen auf der Vereinswebsite.</p>}</section>
+   {events.length>0&&<section className="sport-panel" aria-labelledby="sport-events"><h2 id="sport-events">Veranstaltungen</h2>{events.map(e=><div className={'sport-session'+(e.date<today?' sport-past':'')} key={e.date+e.title}><b>{e.title}</b><span>{longDate(e.date)} · ab {e.start} Uhr{e.venue?' · '+e.venue:''}</span>{e.note&&<span>{e.note}</span>}</div>)}</section>}
    {offer.leaders.length>0&&<section className="sport-panel" aria-labelledby="sport-leaders"><h2 id="sport-leaders">Übungsleitung</h2>{offer.leaders.map(p=><PersonRow key={p.name} person={p} role={leaderTimes(offer,p.name)}/>)}</section>}
    {offer.leaders.length===0&&data&&<section className="sport-panel" aria-labelledby="sport-leaders"><h2 id="sport-leaders">Ansprechpartner</h2>{data.contacts.slice(0,1).map(c=><PersonRow key={c.name} person={c} role={c.role}/>)}</section>}
    {venues.length>0&&<section className="sport-panel" aria-labelledby="sport-venue"><h2 id="sport-venue">Ort</h2>{venues.map(v=><p className="sport-venue" key={v}><MapPin size={18}/>{v}, Ramsdorf</p>)}</section>}
-   <div className="sport-actions"><button type="button" className="sport-button sport-button-ghost" onClick={download}><CalendarPlus size={17}/>Im Kalender</button><a className="sport-button sport-button-ghost" href={safeClubLink(offer.url)} target="_blank" rel="noopener noreferrer">Website<ExternalLink size={16}/></a></div>
+   <div className="sport-actions">{hasCalendar(offer,today)&&<button type="button" className="sport-button sport-button-ghost" onClick={download}><CalendarPlus size={17}/>Im Kalender</button>}<a className="sport-button sport-button-ghost" href={safeClubLink(offer.url)} target="_blank" rel="noopener noreferrer">Website<ExternalLink size={16}/></a></div>
   </div></>;
 }
 

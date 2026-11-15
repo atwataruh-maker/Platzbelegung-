@@ -1,160 +1,702 @@
 {
-  "checkedAt": "2026-11-15",
+  "checkedAt": "2026-11-16",
   "source": "https://www.vfl-ramsdorf.de/breitensport",
-  "note": "Übernommen von den Detail- und Kursseiten der Vereinswebsite. Bei Abweichungen zum dortigen Wochenplan gelten die Detail- und Kursseiten.",
+  "note": "Übernommen von den Detail- und Kursseiten der Vereinswebsite sowie den dort eingebundenen Aushängen (Sportabzeichen-Termine 2026, Leichtathletik-Flyer). Bei Abweichungen zum Wochenplan der Website gelten die Detail- und Kursseiten.",
   "contacts": [
-    {"role": "1. Vorsitzende Breitensport", "name": "Stefanie Broß", "phone": "+4915773772399", "email": "vorstand@breitensport.vfl-ramsdorf.de"},
-    {"role": "Kursverwaltung · Buchung", "name": "Tina Heyken", "email": "kurs@breitensport.vfl-ramsdorf.de"},
-    {"role": "Sportabzeichen · 2. Vorsitzender", "name": "Ludger Roßkamp", "email": "sportabzeichen@breitensport.vfl-ramsdorf.de"}
+    {
+      "role": "1. Vorsitzende Breitensport",
+      "name": "Stefanie Broß",
+      "phone": "+4915773772399",
+      "email": "vorstand@breitensport.vfl-ramsdorf.de"
+    },
+    {
+      "role": "Kursverwaltung · Buchung",
+      "name": "Tina Heyken",
+      "email": "kurs@breitensport.vfl-ramsdorf.de"
+    },
+    {
+      "role": "Sportabzeichen · 2. Vorsitzender",
+      "name": "Ludger Roßkamp",
+      "email": "sportabzeichen@breitensport.vfl-ramsdorf.de"
+    }
   ],
   "offers": [
     {
-      "id": "eltern-kind-turnen", "title": "Eltern-Kind-Turnen", "area": "Kinder-/Jugendsport", "groups": ["kinder"],
+      "id": "eltern-kind-turnen",
+      "title": "Eltern-Kind-Turnen",
+      "area": "Kinder-/Jugendsport",
+      "groups": [
+        "kinder"
+      ],
       "intro": "Gemeinsam aktiv sein und spielerisch die motorischen Fähigkeiten der Kleinsten fördern: klettern, balancieren, rollen und hüpfen.",
       "url": "https://www.vfl-ramsdorf.de/breitensport/kindersport",
-      "leaders": [{"name": "Nike Höing", "phone": "+491607538085"}],
-      "sessions": [{"day": 3, "start": "16:00", "end": "17:00", "venue": "Sporthalle Paulusstraße", "audience": "2–4 J.", "leader": "Nike Höing"}]
+      "leaders": [
+        {
+          "name": "Nike Höing",
+          "phone": "+491607538085"
+        }
+      ],
+      "sessions": [
+        {
+          "day": 3,
+          "start": "16:00",
+          "end": "17:00",
+          "venue": "Sporthalle Paulusstraße",
+          "audience": "2–4 J.",
+          "leader": "Nike Höing"
+        }
+      ]
     },
     {
-      "id": "vorschulkinder-turnen", "title": "Vorschulkinder Turnen", "area": "Kinder-/Jugendsport", "groups": ["kinder"],
+      "id": "vorschulkinder-turnen",
+      "title": "Vorschulkinder Turnen",
+      "area": "Kinder-/Jugendsport",
+      "groups": [
+        "kinder"
+      ],
       "intro": "Kinderturnen mit kreativen Übungen und Bewegungslandschaften: Laufen, Springen, Klettern und Balancieren spielerisch lernen.",
       "url": "https://www.vfl-ramsdorf.de/breitensport/kindersport",
-      "leaders": [{"name": "Nike Höing", "phone": "+491607538085"}],
-      "sessions": [{"day": 3, "start": "17:15", "end": "18:15", "venue": "Sporthalle Paulusstraße", "audience": "4–6 J.", "leader": "Nike Höing"}]
+      "leaders": [
+        {
+          "name": "Nike Höing",
+          "phone": "+491607538085"
+        }
+      ],
+      "sessions": [
+        {
+          "day": 3,
+          "start": "17:15",
+          "end": "18:15",
+          "venue": "Sporthalle Paulusstraße",
+          "audience": "4–6 J.",
+          "leader": "Nike Höing"
+        }
+      ]
     },
     {
-      "id": "schulkindturnen", "title": "Schulkindturnen", "area": "Kinder-/Jugendsport", "groups": ["kinder"],
+      "id": "schulkindturnen",
+      "title": "Schulkindturnen",
+      "area": "Kinder-/Jugendsport",
+      "groups": [
+        "kinder"
+      ],
       "intro": "Abwechslungsreiches Programm mit spielerischen Übungen und Parcours für Kraft, Ausdauer und Beweglichkeit.",
       "url": "https://www.vfl-ramsdorf.de/breitensport/kindersport",
-      "leaders": [{"name": "Hendrik Buß", "phone": "+4917672236819"}],
-      "sessions": [{"day": 3, "start": "18:15", "end": "19:30", "venue": "Sporthalle Paulusstraße", "audience": "3.–5. Klasse", "leader": "Hendrik Buß"}]
+      "leaders": [
+        {
+          "name": "Hendrik Buß",
+          "phone": "+4917672236819"
+        }
+      ],
+      "sessions": [
+        {
+          "day": 3,
+          "start": "18:15",
+          "end": "19:30",
+          "venue": "Sporthalle Paulusstraße",
+          "audience": "3.–5. Klasse",
+          "leader": "Hendrik Buß"
+        }
+      ]
     },
     {
-      "id": "kinder-move-community", "title": "Kinder Move Community", "area": "Kinder-/Jugendsport", "groups": ["kinder"],
+      "id": "kinder-move-community",
+      "title": "Kinder Move Community",
+      "area": "Kinder-/Jugendsport",
+      "groups": [
+        "kinder"
+      ],
       "intro": "Bewegungsangebot ohne Leistungsdruck: klettern, balancieren, springen und rollen in abwechslungsreichen Bewegungslandschaften.",
       "url": "https://www.vfl-ramsdorf.de/breitensport/kindersport",
-      "leaders": [{"name": "Steffi Broß", "phone": "+491793467929"}],
-      "sessions": [{"day": 5, "start": "15:30", "end": "16:30", "venue": "Sporthalle Paulusstraße", "audience": "2–8 J.", "leader": "Steffi Broß", "note": "15:15 Uhr Treffen zum Aufbau, 16:15 Uhr Abbau"}]
+      "leaders": [
+        {
+          "name": "Steffi Broß",
+          "phone": "+491793467929"
+        }
+      ],
+      "sessions": [
+        {
+          "day": 5,
+          "start": "15:30",
+          "end": "16:30",
+          "venue": "Sporthalle Paulusstraße",
+          "audience": "2–8 J.",
+          "leader": "Steffi Broß",
+          "note": "15:15 Uhr Treffen zum Aufbau, 16:15 Uhr Abbau"
+        }
+      ]
     },
     {
-      "id": "trampolin", "title": "Trampolin", "area": "Kinder-/Jugendsport", "groups": ["kinder"],
+      "id": "trampolin",
+      "title": "Trampolin",
+      "area": "Kinder-/Jugendsport",
+      "groups": [
+        "kinder"
+      ],
       "intro": "Springen, Schweben, Lachen: Balance, Koordination und Körperspannung spielerisch verbessern.",
       "url": "https://www.vfl-ramsdorf.de/breitensport/kindersport",
-      "leaders": [{"name": "Laura Bach", "phone": "+4917643589851", "email": "laurabach2013@gmail.com"}, {"name": "Mandy Lahme", "phone": "+4915128068148"}],
+      "leaders": [
+        {
+          "name": "Laura Bach",
+          "phone": "+4917643589851",
+          "email": "laurabach2013@gmail.com"
+        },
+        {
+          "name": "Mandy Lahme",
+          "phone": "+4915128068148"
+        }
+      ],
       "sessions": [
-        {"day": 1, "start": "16:00", "end": "17:30", "venue": "Sporthalle Paulusstraße", "audience": "ab 5 J.", "leader": "Laura Bach"},
-        {"day": 1, "start": "17:30", "end": "19:00", "venue": "Sporthalle Paulusstraße", "audience": "Anfänger ab 3 J.", "leader": "Mandy Lahme"},
-        {"day": 5, "start": "16:30", "end": "18:30", "venue": "Sporthalle Paulusstraße", "audience": "Fortgeschrittene ab P5", "leader": "Mandy Lahme"}
+        {
+          "day": 1,
+          "start": "16:00",
+          "end": "17:30",
+          "venue": "Sporthalle Paulusstraße",
+          "audience": "ab 5 J.",
+          "leader": "Laura Bach"
+        },
+        {
+          "day": 1,
+          "start": "17:30",
+          "end": "19:00",
+          "venue": "Sporthalle Paulusstraße",
+          "audience": "Anfänger ab 3 J.",
+          "leader": "Mandy Lahme"
+        },
+        {
+          "day": 5,
+          "start": "16:30",
+          "end": "18:30",
+          "venue": "Sporthalle Paulusstraße",
+          "audience": "Fortgeschrittene ab P5",
+          "leader": "Mandy Lahme"
+        }
       ]
     },
     {
-      "id": "leichtathletik", "title": "Leichtathletik", "area": "Kinder-/Jugendsport", "groups": ["kinder"],
-      "intro": "Leichtathletik für Kinder: von November bis März im Kursraum der Alten Molkerei, ab April auf der Laufbahn im Wulfkampstadion.",
+      "id": "leichtathletik",
+      "title": "Leichtathletik",
+      "area": "Kinder-/Jugendsport",
+      "groups": [
+        "kinder"
+      ],
+      "intro": "Laufen, Springen und Werfen: Kinder spielerisch mit Staffelspielen und Sportgeräten an die Leichtathletik heranführen. Je Gruppe höchstens 10 Kinder, Anmeldung erforderlich.",
       "url": "https://www.vfl-ramsdorf.de/breitensport",
-      "leaders": [],
+      "leaders": [
+        {
+          "name": "Jennifer Roßkamp",
+          "phone": "+491744113017"
+        }
+      ],
       "sessions": [
-        {"day": 3, "start": "15:30", "end": "16:30", "venue": "Alte Molkerei · Kursraum", "audience": "4–7 J.", "months": [11, 12, 1, 2, 3], "note": "November bis März"},
-        {"day": 3, "start": "16:40", "end": "17:40", "venue": "Alte Molkerei · Kursraum", "audience": "8–12 J.", "months": [11, 12, 1, 2, 3], "note": "November bis März"},
-        {"day": 3, "start": "15:30", "end": "16:30", "venue": "Wulfkampstadion · Laufbahn", "audience": "4–7 J.", "months": [4, 5, 6, 7, 8, 9, 10], "note": "ab April"},
-        {"day": 3, "start": "16:40", "end": "17:40", "venue": "Wulfkampstadion · Laufbahn", "audience": "8–12 J.", "months": [4, 5, 6, 7, 8, 9, 10], "note": "ab April"}
+        {
+          "day": 3,
+          "start": "15:30",
+          "end": "16:30",
+          "venue": "Alte Molkerei · Kursraum",
+          "audience": "4–7 J.",
+          "months": [
+            11,
+            12,
+            1,
+            2,
+            3
+          ],
+          "note": "November bis März",
+          "leader": "Jennifer Roßkamp"
+        },
+        {
+          "day": 3,
+          "start": "16:40",
+          "end": "17:40",
+          "venue": "Alte Molkerei · Kursraum",
+          "audience": "8–12 J.",
+          "months": [
+            11,
+            12,
+            1,
+            2,
+            3
+          ],
+          "note": "November bis März",
+          "leader": "Jennifer Roßkamp"
+        },
+        {
+          "day": 3,
+          "start": "15:30",
+          "end": "16:30",
+          "venue": "Wulfkampstadion · Laufbahn",
+          "audience": "4–7 J.",
+          "months": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "note": "ab April",
+          "leader": "Jennifer Roßkamp"
+        },
+        {
+          "day": 3,
+          "start": "16:40",
+          "end": "17:40",
+          "venue": "Wulfkampstadion · Laufbahn",
+          "audience": "8–12 J.",
+          "months": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "note": "ab April",
+          "leader": "Jennifer Roßkamp"
+        }
       ]
     },
     {
-      "id": "eltern-kind-fussball", "title": "Eltern-Kind-Fußball", "area": "Eltern-Kind-Fußball", "groups": ["kinder"],
+      "id": "eltern-kind-fussball",
+      "title": "Eltern-Kind-Fußball",
+      "area": "Eltern-Kind-Fußball",
+      "groups": [
+        "kinder"
+      ],
       "intro": "Erste Ballerfahrungen gemeinsam mit Mama oder Papa – in zwei Altersgruppen am Samstagvormittag.",
       "url": "https://www.vfl-ramsdorf.de/breitensport/eltern-kind-fussball",
-      "leaders": [{"name": "Benedikt Sicking", "phone": "+4916091407204"}, {"name": "David Frenk", "phone": "+4917670793733"}],
+      "leaders": [
+        {
+          "name": "Benedikt Sicking",
+          "phone": "+4916091407204"
+        },
+        {
+          "name": "David Frenk",
+          "phone": "+4917670793733"
+        }
+      ],
       "sessions": [
-        {"day": 6, "start": "09:00", "end": "10:00", "venue": "Sporthalle Paulusstraße", "audience": "2–3 J.", "leader": "Benedikt Sicking"},
-        {"day": 6, "start": "10:00", "end": "11:00", "venue": "Sporthalle Paulusstraße", "audience": "3–4 J.", "leader": "David Frenk"}
+        {
+          "day": 6,
+          "start": "09:00",
+          "end": "10:00",
+          "venue": "Sporthalle Paulusstraße",
+          "audience": "2–3 J.",
+          "leader": "Benedikt Sicking"
+        },
+        {
+          "day": 6,
+          "start": "10:00",
+          "end": "11:00",
+          "venue": "Sporthalle Paulusstraße",
+          "audience": "3–4 J.",
+          "leader": "David Frenk"
+        }
       ]
     },
     {
-      "id": "volleyball", "title": "Volleyball Mixed", "area": "Mannschaftssport", "groups": ["erwachsene"],
+      "id": "volleyball",
+      "title": "Volleyball Mixed",
+      "area": "Mannschaftssport",
+      "groups": [
+        "erwachsene"
+      ],
       "intro": "Technik, Taktik und Teamgeist am Netz – für Einsteiger und Erfahrene.",
       "url": "https://www.vfl-ramsdorf.de/breitensport/mannschaftssport",
-      "leaders": [{"name": "Markus Schöttler", "phone": "+491732606306"}],
-      "sessions": [{"day": 1, "start": "20:00", "end": "22:00", "venue": "Sporthalle Paulusstraße", "audience": "Erwachsene", "leader": "Markus Schöttler"}]
+      "leaders": [
+        {
+          "name": "Markus Schöttler",
+          "phone": "+491732606306"
+        }
+      ],
+      "sessions": [
+        {
+          "day": 1,
+          "start": "20:00",
+          "end": "22:00",
+          "venue": "Sporthalle Paulusstraße",
+          "audience": "Erwachsene",
+          "leader": "Markus Schöttler"
+        }
+      ]
     },
     {
-      "id": "badminton", "title": "Badminton Mixed", "area": "Mannschaftssport", "groups": ["erwachsene"],
+      "id": "badminton",
+      "title": "Badminton Mixed",
+      "area": "Mannschaftssport",
+      "groups": [
+        "erwachsene"
+      ],
       "intro": "Schnelligkeit, Geschick und Spaß im Einzel oder Doppel – für Anfänger und Fortgeschrittene.",
       "url": "https://www.vfl-ramsdorf.de/breitensport/mannschaftssport",
-      "leaders": [{"name": "Markus Holtkamp", "phone": "+4917664076999"}, {"name": "Werner Knuf", "phone": "+491791325388", "email": "werner.knuf@web.de"}],
+      "leaders": [
+        {
+          "name": "Markus Holtkamp",
+          "phone": "+4917664076999"
+        },
+        {
+          "name": "Werner Knuf",
+          "phone": "+491791325388",
+          "email": "werner.knuf@web.de"
+        }
+      ],
       "sessions": [
-        {"day": 2, "start": "20:00", "end": "22:00", "venue": "Sporthalle In der Worthe", "audience": "Erwachsene", "leader": "Markus Holtkamp"},
-        {"day": 4, "start": "20:00", "end": "22:00", "venue": "Sporthalle In der Worthe", "audience": "Erwachsene", "leader": "Werner Knuf"}
+        {
+          "day": 2,
+          "start": "20:00",
+          "end": "22:00",
+          "venue": "Sporthalle In der Worthe",
+          "audience": "Erwachsene",
+          "leader": "Markus Holtkamp"
+        },
+        {
+          "day": 4,
+          "start": "20:00",
+          "end": "22:00",
+          "venue": "Sporthalle In der Worthe",
+          "audience": "Erwachsene",
+          "leader": "Werner Knuf"
+        }
       ]
     },
     {
-      "id": "taekwondo", "title": "Taekwondo", "area": "Mannschaftssport", "groups": ["kinder", "erwachsene"],
+      "id": "taekwondo",
+      "title": "Taekwondo",
+      "area": "Mannschaftssport",
+      "groups": [
+        "kinder",
+        "erwachsene"
+      ],
       "intro": "Kraft, Disziplin und Selbstvertrauen – Training für alle Altersklassen und Leistungsstufen.",
       "url": "https://www.vfl-ramsdorf.de/breitensport/mannschaftssport",
-      "leaders": [{"name": "Großmeister Sin Kil Yoon"}],
-      "sessions": [{"day": 4, "start": "17:30", "end": "19:00", "venue": "Sporthalle Paulusstraße", "audience": "alle Altersklassen", "leader": "Großmeister Sin Kil Yoon"}]
+      "leaders": [
+        {
+          "name": "Großmeister Sin Kil Yoon"
+        }
+      ],
+      "sessions": [
+        {
+          "day": 4,
+          "start": "17:30",
+          "end": "19:00",
+          "venue": "Sporthalle Paulusstraße",
+          "audience": "alle Altersklassen",
+          "leader": "Großmeister Sin Kil Yoon"
+        }
+      ]
     },
     {
-      "id": "aerobic", "title": "Aerobic", "area": "Senior*innen Sport", "groups": ["erwachsene", "senioren"],
+      "id": "aerobic",
+      "title": "Aerobic",
+      "area": "Senior*innen Sport",
+      "groups": [
+        "erwachsene",
+        "senioren"
+      ],
       "intro": "Bewegung, Musik und gute Laune: Ausdauer, Koordination und Beweglichkeit in der Gruppe trainieren.",
       "url": "https://www.vfl-ramsdorf.de/breitensport/seniorensport",
-      "leaders": [{"name": "Marion Schmidt", "phone": "+491636021551"}],
-      "sessions": [{"day": 3, "start": "19:30", "end": "20:30", "venue": "Alte Molkerei · Kursraum", "audience": "Erwachsene", "leader": "Marion Schmidt"}]
+      "leaders": [
+        {
+          "name": "Marion Schmidt",
+          "phone": "+491636021551"
+        }
+      ],
+      "sessions": [
+        {
+          "day": 3,
+          "start": "19:30",
+          "end": "20:30",
+          "venue": "Alte Molkerei · Kursraum",
+          "audience": "Erwachsene",
+          "leader": "Marion Schmidt"
+        }
+      ]
     },
     {
-      "id": "seniorinnen-sport", "title": "Seniorinnen Sport", "area": "Senior*innen Sport", "groups": ["senioren"],
+      "id": "seniorinnen-sport",
+      "title": "Seniorinnen Sport",
+      "area": "Senior*innen Sport",
+      "groups": [
+        "senioren"
+      ],
       "intro": "Gymnastik und gezielte Übungen für Muskulatur, Herz und Kreislauf – ohne Leistungsdruck, mit viel Geselligkeit.",
       "url": "https://www.vfl-ramsdorf.de/breitensport/seniorensport",
-      "leaders": [{"name": "Gisela Oenning", "phone": "+491749672628"}, {"name": "Beate Storks", "phone": "+4915770490556"}],
+      "leaders": [
+        {
+          "name": "Gisela Oenning",
+          "phone": "+491749672628"
+        },
+        {
+          "name": "Beate Storks",
+          "phone": "+4915770490556"
+        }
+      ],
       "sessions": [
-        {"day": 1, "start": "19:00", "end": "20:00", "venue": "Sporthalle Paulusstraße", "audience": "Seniorinnen", "leader": "Gisela Oenning"},
-        {"day": 1, "start": "19:00", "end": "20:00", "venue": "Sporthalle In der Worthe", "audience": "Seniorinnen", "leader": "Beate Storks"}
+        {
+          "day": 1,
+          "start": "19:00",
+          "end": "20:00",
+          "venue": "Sporthalle Paulusstraße",
+          "audience": "Seniorinnen",
+          "leader": "Gisela Oenning"
+        },
+        {
+          "day": 1,
+          "start": "19:00",
+          "end": "20:00",
+          "venue": "Sporthalle In der Worthe",
+          "audience": "Seniorinnen",
+          "leader": "Beate Storks"
+        }
       ]
     },
     {
-      "id": "senioren-sport", "title": "Senioren Sport", "area": "Senior*innen Sport", "groups": ["senioren"],
+      "id": "senioren-sport",
+      "title": "Senioren Sport",
+      "area": "Senior*innen Sport",
+      "groups": [
+        "senioren"
+      ],
       "intro": "Aktiv und fit in jedem Alter: Kraft, Beweglichkeit und Koordination – nach dem Motto „Alles kann, nichts muss!“",
       "url": "https://www.vfl-ramsdorf.de/breitensport/seniorensport",
-      "leaders": [{"name": "Judith Bremer", "phone": "+491704436447", "email": "bremer.judith@gmail.com"}],
-      "sessions": [{"day": 4, "start": "19:00", "end": "20:00", "venue": "Sporthalle Paulusstraße", "audience": "Senioren", "leader": "Judith Bremer"}]
-    },
-    {
-      "id": "sportabzeichen", "title": "Sportabzeichen", "area": "Sportabzeichen", "groups": ["kinder", "erwachsene", "senioren"],
-      "intro": "Das Deutsche Sportabzeichen: Ausdauer, Kraft, Schnelligkeit und Koordination – auch ohne Vereinsmitgliedschaft und ab sechs Personen als Team.",
-      "url": "https://www.vfl-ramsdorf.de/breitensport/sportabzeichen",
-      "leaders": [{"name": "Ludger Roßkamp", "phone": "+4928633790401", "email": "sportabzeichen@breitensport.vfl-ramsdorf.de"}],
+      "leaders": [
+        {
+          "name": "Judith Bremer",
+          "phone": "+491704436447",
+          "email": "bremer.judith@gmail.com"
+        }
+      ],
       "sessions": [
-        {"day": 1, "start": "15:00", "end": "16:00", "audience": "alle Altersgruppen", "leader": "Ludger Roßkamp"},
-        {"day": 4, "start": "19:00", "end": "20:00", "audience": "alle Altersgruppen", "leader": "Ludger Roßkamp"},
-        {"day": 6, "start": "10:00", "end": "11:30", "audience": "alle Altersgruppen", "leader": "Ludger Roßkamp"}
+        {
+          "day": 4,
+          "start": "19:00",
+          "end": "20:00",
+          "venue": "Sporthalle Paulusstraße",
+          "audience": "Senioren",
+          "leader": "Judith Bremer"
+        }
       ]
     },
     {
-      "id": "line-dance", "title": "Line Dance", "area": "Kurse", "groups": ["erwachsene", "senioren"],
+      "id": "sportabzeichen",
+      "title": "Sportabzeichen",
+      "area": "Sportabzeichen",
+      "groups": [
+        "kinder",
+        "erwachsene",
+        "senioren"
+      ],
+      "intro": "Das Deutsche Sportabzeichen: Ausdauer, Kraft, Schnelligkeit und Koordination – auch ohne Vereinsmitgliedschaft und ab sechs Personen als Team. Abnahme an festen Terminen.",
+      "url": "https://www.vfl-ramsdorf.de/breitensport/sportabzeichen",
+      "leaders": [
+        {
+          "name": "Ludger Roßkamp",
+          "phone": "+4928633790401",
+          "email": "sportabzeichen@breitensport.vfl-ramsdorf.de"
+        }
+      ],
+      "sessions": [
+        {
+          "day": 1,
+          "start": "15:00",
+          "end": "16:00",
+          "venue": "Wulfkampstadion (Holthausener Str. 18)",
+          "audience": "alle Altersgruppen",
+          "leader": "Ludger Roßkamp",
+          "dates": [
+            "2026-05-18",
+            "2026-06-22",
+            "2026-09-14"
+          ]
+        },
+        {
+          "day": 4,
+          "start": "19:00",
+          "end": "20:00",
+          "venue": "Wulfkampstadion (Holthausener Str. 18)",
+          "audience": "alle Altersgruppen",
+          "leader": "Ludger Roßkamp",
+          "dates": [
+            "2026-05-28",
+            "2026-07-02",
+            "2026-09-10",
+            "2026-10-01"
+          ]
+        },
+        {
+          "day": 6,
+          "start": "10:00",
+          "end": "11:30",
+          "venue": "Wulfkampstadion (Holthausener Str. 18)",
+          "audience": "alle Altersgruppen",
+          "leader": "Ludger Roßkamp",
+          "dates": [
+            "2026-06-13",
+            "2026-07-11",
+            "2026-09-05",
+            "2026-09-26"
+          ]
+        }
+      ],
+      "events": [
+        {
+          "date": "2026-11-22",
+          "start": "15:00",
+          "title": "Übergabefeier Sportabzeichen",
+          "venue": "Ramsdorfer Burg",
+          "note": "Feierliche Übergabe der Urkunden, Teams werden gesondert ausgezeichnet."
+        }
+      ]
+    },
+    {
+      "id": "line-dance",
+      "title": "Line Dance",
+      "area": "Kurse",
+      "groups": [
+        "erwachsene",
+        "senioren"
+      ],
       "intro": "Tanzen in Reihen und Linien zu Country- und Popmusik – fördert Koordination, Fitness und soziale Kontakte in jedem Alter.",
       "url": "https://www.vfl-ramsdorf.de/breitensport/kurse",
-      "leaders": [{"name": "Sabine Scheer"}],
+      "leaders": [
+        {
+          "name": "Sabine Scheer"
+        }
+      ],
       "sessions": [
-        {"day": 4, "start": "16:30", "end": "17:30", "venue": "Sporthalle In der Worthe", "audience": "Level I", "leader": "Sabine Scheer", "course": "Line Dance - Level I"},
-        {"day": 4, "start": "18:00", "end": "19:00", "venue": "Sporthalle In der Worthe", "audience": "Level II", "leader": "Sabine Scheer", "course": "Line Dance - Level II"},
-        {"day": 4, "start": "19:00", "end": "20:00", "venue": "Sporthalle In der Worthe", "audience": "Level III", "leader": "Sabine Scheer", "course": "Line Dance - Level III"}
+        {
+          "day": 4,
+          "start": "16:30",
+          "end": "17:30",
+          "venue": "Sporthalle In der Worthe",
+          "audience": "Level I",
+          "leader": "Sabine Scheer",
+          "course": "Line Dance - Level I"
+        },
+        {
+          "day": 4,
+          "start": "18:00",
+          "end": "19:00",
+          "venue": "Sporthalle In der Worthe",
+          "audience": "Level II",
+          "leader": "Sabine Scheer",
+          "course": "Line Dance - Level II"
+        },
+        {
+          "day": 4,
+          "start": "19:00",
+          "end": "20:00",
+          "venue": "Sporthalle In der Worthe",
+          "audience": "Level III",
+          "leader": "Sabine Scheer",
+          "course": "Line Dance - Level III"
+        }
       ]
     },
     {
-      "id": "dancing-fit", "title": "Dancing Fit", "area": "Kurse", "groups": ["erwachsene", "senioren"],
+      "id": "dancing-fit",
+      "title": "Dancing Fit",
+      "area": "Kurse",
+      "groups": [
+        "erwachsene",
+        "senioren"
+      ],
       "intro": "Moderne Tanz-Fitness: leicht erlernbare Choreografien aus Line Dance und Aerobic zu moderner und lateinamerikanischer Musik.",
       "url": "https://www.vfl-ramsdorf.de/breitensport/kurse",
-      "leaders": [{"name": "Andrea Fortmann", "phone": "+491607144135", "email": "fortmann20@gmail.com"}],
+      "leaders": [
+        {
+          "name": "Andrea Fortmann",
+          "phone": "+491607144135",
+          "email": "fortmann20@gmail.com"
+        }
+      ],
       "sessions": [
-        {"day": 2, "start": "17:00", "end": "18:00", "venue": "Alte Molkerei · Kursraum", "audience": "Gruppe I", "leader": "Andrea Fortmann", "course": "Dancing Fit I"},
-        {"day": 2, "start": "18:15", "end": "19:15", "venue": "Alte Molkerei · Kursraum", "audience": "Gruppe II", "leader": "Andrea Fortmann", "course": "Dancing Fit II"}
+        {
+          "day": 2,
+          "start": "17:00",
+          "end": "18:00",
+          "venue": "Alte Molkerei · Kursraum",
+          "audience": "Gruppe I",
+          "leader": "Andrea Fortmann",
+          "course": "Dancing Fit I"
+        },
+        {
+          "day": 2,
+          "start": "18:15",
+          "end": "19:15",
+          "venue": "Alte Molkerei · Kursraum",
+          "audience": "Gruppe II",
+          "leader": "Andrea Fortmann",
+          "course": "Dancing Fit II"
+        }
       ]
     },
     {
-      "id": "fit-bis-ins-hohe-alter", "title": "Fit bis ins hohe Alter", "area": "Kurse", "groups": ["senioren"],
+      "id": "fit-bis-ins-hohe-alter",
+      "title": "Fit bis ins hohe Alter",
+      "area": "Kurse",
+      "groups": [
+        "senioren"
+      ],
       "intro": "Sport und Inklusion im Verein: Jede Teilnehmerin und jeder Teilnehmer wird dort abgeholt, wo sie oder er steht.",
       "url": "https://www.vfl-ramsdorf.de/breitensport/kurse",
-      "leaders": [{"name": "Gladys Ostrick", "phone": "+4915751095374", "email": "ostrickgladys@gmail.com"}],
-      "sessions": [{"day": 3, "start": "14:30", "end": "16:30", "venue": "Alte Molkerei · Mehrzweckraum", "audience": "Senior*innen", "leader": "Gladys Ostrick", "course": "Fit bis ins Hohe Alter"}]
+      "leaders": [
+        {
+          "name": "Gladys Ostrick",
+          "phone": "+4915751095374",
+          "email": "ostrickgladys@gmail.com"
+        }
+      ],
+      "sessions": [
+        {
+          "day": 3,
+          "start": "14:30",
+          "end": "16:30",
+          "venue": "Alte Molkerei · Mehrzweckraum",
+          "audience": "Senior*innen",
+          "leader": "Gladys Ostrick",
+          "course": "Fit bis ins Hohe Alter"
+        }
+      ]
+    },
+    {
+      "id": "aqua-fitness",
+      "title": "Aqua Fitness",
+      "area": "Kurse",
+      "groups": [
+        "erwachsene",
+        "senioren"
+      ],
+      "intro": "Gelenkschonendes Ganzkörpertraining im Wasser mit Poolnudel, Aquadisc, Hanteln und BEtomic – für Kraft, Ausdauer, Beweglichkeit und Entspannung.",
+      "url": "https://www.vfl-ramsdorf.de/breitensport/kurse",
+      "leaders": [
+        {
+          "name": "Beate Storks",
+          "phone": "+4915770490556",
+          "email": "vorstand@breitensport.vfl-ramsdorf.de"
+        }
+      ],
+      "sessions": [
+        {
+          "day": 4,
+          "start": "17:15",
+          "end": "17:45",
+          "venue": "Freibad Ramsdorf",
+          "audience": "Erwachsene",
+          "leader": "Beate Storks",
+          "months": [
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "note": "Nur während der Freibadsaison"
+        }
+      ]
     }
   ]
 }

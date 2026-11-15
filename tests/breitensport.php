@@ -38,9 +38,12 @@ foreach($data['offers'] as $o){
  check(array_diff($o['groups'],['kinder','erwachsene','senioren'])===[]&&$o['groups'],'groups '.$o['id']);
  foreach($o['sessions'] as $s){
   check(is_int($s['day'])&&$s['day']>=1&&$s['day']<=6,'weekday '.$o['id']);
+  check(!isset($s['dates'])||(is_array($s['dates'])&&$s['dates']),'dates list '.$o['id']);
   check(preg_match('/^\d\d:\d\d$/',$s['start'])===1&&preg_match('/^\d\d:\d\d$/',$s['end'])===1&&$s['start']<$s['end'],'time range '.$o['id']);
   if(isset($s['leader']))check(in_array($s['leader'],array_column($o['leaders'],'name'),true),'leader listed '.$o['id']);
  }
 }
-check(count($data['offers'])===17&&count($data['contacts'])===3,'all website offers and contacts');
+check(count($data['offers'])===18&&count($data['contacts'])===3,'all website offers and contacts');
+foreach($data['offers'] as $o){foreach($o['sessions'] as $s)foreach($s['dates']??[] as $d){check(preg_match('/^\d{4}-\d\d-\d\d$/',$d)===1&&(int)date('w',strtotime($d))%7===$s['day']%7,'dated session on its weekday '.$o['id'].' '.$d);}
+ foreach($o['events']??[] as $e)check(preg_match('/^\d{4}-\d\d-\d\d$/',$e['date'])===1&&preg_match('/^\d\d:\d\d$/',$e['start'])===1&&$e['title']!=='','event '.$o['id']);}
 echo "PASS: PHP Breitensport course list, details, prices, seats, dates, link/image restrictions and maintained offers.\n";

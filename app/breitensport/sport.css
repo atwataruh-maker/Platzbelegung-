@@ -80,3 +80,11 @@
 .sport-shell a:focus-visible,.sport-shell button:focus-visible{outline:3px solid #ecb94d;outline-offset:3px}
 @media(min-width:700px){.sport-course{display:grid;grid-template-columns:220px 1fr}.sport-course img{height:100%;min-height:200px}}
 @media(max-width:360px){.sport-days{gap:4px}.sport-days button{font-size:12px}.sport-offer{grid-template-columns:54px minmax(0,1fr) 14px;gap:8px;padding:12px 10px}.sport-actions{grid-template-columns:1fr}}
+.sport-dates{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.sport-dates span{font-size:12px;font-weight:700;color:#176bb0;background:#e2f2ff;border-radius:7px;padding:2px 7px}
+.sport-dates .sport-past{color:#8a9aac;background:#eef1f7;text-decoration:line-through}
+.sport-session.sport-past{opacity:.55}
+.sport-dates-over{font-size:13px;color:#8a5714;background:#fff6e2;border-radius:10px;padding:10px 12px;margin:8px 0 0}
+.sport-upcoming .sport-time{background:#fff1d4;color:#8a5714}
+.sport-upcoming .sport-time small{color:#8a5714}
+.sport-upcoming .sport-time b{font-size:13px}

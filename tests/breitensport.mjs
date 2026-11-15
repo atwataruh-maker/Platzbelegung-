@@ -18,7 +18,20 @@ assert.deepEqual(titles('2026-11-18'),['Fit bis ins hohe Alter 14:30','Leichtath
 assert.equal(L.sessionsFor(data,'2026-11-18').find(e=>e.offer.id==='leichtathletik').session.venue,'Alte Molkerei · Kursraum');
 assert.equal(L.sessionsFor(data,'2027-04-14').find(e=>e.offer.id==='leichtathletik').session.venue,'Wulfkampstadion · Laufbahn');
 assert.deepEqual(titles('2026-11-18','senioren'),['Fit bis ins hohe Alter 14:30','Aerobic 19:30']);
-assert.deepEqual(titles('2026-11-21'),['Eltern-Kind-Fußball 09:00','Eltern-Kind-Fußball 10:00','Sportabzeichen 10:00']);
+assert.deepEqual(titles('2026-11-21'),['Eltern-Kind-Fußball 09:00','Eltern-Kind-Fußball 10:00'],'Sportabzeichen only on its published dates');
+assert.deepEqual(titles('2026-09-26'),['Eltern-Kind-Fußball 09:00','Eltern-Kind-Fußball 10:00','Sportabzeichen 10:00']);
+assert.ok(!titles('2026-11-19').some(t=>t.startsWith('Sportabzeichen')));assert.ok(titles('2026-10-01').includes('Sportabzeichen 19:00'));
+// Aqua Fitness only during the outdoor pool season.
+assert.ok(!titles('2026-11-19').some(t=>t.startsWith('Aqua')));assert.ok(titles('2027-06-03').includes('Aqua Fitness 17:15'));
+// Upcoming appointments: the award ceremony on Sunday 22.11. appears; past Sportabzeichen dates do not.
+const next=L.upcoming(data,'2026-11-15');assert.deepEqual(next.map(i=>[i.title,i.date,i.kind]),[['Übergabefeier Sportabzeichen','2026-11-22','event']]);
+assert.deepEqual(L.upcoming(data,'2026-11-23'),[]);
+assert.deepEqual(L.upcoming(data,'2026-09-01').map(i=>i.date),['2026-09-05','2026-09-10','2026-09-14']);
+const badge=base.offers.find(o=>o.id==='sportabzeichen');
+assert.equal(L.hasCalendar(badge,'2026-11-15'),true);assert.equal(L.hasCalendar(badge,'2026-11-23'),false);
+const badgeIcs=L.ics(badge,'2026-11-15',null);assert.equal(badgeIcs.match(/BEGIN:VEVENT/g).length,1);
+assert.match(badgeIcs,/DTSTART;TZID=Europe\/Berlin:20261122T150000/);assert.match(badgeIcs,/DTEND;TZID=Europe\/Berlin:20261122T170000/);assert.ok(!badgeIcs.includes('RRULE:FREQ=WEEKLY'));
+assert.equal(L.ics(badge,'2026-09-01',null).match(/BEGIN:VEVENT/g).length,6);
 // Courses: shown within their period; ended or unlisted courses disappear once live data exists.
 assert.ok(titles('2026-11-19').includes('Line Dance 16:30'));
 assert.ok(!titles('2026-12-24').includes('Line Dance 16:30'));
@@ -50,4 +63,4 @@ const athletics=L.ics(base.offers.find(o=>o.id==='leichtathletik'),'2026-11-18',
 assert.match(athletics,/DTSTART;TZID=Europe\/Berlin:20261118T153000/);assert.match(athletics,/DTSTART;TZID=Europe\/Berlin:20270407T153000/);
 assert.match(athletics,/BYMONTH=4,5,6,7,8,9,10/);assert.ok(athletics.includes('\r\n'));
 assert.match(L.ics(base.offers.find(o=>o.id==='trampolin'),'2026-11-18',null),/SUMMARY:Trampolin \(Anfänger ab 3 J\.\) · VfL Ramsdorf/);
-console.log('PASS: Breitensport week, filters, seasonal venues, course periods, timing, seats, safe links and calendar export.');
+console.log('PASS: Breitensport week, filters, seasonal venues, dated appointments, events, course periods, timing, seats, safe links and calendar export.');

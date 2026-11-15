@@ -1,10 +1,10 @@
-# VfL Ramsdorf Vereins-App · v0.13.0 · PHP/STRATO
+# VfL Ramsdorf Vereins-App · v0.13.1 · PHP/STRATO
 
 **Branch `strato-php`: eigenständig auf PHP-Webhosting betreibbare Vereins-App.**
 
 Platzbelegung, Kabinenbelegung, Spiele & Ergebnisse, Breitensport, Helferbörse und eigener Admin-Login. Neue Startseite mit Tageshinweisen, Ergebnissen der letzten 48 Stunden und aktuellem Bomber. PHP verarbeitet Spiele und berechnet die Platz- und Kabinenbelegung. Gesuche werden in MySQL/MariaDB gespeichert.
 
-**Bestehende Installation aktualisieren:** [Update 0.13.0](UPDATE-0.13.0.md) · [Fertiges Update-ZIP](vfl-update-0.13.0.zip).
+**Bestehende Installation aktualisieren:** [Update 0.13.1](UPDATE-0.13.1.md) · [Fertiges Update-ZIP](vfl-update-0.13.1.zip). Von v0.11.x zuerst [Update 0.13.0](UPDATE-0.13.0.md).
 
 ## Direkt installieren
 
@@ -48,4 +48,5 @@ Wochenplan Mo–Sa mit Filter nach Zielgruppe, Kursübersicht mit freien Plätze
 
 - Feste Angebote, Zeiten, Übungsleitungen und Ansprechpartner stehen in `server/breitensport.json` und können dort ohne neuen Build angepasst werden. Bei Abweichungen auf der Vereinswebsite gelten deren Detail- und Kursseiten.
 - Kurse (Zeitraum, Preise, freie Plätze, Buchungslink) werden von `www.vfl-ramsdorf.de/breitensport/kurse` gelesen und 30 Minuten zwischengespeichert. Ist die Website nicht erreichbar, wird bis zu sieben Tage der letzte Stand angezeigt; ohne Kursdaten bleibt der gepflegte Wochenplan sichtbar.
+- Angebote mit festen Einzelterminen (`dates`, z. B. Sportabzeichen) erscheinen nur an diesen Tagen; einmalige Veranstaltungen (`events`) stehen unter „Nächste Termine“.
 - Kurstermine erscheinen im Wochenplan nur, solange der Kurs auf der Website ausgeschrieben ist und das Datum im Kurszeitraum liegt.
