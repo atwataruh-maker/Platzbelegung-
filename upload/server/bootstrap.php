@@ -9,4 +9,5 @@ require_once __DIR__.'/Auth.php';
 require_once __DIR__.'/Helpers.php';
 require_once __DIR__.'/Recent.php';
 require_once __DIR__.'/Bomber.php';
+require_once __DIR__.'/Breitensport.php';
 \Vfl\App::boot();

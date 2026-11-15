@@ -49,7 +49,7 @@ final class DB {
 final class Http {
  public static function get(string $url,int $limit=2000000,int $timeout=15):string{
   // No user-supplied target URLs, redirects, credentials or arbitrary proxy endpoints.
-  $p=parse_url($url);if(($p['scheme']??'')!=='https'||(($p['host']??'')!=='www.fussball.de'&&$url!=='https://www.vfl-ramsdorf.de/fussball/stadionzeitung')||isset($p['user'])||isset($p['port']))throw new \RuntimeException('Disallowed source');
+  $p=parse_url($url);if(($p['scheme']??'')!=='https'||(($p['host']??'')!=='www.fussball.de'&&$url!=='https://www.vfl-ramsdorf.de/fussball/stadionzeitung'&&!preg_match('~^https://www\.vfl-ramsdorf\.de/breitensport/(?:kurse|kurs/\d{1,6})$~D',$url))||isset($p['user'])||isset($p['port']))throw new \RuntimeException('Disallowed source');
   $ch=curl_init($url);$body='';curl_setopt_array($ch,[CURLOPT_FOLLOWLOCATION=>false,CURLOPT_CONNECTTIMEOUT=>min(10,$timeout),CURLOPT_TIMEOUT=>$timeout,CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS,CURLOPT_SSL_VERIFYPEER=>true,CURLOPT_SSL_VERIFYHOST=>2,CURLOPT_USERAGENT=>'VfL-Ramsdorf-Vereinsapp/0.10',CURLOPT_HTTPHEADER=>['Accept: text/html, application/octet-stream'],CURLOPT_WRITEFUNCTION=>function($ch,$chunk)use(&$body,$limit){if(strlen($body)+strlen($chunk)>$limit)return 0;$body.=$chunk;return strlen($chunk);}]);
   $ok=curl_exec($ch);$status=curl_getinfo($ch,CURLINFO_RESPONSE_CODE);$error=curl_error($ch);curl_close($ch);if(!$ok||$status<200||$status>=300)throw new \RuntimeException('Source unavailable: '.$status.($error?' ('.$error.')':''),$status);return $body;
  }

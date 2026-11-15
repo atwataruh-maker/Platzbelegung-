@@ -1,0 +1,82 @@
+.sport-shell{padding-bottom:20px}
+.sport-hero p{margin:0;font-size:14px;line-height:1.5;color:#e2f0fa;max-width:38ch}
+.sport-hero h1{margin-bottom:14px}
+.sport-switch{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:16px;padding:4px;border:1px solid #ffffff44;border-radius:13px;background:#ffffff22;max-width:420px}
+.sport-switch a{display:block;text-align:center;font-size:14px;font-weight:700;padding:8px 0;border-radius:10px;color:#fff;text-decoration:none}
+.sport-switch a[aria-current=page]{background:#fff;color:#133452}
+.sport-days{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-top:14px;max-width:420px}
+.sport-days button{border:1px solid #ffffff55;background:#ffffff1a;color:#fff;border-radius:11px;padding:7px 0 6px;font:inherit;font-size:13px;font-weight:700;line-height:1.2;cursor:pointer;min-height:44px}
+.sport-days button small{display:block;font-size:10.5px;font-weight:500;opacity:.85}
+.sport-days button[aria-pressed=true]{background:#fff;color:#133452;border-color:#fff}
+.sport-filter{padding:14px}
+.sport-chips{display:flex;flex-wrap:wrap;gap:7px}
+.sport-chips button{border:1px solid #d5e2ee;background:#fff;color:#234a6c;border-radius:999px;padding:7px 13px;font:inherit;font-size:13px;font-weight:650;cursor:pointer;min-height:36px}
+.sport-chips button[aria-pressed=true]{background:#176bb0;border-color:#176bb0;color:#fff}
+.sport-first{margin-top:34px}
+.sport-offer{display:grid;grid-template-columns:62px minmax(0,1fr) 16px;gap:11px;align-items:center;background:#fff;border:1px solid #dfe8f1;border-radius:13px;padding:13px 12px;margin-top:9px;box-shadow:0 2px 5px #13375908;color:#143452;text-decoration:none}
+.sport-time{display:grid;place-items:center;align-content:center;border-radius:11px;background:#e2f2ff;color:#176bb0;height:54px;line-height:1.15}
+.sport-time b{font-size:15px;font-weight:750}
+.sport-time small{font-size:11px;font-weight:600;color:#3f6e95}
+.sport-offer-copy{min-width:0}
+.sport-offer-copy strong{display:block;font-size:15px;line-height:1.3}
+.sport-meta{display:block;font-size:12px;color:#62758b;line-height:1.5;margin-top:2px}
+.sport-chevron{color:#557c9f}
+.sport-tag{display:inline-block;font-size:10.5px;font-weight:700;border-radius:6px;padding:1px 6px;margin-right:6px;vertical-align:1px}
+.sport-tag-kinder{background:#e6f6ea;color:#1c7a3a}
+.sport-tag-senioren{background:#f1ebfb;color:#6b3fb3}
+.sport-tag-erwachsene{background:#e2f2ff;color:#176bb0}
+.sport-tag-kurs{background:#fff1d4;color:#8a5714}
+.sport-offer-done{opacity:.55}
+.sport-offer-now{border-color:#176bb0;box-shadow:0 0 0 2px #176bb033}
+.sport-offer-now .sport-time{background:#176bb0;color:#fff}
+.sport-offer-now .sport-time small{color:#d8ecfb}
+.sport-live{display:block;font-size:10.5px;font-weight:750;color:#176bb0;text-transform:uppercase;letter-spacing:.5px}
+.sport-offer .sport-seats{margin-top:5px}
+.sport-legend,.sport-source{font-size:12px;color:#62758b;margin:10px 0 0;line-height:1.5}
+.sport-source{text-align:center}
+.sport-retry{display:inline-flex;align-items:center;gap:7px;margin-top:10px;border:0;background:none;color:#176bb0;font:inherit;font-size:14px;font-weight:650;text-decoration:underline;cursor:pointer}
+.sport-panel{background:#fff;border:1px solid #e0e8f0;padding:16px;border-radius:18px;box-shadow:0 3px 9px #163e6410}
+.sport-panel h2{margin:0 0 4px}
+.sport-person{display:grid;grid-template-columns:44px 1fr;gap:11px;align-items:center;padding:12px 0;border-top:1px solid #edf1f6}
+.sport-panel h2+.sport-person{border-top:0}
+.sport-avatar{width:44px;height:44px;border-radius:50%;background:#e2f2ff;color:#176bb0;display:grid;place-items:center;font-weight:750;font-size:15px}
+.sport-person small{display:block;font-size:12px;color:#62758b}
+.sport-person strong{display:block;font-size:15px}
+.sport-person-links{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:3px}
+.sport-person-links a{display:inline-flex;align-items:center;gap:5px;min-height:32px;color:#176bb0;font-size:13px;font-weight:650;text-decoration:none}
+.sport-seats{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;border-radius:999px;padding:3px 9px}
+.sport-seats:before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor}
+.sport-seats-full{background:#fde4e1;color:#a3291c}
+.sport-seats-few{background:#fff1d4;color:#8a5714}
+.sport-seats-ok{background:#e6f6ea;color:#1c7a3a}
+.sport-seats-unknown{background:#eef1f7;color:#4c6077}
+.sport-course{background:#fff;border:1px solid #dfe8f1;border-radius:16px;overflow:hidden;margin-top:12px;box-shadow:0 3px 9px #163e6410}
+.sport-course img{display:block;width:100%;height:140px;object-fit:cover;background:#dbe8f3}
+.sport-course>div{padding:14px}
+.sport-course h3{margin:7px 0 2px;font-weight:750;font-size:18px;letter-spacing:-.3px;line-height:1.25}
+.sport-course p{font-size:13px;color:#4c6077;margin:0}
+.sport-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0 10px}
+.sport-facts div{background:#f3f7fb;border-radius:10px;padding:8px 9px}
+.sport-facts dt{font-size:10.5px;color:#62758b}
+.sport-facts dd{margin:0;font-size:14px;font-weight:750}
+.sport-course .sport-price{display:flex;flex-wrap:wrap;gap:4px 16px;margin:0 0 12px;font-size:13px}
+.sport-price b{color:#143452}
+.sport-button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 12px;border-radius:11px;border:0;background:#176bb0;color:#fff;font:inherit;font-weight:700;font-size:14px;text-align:center;text-decoration:none;cursor:pointer}
+.sport-button-muted{background:#e8edf3;color:#4c6077}
+.sport-button-ghost{background:#fff;color:#176bb0;border:1px solid #c9dcec}
+.sport-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sport-back{display:inline-flex;align-items:center;gap:4px;margin:0 0 10px -4px;color:#e2f0fa;font-size:13px;font-weight:650;text-decoration:none;min-height:32px}
+.sport-back+time{display:block}
+.sport-session{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;padding:12px 0;border-top:1px solid #edf1f6}
+.sport-panel h2+.sport-session{border-top:0}
+.sport-session b{font-size:15px}
+.sport-session>span{grid-column:1;font-size:12px;color:#62758b}
+.sport-session .sport-age{grid-column:2;grid-row:1/span 2;align-self:center;font-size:12px;font-weight:700;background:#e6f6ea;color:#1c7a3a;border-radius:8px;padding:4px 8px;max-width:140px;text-align:center}
+.sport-session .sport-note{color:#8a5714}
+.sport-session-course{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin-top:4px}
+.sport-session-course a{display:inline-flex;align-items:center;gap:4px;color:#176bb0;font-weight:650;text-decoration:none}
+.sport-venue{display:flex;align-items:center;gap:8px;font-size:14px;margin:8px 0 0}
+.sport-venue svg{color:#176bb0;flex:none}
+.sport-shell a:focus-visible,.sport-shell button:focus-visible{outline:3px solid #ecb94d;outline-offset:3px}
+@media(min-width:700px){.sport-course{display:grid;grid-template-columns:220px 1fr}.sport-course img{height:100%;min-height:200px}}
+@media(max-width:360px){.sport-days{gap:4px}.sport-days button{font-size:12px}.sport-offer{grid-template-columns:54px minmax(0,1fr) 14px;gap:8px;padding:12px 10px}.sport-actions{grid-template-columns:1fr}}

@@ -1,5 +1,14 @@
 # Änderungen
 
+## v0.13.0 — 15.11.2026 · Breitensport
+
+- Neuer Reiter „Sport“ zwischen „Kabinen“ und „Helfen“. Die Startseite bleibt unverändert.
+- Wochenplan Mo–Sa mit allen 17 Breitensport-Angeboten der Vereinswebsite, Filter für Kinder, Erwachsene und Senior*innen sowie Kennzeichnung laufender und vergangener Angebote. Leichtathletik wechselt automatisch zwischen Alter Molkerei (November–März) und Wulfkampstadion (ab April).
+- Kursübersicht mit Zeitraum, Terminen, Preisen für Mitglieder/Nicht-Mitglieder, freien Plätzen und Buchungslink, live von der Vereinswebsite (30 Minuten Zwischenspeicher, bei Ausfall letzter Stand).
+- Seite je Angebot mit allen Zeiten, Übungsleitung (Anrufen/E-Mail), Ort, Kalenderexport (.ics) und Link zur Website. Ansprechpartner der Breitensport-Abteilung im Wochenplan.
+- Bei Abweichungen auf der Website gelten die Detail- und Kursseiten. Gepflegte Daten in `server/breitensport.json`.
+- Keine Änderungen an Platz- und Kabinenbelegung oder Datenbank. STRATO-Update: [Anleitung](UPDATE-0.13.0.md).
+
 ## v0.11.1 — 15.11.2026 · Vereinslogos in Spielen und Ergebnissen
 
 - Heim- und Gastlogo direkt neben den jeweiligen Mannschaftsnamen, auch bei den Ergebnissen der letzten 48 Stunden. Bei fehlendem oder nicht ladbarem Logo erscheinen neutrale Initialen.
