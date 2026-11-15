@@ -1,5 +1,12 @@
 # Änderungen
 
+## v0.11.1 — 15.11.2026 · Vereinslogos in Spielen und Ergebnissen
+
+- Heim- und Gastlogo direkt neben den jeweiligen Mannschaftsnamen, auch bei den Ergebnissen der letzten 48 Stunden. Bei fehlendem oder nicht ladbarem Logo erscheinen neutrale Initialen.
+- Allgemeine gelbe Quellenhinweise und wiederholte Erklärungstexte auf der Startseite entfernt. Konkrete Spieländerungen (z. B. verlegt oder abgesetzt) bleiben sichtbar.
+- Nicht bestätigte bzw. ältere Spielstände erhalten eine dezente Kennzeichnung; bei vollständig fehlenden Ergebnissen bleibt der Fehlerzustand erkennbar.
+- Keine Änderungen an Platz- und Kabinenbelegung oder Datenbank. STRATO-Update: [Anleitung](UPDATE-0.11.1.md).
+
 ## v0.11.0 — 14.11.2026 · Neue Startseite, Ergebnisse und Bomber
 
 - Freigegebenes blau-weißes Design mit Logo/Wasserzeichen, Tageshinweisen und dauerhaftem Schnellzugriff.

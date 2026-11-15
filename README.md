@@ -1,10 +1,10 @@
-# VfL Ramsdorf Vereins-App · v0.11.0 · PHP/STRATO
+# VfL Ramsdorf Vereins-App · v0.11.1 · PHP/STRATO
 
 **Branch `strato-php`: eigenständig auf PHP-Webhosting betreibbare Vereins-App.**
 
 Platzbelegung, Kabinenbelegung, Spiele & Ergebnisse, Helferbörse und eigener Admin-Login. Neue Startseite mit Tageshinweisen, Ergebnissen der letzten 48 Stunden und aktuellem Bomber. PHP verarbeitet Spiele und berechnet die Platz- und Kabinenbelegung. Gesuche werden in MySQL/MariaDB gespeichert.
 
-**Bestehende Installation aktualisieren:** [Update 0.11.0](UPDATE-0.11.0.md) · [Fertiges Update-ZIP](vfl-update-0.11.0.zip).
+**Bestehende Installation aktualisieren:** [Update 0.11.1](UPDATE-0.11.1.md) · [Fertiges Update-ZIP](vfl-update-0.11.1.zip).
 
 ## Direkt installieren
 
