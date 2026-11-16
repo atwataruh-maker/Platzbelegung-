@@ -1,4 +1,4 @@
-import {DoorOpen} from 'lucide-react';
+import {DoorOpen,Users} from 'lucide-react';
 import {CABINS,GENDER_LABEL,isGroundsUser,type CabinPlan as Plan} from '@/lib/cabin-allocation';
 import {clock} from '@/lib/training-plan';
 
@@ -13,6 +13,8 @@ export function CabinPlan({plan,title='Kabinenbelegung'}:{plan:Plan;title?:strin
     {entries.length?<ul>{entries.map(b=><li key={b.id} className={'cabin-booking '+b.gender}>
      <div className="cabin-time"><time>{clock(b.start)}–{clock(b.end)}</time></div>
      <strong>{b.team}</strong><div className="cabin-meta">{b.category&&<span>{b.category}</span>}<span>{b.activities.join(' + ')}</span>{isGroundsUser(b)&&<span>1 Mannschaft · 10 Spieler</span>}</div>
+     {(()=>{const others=entries.filter(o=>o.id!==b.id&&b.sharingWith?.includes(o.team)&&o.start<b.end&&b.start<o.end);
+      return others.length>0&&<p className="cabin-sharing"><Users size={13} aria-hidden="true"/> Geteilt mit {others.map(o=>`${o.team} (${clock(Math.max(b.start,o.start))}–${clock(Math.min(b.end,o.end))})`).join(', ')}</p>;})()}
     </li>)}</ul>:<p className="pitch-empty">{plan.confirmed?'Keine Belegung im Tagesplan':'Keine bekannte Belegung'}</p>}
    </section>;
   })}</div>

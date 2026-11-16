@@ -5,6 +5,7 @@
 - Spielt eine Vereinsmannschaft an einem Tag (Heim-, Auswärtsspiel oder Vereinsduell), entfällt ihr Training an diesem Tag. Es wird weder angezeigt noch verschoben und belegt keinen Platz und keine Kabine. Die Platzbelegung zeigt den Hinweis „Training entfällt · Spieltag“ mit Grund und Anstoßzeit, die Startseite zählt es als Änderung.
 - Abgesagte oder auf einen anderen Tag verlegte Spiele heben kein Training auf. Zusammengelegte Trainingsgruppen (z. B. E1/E2-Juniorinnen) trainieren weiter, weil nur eine der Mannschaften spielt.
 - Spielkarten in der Platzbelegung nennen die Vereinsmannschaft und Altersklasse, z. B. „D1-Junioren · D-Junioren“.
+- Kabinenbelegung: Jede Kachel zeigt, mit wem und in welchem Zeitraum die Kabine geteilt wird, z. B. „Geteilt mit D2-Junioren (17:30–19:15)“.
 - Gleiche Zuordnung „VfL Ramsdorf 2 + D-Junioren → D2-Junioren“ für Platz- und Kabinenbelegung.
 - STRATO-Update: [Anleitung](UPDATE-0.14.1.md).
 
