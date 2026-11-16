@@ -88,3 +88,7 @@
 .sport-upcoming .sport-time{background:#fff1d4;color:#8a5714}
 .sport-upcoming .sport-time small{color:#8a5714}
 .sport-upcoming .sport-time b{font-size:13px}
+.sport-live-note{display:block;font-size:11.5px;font-weight:650;color:#176bb0;margin-top:3px;line-height:1.4}
+.sport-session .sport-live-note{grid-column:1/-1;color:#176bb0}
+.sport-session .sport-live-missing{color:#a3291c}
+.sport-live-missing{color:#a3291c}

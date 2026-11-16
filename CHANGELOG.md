@@ -1,5 +1,13 @@
 # Änderungen
 
+## v0.14.0 — 16.11.2026 · Zeiten automatisch von der Vereinswebsite
+
+- Alle Breitensport-Zeiten werden stündlich mit der Vereinswebsite abgeglichen: Detailseiten (Kinder-, Senior*innen-, Mannschaftssport, Eltern-Kind-Fußball, Sportabzeichen, Kurse), Kurstexte und für Leichtathletik der Wochenplan der Übersicht.
+- Die Website gewinnt: Geänderte Zeiten, deutlich andere Orte und neue Übungsleitungen werden übernommen und mit „Laut Website geändert · bisher …“ gekennzeichnet. Nicht mehr gefundene Termine bleiben sichtbar und erhalten einen Hinweis.
+- Ist eine Seite nicht erreichbar oder nicht lesbar, gelten für deren Angebote die hinterlegten Zeiten. Letzter Abgleich am Ende des Wochenplans.
+- Neue, noch nicht hinterlegte Angebote der Website werden in `/api/breitensport` unter `live.unmatched` gemeldet.
+- STRATO-Update: [Anleitung](UPDATE-0.14.0.md).
+
 ## v0.13.1 — 16.11.2026 · Breitensport-Termine
 
 - Sportabzeichen nur noch an den veröffentlichten Abnahmeterminen 2026 (Aushang auf der Vereinswebsite) statt jede Woche; vergangene Termine durchgestrichen, Hinweis auf neue Termine. Ort ergänzt: Wulfkampstadion (Holthausener Str. 18).

@@ -4,14 +4,16 @@ export type Group = 'kinder' | 'erwachsene' | 'senioren';
 export type Person = { name: string; phone?: string; email?: string };
 export type Contact = Person & { role: string };
 /** Weekly session; with `dates` it only takes place on those dates (e.g. Sportabzeichen-Abnahme). */
-export type Session = { day: number; start: string; end: string; venue?: string; audience?: string; leader?: string; months?: number[]; dates?: string[]; note?: string; course?: string };
+export type LiveCheck = { state: 'confirmed' | 'updated' | 'missing' | 'unchecked'; source?: 'kurs' | 'seite'; planned?: { start: string; end: string; venue: string | null; leader?: string | null } };
+export type Session = { day: number; start: string; end: string; venue?: string; audience?: string; leader?: string; months?: number[]; dates?: string[]; note?: string; course?: string; live?: LiveCheck };
 /** One-off event without weekly rhythm (e.g. Übergabefeier). */
 export type ClubEvent = { date: string; start: string; end?: string; title: string; venue?: string; note?: string };
 export type Offer = { id: string; title: string; area: string; groups: Group[]; intro: string; url: string; leaders: Person[]; sessions: Session[]; events?: ClubEvent[] };
 export type Course = { id: number; title: string; url: string; image: string | null; teaser: string[]; leader: string | null; startDate: string | null; endDate: string | null; ongoing: boolean;
   units: number | null; venue: string | null; priceMember: number | null; priceGuest: number | null; seatsLeft: number | null; bookingUrl: string | null; detailsMissing?: boolean };
 export type CourseFeed = { courses: Course[]; retrievedAt: string; stale?: boolean; source: string };
-export type BreitensportData = { checkedAt: string; source: string; note?: string; contacts: Contact[]; offers: Offer[]; courses: CourseFeed | null };
+export type LiveTimes = { retrievedAt: string | null; stale: boolean; pages: Record<string, boolean>; unmatched: { page: string; title: string; day: number; start: string; end: string | null; venue: string | null }[] };
+export type BreitensportData = { checkedAt: string; source: string; note?: string; contacts: Contact[]; offers: Offer[]; courses: CourseFeed | null; live?: LiveTimes | null };
 export type Entry = { offer: Offer; session: Session; course?: Course };
 
 export const GROUPS: { id: Group | 'alle'; label: string }[] = [
@@ -63,6 +65,21 @@ export function sessionsFor(data: BreitensportData | null | undefined, date: str
     .filter(s => s.day === day && (!s.months || s.months.includes(month)) && (!s.dates || s.dates.includes(date)) && (!s.course || courseRuns(data.courses, s.course, date)))
     .map(session => ({ offer, session, course: courseFor(data.courses, session.course) })))
     .sort((a, b) => a.session.start.localeCompare(b.session.start) || a.session.end.localeCompare(b.session.end) || a.offer.title.localeCompare(b.offer.title, 'de'));
+}
+/** What changed against the maintained plan, e.g. "bisher 17:00–18:00 Uhr · Sporthalle In der Worthe". */
+export function plannedLabel(session: Session): string {
+  const p = session.live?.planned;
+  if (!p) return '';
+  const parts: string[] = [];
+  if (p.start !== session.start || p.end !== session.end) parts.push(`${p.start}–${p.end} Uhr`);
+  if (p.venue && p.venue !== session.venue) parts.push(p.venue);
+  if (p.leader && p.leader !== session.leader) parts.push(p.leader);
+  return parts.length ? 'bisher ' + parts.join(' · ') : '';
+}
+export function liveSummary(live: LiveTimes | null | undefined, format: (iso: string) => string): string {
+  if (!live?.retrievedAt) return 'Abgleich mit der Vereinswebsite derzeit nicht möglich; angezeigt werden die hinterlegten Zeiten.';
+  const failed = Object.values(live.pages).filter(ok => !ok).length;
+  return `${live.stale ? 'Letzter Abgleich' : 'Zeiten mit der Vereinswebsite abgeglichen'}: ${format(live.retrievedAt)} Uhr.` + (failed ? ` ${failed === 1 ? 'Eine Seite war' : failed + ' Seiten waren'} nicht lesbar.` : '');
 }
 export type Upcoming = { offer: Offer; date: string; start: string; end?: string; title: string; venue?: string; note?: string; kind: 'event' | 'termin' };
 /** Dated appointments and events from today on (until `days` ahead), earliest first. */

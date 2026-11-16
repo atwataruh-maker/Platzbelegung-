@@ -3,7 +3,7 @@ import {CalendarPlus,ChevronLeft,ChevronRight,ExternalLink,Mail,MapPin,Phone,Ref
 import {appPath} from '@/frontend/api';
 import {ClubHeader} from '@/components/club-header';
 import {usePublicData} from '@/hooks/use-public-data';
-import {GROUPS,DAY_NAMES,DAY_SHORT,activeCourses,hasCalendar,upcoming,berlinDate,berlinMinutes,courseFor,defaultDay,euro,ics,initials,mailHref,safeClubLink,seats,sessionsFor,shortDate,telHref,timing,weekDays,weekday,
+import {GROUPS,DAY_NAMES,DAY_SHORT,activeCourses,hasCalendar,liveSummary,plannedLabel,upcoming,berlinDate,berlinMinutes,courseFor,defaultDay,euro,ics,initials,mailHref,safeClubLink,seats,sessionsFor,shortDate,telHref,timing,weekDays,weekday,
  type BreitensportData,type Session,type Upcoming,type Course,type Entry,type Group,type Offer,type Person} from '@/lib/breitensport';
 import clubLogo from '@/frontend/assets/vfl-logo.png';
 import '../home.css';
@@ -40,6 +40,8 @@ function EntryRow({entry,date,today,now}:{entry:Entry;date:string;today:string;n
   <span className="sport-time"><b>{session.start}</b><small>bis {session.end}</small></span>
   <span className="sport-offer-copy">{state==='now'&&<span className="sport-live">Läuft gerade</span>}<strong>{offer.title}</strong>
    <span className="sport-meta">{session.audience&&<span className={'sport-tag sport-tag-'+(session.course?'kurs':offer.groups[0])}>{session.course?'Kurs · ':''}{session.audience}</span>}{session.venue??'Ort beim Ansprechpartner erfragen'}</span>
+   {session.live?.state==='updated'&&<span className="sport-live-note">Laut Website geändert · {plannedLabel(session)}</span>}
+   {session.live?.state==='missing'&&<span className="sport-live-note sport-live-missing">Auf der Website nicht mehr gefunden</span>}
    {course&&course.seatsLeft!==null&&course.seatsLeft<=3&&<SeatBadge course={course}/>}</span>
   <ChevronRight size={18} className="sport-chevron"/></a>;
 }
@@ -63,7 +65,7 @@ function Plan({data,loading,error,retry}:{data:BreitensportData|null;loading:boo
     {entries.map((e,i)=><EntryRow key={e.offer.id+i} entry={e} date={date} today={today} now={berlinMinutes(now)}/>)}
     {date===today&&entries.length>0&&<p className="sport-legend">Grau: bereits vorbei · Blau umrandet: läuft gerade</p>}</section>
    {data&&<section className="sport-panel" aria-labelledby="sport-contacts"><h2 id="sport-contacts">Ansprechpartner</h2>{data.contacts.map(c=><PersonRow key={c.name} person={c} role={c.role}/>)}</section>}
-   {data&&<p className="sport-source">Angebote laut Vereinswebsite, Stand {new Date(data.checkedAt+'T12:00:00Z').toLocaleDateString('de-DE')}. Ferien und Ausfälle bitte bei der Übungsleitung erfragen.</p>}
+   {data&&<p className="sport-source">{liveSummary(data.live,stampFormat)} Ferien und Ausfälle bitte bei der Übungsleitung erfragen.</p>}
    <a className="home-website" href={WEBSITE} target="_blank" rel="noopener noreferrer">Breitensport auf der Vereinswebsite<ExternalLink size={17}/></a>
   </div></>;
 }
@@ -94,6 +96,7 @@ function Courses({data,loading,error,retry}:{data:BreitensportData|null;loading:
    <a className="home-website" href={WEBSITE+'/kurse'} target="_blank" rel="noopener noreferrer">Kurse auf der Vereinswebsite<ExternalLink size={17}/></a></div></>;
 }
 
+const stampFormat=(iso:string)=>new Intl.DateTimeFormat('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Berlin'}).format(new Date(iso));
 const longDate=(date:string)=>new Intl.DateTimeFormat('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(date+'T12:00:00Z'));
 function DateList({session,today}:{session:Session;today:string}){
  return <span className="sport-dates" aria-label="Termine">{session.dates!.map(d=><span key={d} className={d<today?'sport-past':undefined}>{shortDate(d)}</span>)}</span>;
@@ -121,7 +124,9 @@ function Detail({id,data,loading,error,retry}:{id:string;data:BreitensportData|n
   <div className="home-sections">
    <section className="sport-panel" aria-labelledby="sport-times"><h2 id="sport-times">{allDated?'Termine':'Trainingszeiten'}</h2>{sorted.map((s,i)=>{const course=courseFor(data?.courses,s.course);return <div className="sport-session" key={i}>
     <b>{DAY_NAMES[s.day]} · {s.start}–{s.end} Uhr</b>{s.audience&&<span className="sport-age">{s.audience}</span>}
-    <span>{[s.venue??'Ort beim Ansprechpartner erfragen',s.leader].filter(Boolean).join(' · ')}</span>{s.dates&&<DateList session={s} today={today}/>}{s.note&&<span className="sport-note">{s.note}</span>}{course&&<span className="sport-session-course"><SeatBadge course={course}/><a href={safeClubLink(course.bookingUrl??course.url)} target="_blank" rel="noopener noreferrer">Kurs auf der Website<ExternalLink size={13}/></a></span>}</div>;})}
+    <span>{[s.venue??'Ort beim Ansprechpartner erfragen',s.leader].filter(Boolean).join(' · ')}</span>{s.dates&&<DateList session={s} today={today}/>}{s.note&&<span className="sport-note">{s.note}</span>}
+    {s.live?.state==='updated'&&<span className="sport-live-note">Laut Vereinswebsite geändert · {plannedLabel(s)}</span>}
+    {s.live?.state==='missing'&&<span className="sport-live-note sport-live-missing">Auf der Vereinswebsite derzeit nicht gefunden. Bitte bei der Übungsleitung nachfragen.</span>}{course&&<span className="sport-session-course"><SeatBadge course={course}/><a href={safeClubLink(course.bookingUrl??course.url)} target="_blank" rel="noopener noreferrer">Kurs auf der Website<ExternalLink size={13}/></a></span>}</div>;})}
     {allDated&&!datesAhead&&<p className="sport-dates-over">Alle Termine {sorted[0]?.dates?.[0]?.slice(0,4)} sind vorbei. Neue Termine folgen auf der Vereinswebsite.</p>}</section>
    {events.length>0&&<section className="sport-panel" aria-labelledby="sport-events"><h2 id="sport-events">Veranstaltungen</h2>{events.map(e=><div className={'sport-session'+(e.date<today?' sport-past':'')} key={e.date+e.title}><b>{e.title}</b><span>{longDate(e.date)} · ab {e.start} Uhr{e.venue?' · '+e.venue:''}</span>{e.note&&<span>{e.note}</span>}</div>)}</section>}
    {offer.leaders.length>0&&<section className="sport-panel" aria-labelledby="sport-leaders"><h2 id="sport-leaders">Übungsleitung</h2>{offer.leaders.map(p=><PersonRow key={p.name} person={p} role={leaderTimes(offer,p.name)}/>)}</section>}

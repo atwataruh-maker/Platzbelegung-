@@ -63,4 +63,12 @@ const athletics=L.ics(base.offers.find(o=>o.id==='leichtathletik'),'2026-11-18',
 assert.match(athletics,/DTSTART;TZID=Europe\/Berlin:20261118T153000/);assert.match(athletics,/DTSTART;TZID=Europe\/Berlin:20270407T153000/);
 assert.match(athletics,/BYMONTH=4,5,6,7,8,9,10/);assert.ok(athletics.includes('\r\n'));
 assert.match(L.ics(base.offers.find(o=>o.id==='trampolin'),'2026-11-18',null),/SUMMARY:Trampolin \(Anfänger ab 3 J\.\) · VfL Ramsdorf/);
-console.log('PASS: Breitensport week, filters, seasonal venues, dated appointments, events, course periods, timing, seats, safe links and calendar export.');
+// Website check labels.
+assert.equal(L.plannedLabel({start:'19:00',end:'20:15',venue:'A',leader:'X',live:{state:'updated',planned:{start:'19:30',end:'20:30',venue:'A',leader:'X'}}}),'bisher 19:30–20:30 Uhr');
+assert.equal(L.plannedLabel({start:'20:00',end:'22:00',venue:'B',leader:'Hans Neu',live:{state:'updated',planned:{start:'20:00',end:'22:00',venue:'A',leader:'Werner Knuf'}}}),'bisher A · Werner Knuf');
+assert.equal(L.plannedLabel({start:'1',end:'2'}),'');
+const fmt=()=>'16.11., 11:00';
+assert.equal(L.liveSummary({retrievedAt:'x',stale:false,pages:{a:true,b:true},unmatched:[]},fmt),'Zeiten mit der Vereinswebsite abgeglichen: 16.11., 11:00 Uhr.');
+assert.equal(L.liveSummary({retrievedAt:'x',stale:true,pages:{a:true,b:false},unmatched:[]},fmt),'Letzter Abgleich: 16.11., 11:00 Uhr. Eine Seite war nicht lesbar.');
+assert.match(L.liveSummary(null,fmt),/hinterlegten Zeiten/);
+console.log('PASS: Breitensport website check labels, week, filters, seasonal venues, dated appointments, events, course periods, timing, seats, safe links and calendar export.');
