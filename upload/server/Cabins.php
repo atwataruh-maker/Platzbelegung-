@@ -24,15 +24,8 @@ final class Cabins {
   if(in_array($b['team'],['D1-Junioren','E2-Junioren'],true))return 'shared';return null;
  }
  private static function rooms(array $b,string $date):array{if($b['fixed'])return [$b['fixed']];if(self::women($b))return ['home1','home2'];$regular=self::groundsUser($b)?['away1','shared','home2','home1']:($b['guest']?['away1','shared']:['shared','home1','home2','away1']);$preferred=self::preferredRoom($b,$date);return $preferred?[$preferred,...array_values(array_filter($regular,fn($r)=>$r!==$preferred))]:$regular;}
- private static function ownTeam(string $team,string $category,array $names):?string{
-  if(!preg_match('/^VfL\s+Ramsdorf(?:\s+(I|II|III|IV|[1-9]\d*))?$/Di',$team,$m))return null;
-  $suffix=strtoupper($m[1]??'1');$n=['I'=>1,'II'=>2,'III'=>3,'IV'=>4][$suffix]??(int)$suffix;
-  if(preg_match('/^([A-G])-(Junioren|Juniorinnen)$/D',$category,$y))$choices=["$y[1]$n-$y[2]",...($n===1?["$y[1]-$y[2]"]:[])];
-  else $choices=$category==='Herren'?["$n. Herren"]:($category==='Frauen'&&$n===1?['VfL Ramsdorf Damen']:($category==='Altherren'&&$n===1?['Alte Herren']:[]));
-  foreach($choices as $c)if(in_array($c,$names,true))return $c;return null;
- }
  public static function allocate(array $allocation,?array $schedule,bool $includeChanges=true):array{
-  $date=$allocation['date'];$requests=[];$trainingNames=array_column(array_filter($allocation['bookings'],fn($b)=>$b['kind']==='training'),'title');
+  $date=$allocation['date'];$requests=[];$trainingNames=[...array_column(array_filter($allocation['bookings'],fn($b)=>$b['kind']==='training'),'title'),...array_column($allocation['cancelled']??[],'team')];
   foreach($allocation['bookings'] as $b){
    if($b['kind']==='reserve')continue;$segments=$b['segments']?:($b['original']??[]);if(!$segments)continue;
    $start=min(array_column($segments,'start'));$end=max(array_column($segments,'end'));
@@ -44,7 +37,7 @@ final class Cabins {
     foreach(['home','away'] as $side){
      $ours=$side==='home'||$match['location']==='Vereinsduell';$team=$b['teams'][$side];$fixed=null;
      if($ours&&$match['category']==='Herren'&&preg_match('/^VfL\s+Ramsdorf(?:\s+(I|II|1|2))?$/Di',$team,$f))$fixed=in_array(strtoupper($f[1]??'I'),['II','2'],true)?'home2':'home1';
-     $clubTeam=$fixed==='home1'?'1. Herren':($fixed==='home2'?'2. Herren':($ours?self::ownTeam($team,$match['category'],$trainingNames):null));
+     $clubTeam=$fixed==='home1'?'1. Herren':($fixed==='home2'?'2. Herren':($ours?Planning::clubTeam($team,$match['category'],$trainingNames):null));
      $r=['id'=>$b['id'].'-'.$side,'team'=>$clubTeam??$team,'category'=>$match['category'],'gender'=>self::gender($match['category']),'start'=>$start,'end'=>min(1440,$end+15),'room'=>null,'fixed'=>$fixed,'guest'=>!$ours,'shareEligible'=>self::youth($match['category']),'activities'=>[$side==='home'?'Heimspiel':($ours?'Vereinsduell':'Gastspiel')],'sourceIds'=>[$b['id']]];if($clubTeam!==null)$r['clubTeam']=$clubTeam;$requests[]=$r;
     }
    }

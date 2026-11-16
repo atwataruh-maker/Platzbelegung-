@@ -1,7 +1,7 @@
 import {apiFetch as fetch,appPath} from '@/frontend/api';
 'use client';
 import {useEffect,useState,type CSSProperties} from 'react';
-import {ArrowLeft,ArrowRight,CalendarDays,Check,ExternalLink,RefreshCw,AlertTriangle,LoaderCircle,MapPin,ArrowRightLeft,Shield} from 'lucide-react';
+import {ArrowLeft,ArrowRight,CalendarDays,Check,ExternalLink,RefreshCw,AlertTriangle,LoaderCircle,MapPin,ArrowRightLeft,Shield,CalendarX} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {UpcomingMatches} from '@/components/upcoming-matches';
 import {sevenDays,shiftMatchDate,isMatchDate} from '@/lib/matches';
@@ -26,6 +26,7 @@ function BookingCard({booking,style,wide=false}:{booking:Booking;style?:CSSPrope
  const min=Math.min(...booking.segments.map(s=>s.start)),max=Math.max(...booking.segments.map(s=>s.end));
  return <li style={style} data-wide={wide||undefined} className={'pitch-booking '+booking.kind+(booking.moved?' relocated':'')}>
   <div className="booking-top"><time>{clock(min)}–{clock(max)}</time><span>{booking.kind==='match'?(wide?'Spiel · beide Hälften':'Spiel'):booking.kind==='reserve'?'Reserve':booking.moved?'Verschoben':'Training'}</span></div>
+  {booking.kind==='match'&&(booking.clubTeams?.length||booking.category)&&<p className="pitch-match-team">{booking.clubTeams?.length?booking.clubTeams.join(' & '):booking.category}{booking.clubTeams?.length&&booking.category?<small> · {booking.category}</small>:null}</p>}
   {booking.kind==='match'&&booking.teams?<div className="pitch-match-teams" aria-label={booking.title}>
    <div><PitchTeamLogo src={booking.teams.homeLogo}/><strong>{booking.teams.home}</strong></div><span className="pitch-versus" aria-hidden="true">vs.</span><div><PitchTeamLogo src={booking.teams.awayLogo}/><strong>{booking.teams.away}</strong></div>
   </div>:<strong>{booking.title}</strong>}
@@ -65,9 +66,10 @@ export default function PitchPage(){
    {error&&<div className="pitch-notice danger" role="alert"><AlertTriangle size={20}/><div><strong>Abgleich nicht möglich</strong><p>{error}</p><Button variant="outline" onClick={()=>setReload(v=>v+1)}>Erneut laden</Button></div></div>}
    {current&&<>
     {current.changes.length>0&&<div className="pitch-notice changed"><ArrowRightLeft size={22}/><div><strong>{current.changes.length===1?'Training verschoben':`${current.changes.length} Trainings verschoben`} · {label(day)}</strong><ul>{current.changes.map(c=><li key={c.team}><b>{c.team} · {c.time}</b><span>{c.from} <ArrowRight size={13}/> {c.to}</span><small>{c.reason}</small></li>)}</ul></div></div>}
+    {(current.cancelled??[]).length>0&&<div className="pitch-notice changed"><CalendarX size={22}/><div><strong>{current.cancelled.length===1?'Training entfällt':`${current.cancelled.length} Trainings entfallen`} · Spieltag</strong><ul>{current.cancelled.map(c=><li key={c.team}><b>{c.team} · {c.time}</b><span>{c.from}</span><small>{c.reason}</small></li>)}</ul></div></div>}
     {current.conflicts.length>0&&<div className="pitch-notice danger"><AlertTriangle size={22}/><div><strong>Abstimmung nötig · {label(day)}</strong><ul>{current.conflicts.map(c=><li key={c}>{c}</li>)}</ul></div></div>}
     {current.warnings.length>0&&<div className="pitch-notice warning"><AlertTriangle size={20}/><div><strong>{current.automatic?'Hinweise zum Abgleich':'Automatik eingeschränkt'}</strong>{current.warnings.map(w=><p key={w}>{w}</p>)}</div></div>}
-    {current.automatic&&!current.changes.length&&!current.conflicts.length&&<div className="pitch-notice success"><Check size={20}/><div><strong>Keine Verschiebung erforderlich</strong><p>{label(day)} · Im hinterlegten Plan keine Überschneidung mit Heimspielen.</p></div></div>}
+    {current.automatic&&!current.changes.length&&!(current.cancelled??[]).length&&!current.conflicts.length&&<div className="pitch-notice success"><Check size={20}/><div><strong>Keine Verschiebung erforderlich</strong><p>{label(day)} · Im hinterlegten Plan keine Überschneidung mit Heimspielen.</p></div></div>}
    </>}
   </div>
   <UpcomingMatches selectedDate={date} onDateChange={select} refreshKey={reload} onRefresh={()=>setReload(v=>v+1)}/>

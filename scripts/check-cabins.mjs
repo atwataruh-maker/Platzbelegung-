@@ -42,11 +42,35 @@ assert.deepEqual(p.bookings.filter(b=>b.guest).map(b=>b.room).sort(),['away1','s
 // Fixed team training takes priority even when other teams have a home fixture.
 p=plan([training('1. Herren'),training('2. Herren',BACK)],[game('youth','B-Junioren')]);
 assert.equal(p.bookings.find(b=>b.team==='1. Herren').room,'home1');assert.equal(p.bookings.find(b=>b.team==='2. Herren').room,'home2');noRoomClashes(p);
-// One team's match overlapping its training is one continuous cabin reservation.
+// A team that plays on a day does not train that day: only the match remains, with its own cabin.
 p=plan([training('1. Herren')],[game('same-team')]);
-const first=p.bookings.filter(b=>b.team==='1. Herren');assert.equal(first.length,1);assert.equal(first[0].room,'home1');assert.deepEqual(first[0].activities,['Training','Heimspiel']);noRoomClashes(p);
-p=plan([training('C-Junioren')],[game('same-youth','C-Junioren')]);assert.equal(p.bookings.filter(b=>!b.guest).length,1);assert.equal(p.bookings.find(b=>!b.guest).activities.length,2);noRoomClashes(p);
-p=plan([training('D1-Junioren'),training('D2-Junioren',BACK)],[game('second-youth','D-Junioren',{home:'VfL Ramsdorf II'})]);assert.equal(p.bookings.filter(b=>!b.guest).length,2);assert.equal(p.bookings.find(b=>b.team==='D2-Junioren').activities.length,2);assert.equal(p.bookings.find(b=>b.team==='D1-Junioren').activities.length,1);noRoomClashes(p);
+const first=p.bookings.filter(b=>b.team==='1. Herren');assert.equal(first.length,1);assert.equal(first[0].room,'home1');assert.deepEqual(first[0].activities,['Heimspiel']);noRoomClashes(p);
+p=plan([training('C-Junioren')],[game('same-youth','C-Junioren')]);assert.equal(p.bookings.filter(b=>!b.guest).length,1);assert.deepEqual(p.bookings.find(b=>!b.guest).activities,['Heimspiel']);assert.equal(p.bookings.find(b=>!b.guest).team,'C-Junioren');noRoomClashes(p);
+p=plan([training('D1-Junioren'),training('D2-Junioren',BACK)],[game('second-youth','D-Junioren',{home:'VfL Ramsdorf II'})]);assert.equal(p.bookings.filter(b=>!b.guest).length,2);assert.deepEqual(p.bookings.find(b=>b.team==='D2-Junioren').activities,['Heimspiel']);assert.deepEqual(p.bookings.find(b=>b.team==='D1-Junioren').activities,['Training']);noRoomClashes(p);
+// Reported case (16.11.2026): D1 home game on the turf at 18:00, D1 training 16:30–18:00 on grass is cancelled.
+{
+ const s=schedule([game('d1','D-Junioren',{time:'18:00',home:'VfL Ramsdorf',away:'JSG SV Dorsten-Hardt / TuS Gahlen II'})]);
+ const a=allocate(date,s,true,[training('D1-Junioren',['r2'],990,1080),training('D2-Junioren',FRONT,1050,1140),training('A-Junioren',FRONT,1140,1230)]);
+ assert.deepEqual(a.cancelled.map(c=>[c.team,c.time,c.from]),[['D1-Junioren','16:30–18:00','Rasen 2/3']]);assert.match(a.cancelled[0].reason,/^Heimspiel: VfL Ramsdorf – JSG SV Dorsten-Hardt \/ TuS Gahlen II, Anstoß 18:00$/);
+ assert.ok(!a.bookings.some(b=>b.kind==='training'&&b.title==='D1-Junioren'));
+ const m=a.bookings.find(b=>b.kind==='match');assert.deepEqual(m.clubTeams,['D1-Junioren']);assert.equal(m.category,'D-Junioren');
+ assert.ok(a.changes.every(c=>c.team!=='D1-Junioren'));
+ const c=allocateCabins(a,s);assert.deepEqual(c.bookings.filter(b=>!b.guest).find(b=>b.activities.includes('Heimspiel')).team,'D1-Junioren');noRoomClashes(c);
+}
+// Away games and club derbies cancel training too; cancelled or moved games and other teams do not.
+{
+ const teams=[training('D1-Junioren',['r2']),training('D2-Junioren',BACK),training('E1/E2-Juniorinnen',['r1'])];
+ const cancelled=(...matches)=>allocate(date,schedule(matches),true,teams).cancelled.map(c=>c.team).sort();
+ assert.deepEqual(cancelled(game('away','D-Junioren',{location:'Auswärts',home:'SC Gast',away:'VfL Ramsdorf'})),['D1-Junioren']);
+ assert.match(allocate(date,schedule([game('away','D-Junioren',{location:'Auswärts',home:'SC Gast',away:'VfL Ramsdorf'})]),true,teams).cancelled[0].reason,/^Auswärtsspiel: SC Gast – VfL Ramsdorf/);
+ assert.deepEqual(cancelled(game('derby','D-Junioren',{location:'Vereinsduell',home:'VfL Ramsdorf',away:'VfL Ramsdorf II'})),['D1-Junioren','D2-Junioren']);
+ for(const status of ['Ausfall','Absetzung','Verlegt: 20.10.2026 17:00'])assert.deepEqual(cancelled(game('off','D-Junioren',{status})),[]);
+ assert.deepEqual(cancelled(game('later','D-Junioren',{status:'Verlegt: 19.10.2026 19:00'})),['D1-Junioren']);
+ assert.deepEqual(cancelled(game('other','D-Junioren',{date:'2026-10-20'})),[]);
+ assert.deepEqual(cancelled(game('combined','E-Juniorinnen')),[],'combined groups keep training');
+ assert.deepEqual(allocate(date,schedule([game('d1','D-Junioren')]),true,teams).bookings.find(b=>b.kind==='match').clubTeams,['D1-Junioren']);
+ assert.deepEqual(allocate(date,schedule([game('x','D-Junioren',{home:'VfL Ramsdorf III'})]),true,teams).bookings.find(b=>b.kind==='match').clubTeams,[]);
+}
 p=plan([training('G-Junioren / G-F-Juniorinnen')]);
 assert.equal(p.bookings.length,2);assert.deepEqual(p.bookings.map(b=>b.gender).sort(),['female','male']);assert.notEqual(p.bookings[0].room,p.bookings[1].room);noRoomClashes(p);
 p=plan([training('Nordvelen')]);assert.equal(p.bookings[0].room,'away1');assert.equal(p.bookings[0].gender,'unknown');assert.equal(p.bookings[0].shareEligible,false);assert.equal(p.conflicts.length,0);
@@ -111,20 +135,22 @@ for(const d of ['2026-10-15','2026-10-16']){
 
 // Main-pitch fallback: exactly two half-pitch sessions, games block both halves.
 const busyGrass=[training('fixed-r1',['r1']),training('fixed-r2',['r2']),training('fixed-r3',['r3']),training('fixed-corner',['corner'])];
-let a=allocate(date,schedule([game('turf','B-Junioren')]),true,[training('1. Herren'),training('B-Junioren',BACK),...busyGrass]);
+// The turf game belongs to a second B team, so the B-Junioren training below is displaced, not cancelled.
+const turfGame=()=>game('turf','B-Junioren',{home:'VfL Ramsdorf II'});
+let a=allocate(date,schedule([turfGame()]),true,[training('1. Herren'),training('B-Junioren',BACK),...busyGrass]);
 assert.equal(a.conflicts.length,0);
 assert.deepEqual(a.bookings.filter(b=>b.moved).map(b=>b.segments[0].fields).sort(),[['main1'],['main2']]);
 for(let i=0;i<a.bookings.length;i++)for(let j=i+1;j<a.bookings.length;j++)assert.ok(!a.bookings[i].segments.some(s=>a.bookings[j].segments.some(t=>overlaps(s,t))));
-a=allocate(date,schedule([game('turf','B-Junioren'),game('main')]),true,[training('1. Herren'),training('B-Junioren',BACK),...busyGrass]);
+a=allocate(date,schedule([turfGame(),game('main',undefined,{home:'VfL Ramsdorf III'})]),true,[training('1. Herren'),training('B-Junioren',BACK),...busyGrass]);
 assert.equal(a.bookings.filter(b=>b.kind==='training'&&!b.segments.length).length,2);assert.deepEqual(a.bookings.find(b=>b.id==='match-main').segments[0].fields,MAIN);
 // Other adult teams cannot take the stadium; girls are eligible just like boys.
 for(const team of ['2. Herren','3. Herren','Nordvelen','VfL Ramsdorf Damen']){
- a=allocate(date,schedule([game('turf','B-Junioren')]),true,[training(team),...busyGrass]);assert.equal(a.bookings.find(b=>b.id===team).segments.length,0);
+ a=allocate(date,schedule([turfGame()]),true,[training(team),...busyGrass]);assert.equal(a.bookings.find(b=>b.id===team).segments.length,0);
 }
 for(const team of ['C-Juniorinnen','G/F-Juniorinnen','A-Junioren']){
- a=allocate(date,schedule([game('turf','B-Junioren')]),true,[training(team),...busyGrass]);assert.equal(a.bookings.find(b=>b.id===team).segments[0].fields[0],'main1');
+ a=allocate(date,schedule([turfGame()]),true,[training(team),...busyGrass]);assert.equal(a.bookings.find(b=>b.id===team).segments[0].fields[0],'main1');
 }
-a=allocate(date,schedule([game('turf','B-Junioren')]),true,[training('1. Herren'),training('B-Junioren',BACK)]);
+a=allocate(date,schedule([turfGame()]),true,[training('1. Herren'),training('B-Junioren',BACK)]);
 assert.ok(a.bookings.filter(b=>b.kind==='training').every(b=>b.segments.every(s=>!s.fields.some(f=>MAIN.includes(f)))));
 console.log('PASS: fixed first/second team cabins, guests/overflow, gender separation, mixed groups, unknown gender, capacity conflicts, time buffers, merged reservations, stale/cancelled/away/moved fixtures; main-pitch halves, eligibility, final fallback, match blocking.');
 

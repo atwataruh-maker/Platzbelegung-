@@ -1,5 +1,13 @@
 # Änderungen
 
+## v0.14.1 — 16.11.2026 · Kein Training am eigenen Spieltag
+
+- Spielt eine Vereinsmannschaft an einem Tag (Heim-, Auswärtsspiel oder Vereinsduell), entfällt ihr Training an diesem Tag. Es wird weder angezeigt noch verschoben und belegt keinen Platz und keine Kabine. Die Platzbelegung zeigt den Hinweis „Training entfällt · Spieltag“ mit Grund und Anstoßzeit, die Startseite zählt es als Änderung.
+- Abgesagte oder auf einen anderen Tag verlegte Spiele heben kein Training auf. Zusammengelegte Trainingsgruppen (z. B. E1/E2-Juniorinnen) trainieren weiter, weil nur eine der Mannschaften spielt.
+- Spielkarten in der Platzbelegung nennen die Vereinsmannschaft und Altersklasse, z. B. „D1-Junioren · D-Junioren“.
+- Gleiche Zuordnung „VfL Ramsdorf 2 + D-Junioren → D2-Junioren“ für Platz- und Kabinenbelegung.
+- STRATO-Update: [Anleitung](UPDATE-0.14.1.md).
+
 ## v0.14.0 — 16.11.2026 · Zeiten automatisch von der Vereinswebsite
 
 - Alle Breitensport-Zeiten werden stündlich mit der Vereinswebsite abgeglichen: Detailseiten (Kinder-, Senior*innen-, Mannschaftssport, Eltern-Kind-Fußball, Sportabzeichen, Kurse), Kurstexte und für Leichtathletik der Wochenplan der Übersicht.

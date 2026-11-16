@@ -1,4 +1,4 @@
-import type {Allocation} from './pitch-allocation';
+import {clubTeam as clubTeamName,type Allocation} from './pitch-allocation';
 import type {MatchSchedule} from './matches';
 import {clock} from './training-plan';
 
@@ -47,15 +47,6 @@ function canShare(a:CabinBooking,b:CabinBooking,date:string,room:CabinId):boolea
  if(date>='2026-10-29'&&new Date(date+'T12:00:00Z').getUTCDay()===4&&room==='away1'&&((isGroundsUser(a)&&e3(b))||(isGroundsUser(b)&&e3(a))))return true;
  return a.shareEligible&&b.shareEligible&&a.gender!=='unknown'&&a.gender===b.gender&&a.guest===b.guest&&!a.fixed&&!b.fixed;
 }
-function ownTrainingTeam(team:string,category:string,trainingNames:string[]):string|undefined{
- const name=team.match(/^VfL\s+Ramsdorf(?:\s+(I|II|III|IV|[1-9]\d*))?$/i);
- if(!name)return undefined;
- const suffix=(name[1]??'1').toUpperCase();
- const number=({I:1,II:2,III:3,IV:4} as Record<string,number>)[suffix]??Number(suffix);
- const youth=category.match(/^([A-G])-(Junioren|Juniorinnen)$/);
- const names=youth?[`${youth[1]}${number}-${youth[2]}`,...(number===1?[`${youth[1]}-${youth[2]}`]:[])]:category==='Herren'?[`${number}. Herren`]:category==='Frauen'&&number===1?['VfL Ramsdorf Damen']:category==='Altherren'&&number===1?['Alte Herren']:[];
- return names.find(n=>trainingNames.includes(n));
-}
 // Nordvelen shares our grounds; only the explicitly approved E3 Thursday pairing may share.
 // Its gender is deliberately not inferred from the club name.
 export function isGroundsUser(b:CabinBooking):boolean{
@@ -87,7 +78,8 @@ function candidates(b:CabinBooking,date:string):CabinId[]{
 
 export function allocateCabins(allocation:Allocation,schedule:MatchSchedule|null,includeChanges=true):CabinPlan{
  const requests:CabinBooking[]=[];
- const trainingNames=allocation.bookings.filter(b=>b.kind==='training').map(b=>b.title);
+ // Teams whose training was cancelled for a match keep their names for the match cabin.
+ const trainingNames=[...allocation.bookings.filter(b=>b.kind==='training').map(b=>b.title),...(allocation.cancelled??[]).map(c=>c.team)];
  for(const b of allocation.bookings){
   if(b.kind==='reserve')continue;
   const segments=b.segments.length?b.segments:b.original??[];
@@ -104,7 +96,7 @@ export function allocateCabins(allocation:Allocation,schedule:MatchSchedule|null
    for(const side of ['home','away'] as const){
     const ours=side==='home'||match.location==='Vereinsduell';
     const team=b.teams[side],fixed=fixedMatch(team,match.category,ours);
-    const clubTeam=fixed==='home1'?'1. Herren':fixed==='home2'?'2. Herren':ours?ownTrainingTeam(team,match.category,trainingNames):undefined;
+    const clubTeam=fixed==='home1'?'1. Herren':fixed==='home2'?'2. Herren':ours?clubTeamName(team,match.category,trainingNames):undefined;
     requests.push({id:b.id+'-'+side,team:clubTeam??team,clubTeam,category:match.category,gender:genderOf(match.category),start,end:Math.min(1440,end+CABIN_TIMES.matchAfterPitch),room:null,fixed,guest:!ours,shareEligible:youthSharing(match.category),activities:[side==='home'?'Heimspiel':ours?'Vereinsduell':'Gastspiel'],sourceIds:[b.id]});
    }
   }

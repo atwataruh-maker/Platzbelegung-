@@ -23,8 +23,32 @@ final class Planning {
   $options=$onGrass?[...$grass,self::FRONT,self::BACK]:[self::FRONT,self::BACK,...$grass];
   if($t['team']==='1. Herren'||preg_match('/Junior(?:en|innen)/i',$t['team']))$options=[...$options,['main1'],['main2']];return $options;
  }
+ /** "VfL Ramsdorf 2" in "D-Junioren" → "D2-Junioren" (only names that exist in the training plan). */
+ public static function clubTeam(string $team,string $category,array $names):?string{
+  if(!preg_match('/^VfL\s+Ramsdorf(?:\s+(I|II|III|IV|[1-9]\d*))?$/Di',$team,$m))return null;
+  $suffix=strtoupper($m[1]??'1');$n=['I'=>1,'II'=>2,'III'=>3,'IV'=>4][$suffix]??(int)$suffix;
+  if(preg_match('/^([A-G])-(Junioren|Juniorinnen)$/D',$category,$y))$choices=["$y[1]$n-$y[2]",...($n===1?["$y[1]-$y[2]"]:[])];
+  else $choices=$category==='Herren'?["$n. Herren"]:($category==='Frauen'&&$n===1?['VfL Ramsdorf Damen']:($category==='Altherren'&&$n===1?['Alte Herren']:[]));
+  foreach($choices as $c)if(in_array($c,$names,true))return $c;return null;
+ }
+ /** Club teams of a match: home side for home games, away side for away games, both for club derbies. */
+ public static function matchClubTeams(array $m,array $names):array{
+  $sides=$m['location']==='Vereinsduell'?[$m['home'],$m['away']]:($m['location']==='Auswärts'?[$m['away']]:[$m['home']]);
+  return array_values(array_filter(array_map(fn($t)=>self::clubTeam($t,$m['category'],$names),$sides)));
+ }
  public static function allocate(string $date,?array $schedule,bool $sourceUsable=true,?array $template=null):array{
-  $template??=self::trainings($date);$template=array_map(fn($t)=>$t['team']==='SF Nordvelen'?array_replace($t,['team'=>'Nordvelen']):$t,$template);$result=['date'=>$date,'bookings'=>[],'changes'=>[],'conflicts'=>[],'warnings'=>[],'automatic'=>false];
+  $template??=self::trainings($date);$template=array_map(fn($t)=>$t['team']==='SF Nordvelen'?array_replace($t,['team'=>'Nordvelen']):$t,$template);$result=['date'=>$date,'bookings'=>[],'changes'=>[],'cancelled'=>[],'conflicts'=>[],'warnings'=>[],'automatic'=>false];
+  $trainingNames=array_column($template,'team');
+  // A team that plays today (home or away) does not train today.
+  $playing=[];
+  foreach($schedule&&$schedule['from']<=$date&&$schedule['to']>=$date?$schedule['matches']:[] as $m){
+   if($m['date']!==$date||preg_match('/Ausfall|Absetzung|Nichtantritt|spielfrei/i',$m['status']))continue;
+   $time=$m['time'];
+   if(preg_match('/verlegt/i',$m['status'])){if(!preg_match('/(\d{2})\.(\d{2})\.(\d{4}) (\d{2}:\d{2})/',$m['status'],$mv)||"$mv[3]-$mv[2]-$mv[1]"!==$date)continue;$time=$mv[4];}
+   foreach(self::matchClubTeams($m,$trainingNames) as $team)$playing[$team]??=($m['location']==='Auswärts'?'Auswärtsspiel':'Heimspiel').": $m[home] – $m[away]".(preg_match('/^\d{2}:\d{2}$/D',$time)?", Anstoß $time":'');
+  }
+  foreach($template as $t)if(isset($playing[$t['team']]))$result['cancelled'][]=['team'=>$t['team'],'time'=>self::clock(min(array_column($t['segments'],'start'))).'–'.self::clock(max(array_column($t['segments'],'end'))),'from'=>implode(' / ',array_unique(array_map(fn($s)=>self::label($s['fields']),$t['segments']))),'reason'=>$playing[$t['team']]];
+  $template=array_values(array_filter($template,fn($t)=>!isset($playing[$t['team']])));
   $originals=array_map(fn($t)=>self::booking($t,$t['segments']),$template);$reserves=[];
   if((new \DateTimeImmutable($date))->format('w')==='5')foreach([[990,1230,self::FRONT],[1050,1080,self::BACK],[1170,1230,self::BACK]] as $i=>[$start,$end,$fields])$reserves[]=['id'=>'reserve-'.$i,'kind'=>'reserve','title'=>'Spielreserve','segments'=>[self::seg($start,$end,$fields)]];
   $inRange=$schedule&&$schedule['from']<=$date&&$schedule['to']>=$date;
@@ -57,7 +81,7 @@ final class Planning {
    usort($free,fn($a,$b)=>count(self::clash([array_replace($segment,['fields'=>$a])],$originals))<=>count(self::clash([array_replace($segment,['fields'=>$b])],$originals)));
    $fields=$free[0]??$choices[0];if(!$free)$result['conflicts'][]="$m[time] · $m[home] – $m[away]: gleichzeitige Spiele benötigen dieselbe Fläche. Vereinsabstimmung nötig.";
    $teams=['home'=>$m['home'],'away'=>$m['away']];foreach(['homeLogo','awayLogo'] as $k)if(isset($m[$k]))$teams[$k]=$m[$k];
-   $games[]=['id'=>'match-'.$m['id'],'kind'=>'match','title'=>"$m[home] – $m[away]",'segments'=>[array_replace($segment,['fields'=>$fields])],'kickoff'=>$m['time'],'url'=>$m['url'],'teams'=>$teams];
+   $games[]=['id'=>'match-'.$m['id'],'kind'=>'match','title'=>"$m[home] – $m[away]",'segments'=>[array_replace($segment,['fields'=>$fields])],'kickoff'=>$m['time'],'url'=>$m['url'],'teams'=>$teams,'category'=>$m['category'],'clubTeams'=>self::matchClubTeams($m,$trainingNames)];
   }
   $result['automatic']=$trusted;if(!$trusted){$result['bookings']=[...$originals,...$games,...$reserves];return $result;}
   $fixed=$games;$displaced=[];

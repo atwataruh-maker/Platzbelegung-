@@ -21,7 +21,7 @@ export function todayCards(date:string,data:TodayData|null,loading:boolean,error
  games.warning=!complete;games.detail=!complete?'Vorläufiger Stand – weitere Spiele oder Änderungen sind möglich.':matches.length>2?`Alle ${matches.length} Spiele über den Direktlink.`:undefined;
  const pitch=base[1],cabins=base[2];
  for(const [card,confirmed,changes,conflicts,regular] of [
-  [pitch,complete&&a.automatic,a.changes.map(c=>`${c.team} · ${c.time}\n${c.from} → ${c.to}\nGrund: ${c.reason}`),a.conflicts,'Platzbelegung'],
+  [pitch,complete&&a.automatic,[...(a.cancelled??[]).map(c=>`${c.team} · ${c.time}\nTraining entfällt\nGrund: ${c.reason}`),...a.changes.map(c=>`${c.team} · ${c.time}\n${c.from} → ${c.to}\nGrund: ${c.reason}`)],a.conflicts,'Platzbelegung'],
   [cabins,complete&&a.cabins.confirmed,a.cabins.notes??[],a.cabins.conflicts,'Kabinenbelegung']
  ] as const){
   card.warning=!!changes.length||!!conflicts.length||!confirmed;

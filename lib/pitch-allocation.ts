@@ -1,7 +1,22 @@
 import {isMatchDate,type Match,type MatchSchedule} from './matches';
 import {BACK,FRONT,TURF,MAIN,trainingsFor,reservesFor,minutes,clock,fieldLabel,type Field,type Segment,type Training} from './training-plan';
-export type Booking = {id:string;kind:'training'|'match'|'reserve';title:string;segments:Segment[];original?:Segment[];moved?:boolean;reason?:string;kickoff?:string;url?:string;teams?:{home:string;away:string;homeLogo?:string;awayLogo?:string}};
-export type Allocation = {date:string;bookings:Booking[];changes:{team:string;time:string;from:string;to:string;reason:string}[];conflicts:string[];warnings:string[];automatic:boolean};
+export type Booking = {id:string;kind:'training'|'match'|'reserve';title:string;segments:Segment[];original?:Segment[];moved?:boolean;reason?:string;kickoff?:string;url?:string;teams?:{home:string;away:string;homeLogo?:string;awayLogo?:string};category?:string;clubTeams?:string[]};
+export type Allocation = {date:string;bookings:Booking[];changes:{team:string;time:string;from:string;to:string;reason:string}[];cancelled:{team:string;time:string;from:string;reason:string}[];conflicts:string[];warnings:string[];automatic:boolean};
+/** "VfL Ramsdorf 2" in "D-Junioren" → "D2-Junioren" (only names that exist in the training plan). */
+export function clubTeam(team:string,category:string,trainingNames:string[]):string|undefined{
+ const name=team.match(/^VfL\s+Ramsdorf(?:\s+(I|II|III|IV|[1-9]\d*))?$/i);
+ if(!name)return undefined;
+ const suffix=(name[1]??'1').toUpperCase();
+ const number=({I:1,II:2,III:3,IV:4} as Record<string,number>)[suffix]??Number(suffix);
+ const youth=category.match(/^([A-G])-(Junioren|Juniorinnen)$/);
+ const names=youth?[`${youth[1]}${number}-${youth[2]}`,...(number===1?[`${youth[1]}-${youth[2]}`]:[])]:category==='Herren'?[`${number}. Herren`]:category==='Frauen'&&number===1?['VfL Ramsdorf Damen']:category==='Altherren'&&number===1?['Alte Herren']:[];
+ return names.find(n=>trainingNames.includes(n));
+}
+/** Club teams of a match: the home side for home games, the away side for away games, both for club derbies. */
+export function matchClubTeams(m:Match,trainingNames:string[]):string[]{
+ const sides=m.location==='Vereinsduell'?[m.home,m.away]:m.location==='Auswärts'?[m.away]:[m.home];
+ return sides.map(t=>clubTeam(t,m.category,trainingNames)).filter((t):t is string=>!!t);
+}
 // Planning assumptions, NOT official match lengths. Includes warm-up, half-time and changeover.
 export const MATCH_RULES={warmup:30,halfTime:15,changeover:15,playing:{G:60,F:40,E:50,D:60,C:70,B:80,A:90,senior:90}};
 export const overlaps=(a:Segment,b:Segment)=>a.start<b.end&&b.start<a.end&&a.fields.some(f=>b.fields.includes(f));
@@ -23,7 +38,18 @@ function seniorMain(m:Match){
 }
 export function allocate(date:string,schedule:MatchSchedule|null,sourceUsable:boolean,template:Training[]=trainingsFor(date)):Allocation{
  template=template.map(t=>t.team==='SF Nordvelen'?{...t,team:'Nordvelen'}:t);
- const result:Allocation={date,bookings:[],changes:[],conflicts:[],warnings:[],automatic:false};
+ const result:Allocation={date,bookings:[],changes:[],cancelled:[],conflicts:[],warnings:[],automatic:false};
+ const trainingNames=template.map(t=>t.team);
+ // A team that plays today (home or away) does not train today.
+ const playing=new Map<string,string>();
+ for(const m of schedule&&schedule.from<=date&&schedule.to>=date?schedule.matches:[]){
+  if(m.date!==date||/Ausfall|Absetzung|Nichtantritt|spielfrei/i.test(m.status))continue;
+  let time=m.time;
+  if(/verlegt/i.test(m.status)){const moved=m.status.match(/(\d{2})\.(\d{2})\.(\d{4}) (\d{2}:\d{2})/);if(!moved||`${moved[3]}-${moved[2]}-${moved[1]}`!==date)continue;time=moved[4];}
+  for(const team of matchClubTeams(m,trainingNames))if(!playing.has(team))playing.set(team,`${m.location==='Auswärts'?'Auswärtsspiel':'Heimspiel'}: ${m.home} – ${m.away}${/^\d{2}:\d{2}$/.test(time)?`, Anstoß ${time}`:''}`);
+ }
+ for(const t of template)if(playing.has(t.team))result.cancelled.push({team:t.team,time:`${clock(startOf(t))}–${clock(endOf(t))}`,from:[...new Set(t.segments.map(s=>fieldLabel(s.fields)))].join(' / '),reason:playing.get(t.team)!});
+ template=template.filter(t=>!playing.has(t.team));
  const originals:Booking[]=template.map(t=>({id:t.id,kind:'training',title:t.team,segments:t.segments}));
  const reserves:Booking[]=reservesFor(date).map((s,i)=>({id:'reserve-'+i,kind:'reserve',title:'Spielreserve',segments:[s]}));
  const inRange=schedule&&schedule.from<=date&&schedule.to>=date;
@@ -63,7 +89,7 @@ export function allocate(date:string,schedule:MatchSchedule|null,sourceUsable:bo
   free.sort((a,b)=>clashes([{...segment,fields:a}],originals).length-clashes([{...segment,fields:b}],originals).length);
   const fields=free[0]??choices[0];
   if(!free.length)result.conflicts.push(`${m.time} · ${m.home} – ${m.away}: gleichzeitige Spiele benötigen dieselbe Fläche. Vereinsabstimmung nötig.`);
-  games.push({id:'match-'+m.id,kind:'match',title:`${m.home} – ${m.away}`,segments:[{...segment,fields}],kickoff:m.time,url:m.url,teams:{home:m.home,away:m.away,homeLogo:m.homeLogo,awayLogo:m.awayLogo}});
+  games.push({id:'match-'+m.id,kind:'match',title:`${m.home} – ${m.away}`,segments:[{...segment,fields}],kickoff:m.time,url:m.url,teams:{home:m.home,away:m.away,homeLogo:m.homeLogo,awayLogo:m.awayLogo},category:m.category,clubTeams:matchClubTeams(m,trainingNames)});
  }
  result.automatic=trusted;
  if(!trusted){result.bookings=[...originals,...games,...reserves];return result;}

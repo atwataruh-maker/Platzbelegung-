@@ -7,3 +7,6 @@
 .cabin-page .page-heading h1{font-size:clamp(26px,6.8vw,40px)}
 
 .cabin-sharing{font-size:11px;line-height:1.5;color:#42597d;margin-top:8px;padding-top:7px;border-top:1px solid #dce5f1}
+
+.pitch-match-team{margin:8px 0 0;font-size:15px;line-height:1.3;font-weight:800;color:#1f3a7a}
+.pitch-match-team small{font-size:12px;font-weight:600;color:#5b6b8c}

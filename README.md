@@ -1,10 +1,10 @@
-# VfL Ramsdorf Vereins-App · v0.14.0 · PHP/STRATO
+# VfL Ramsdorf Vereins-App · v0.14.1 · PHP/STRATO
 
 **Branch `strato-php`: eigenständig auf PHP-Webhosting betreibbare Vereins-App.**
 
 Platzbelegung, Kabinenbelegung, Spiele & Ergebnisse, Breitensport, Helferbörse und eigener Admin-Login. Neue Startseite mit Tageshinweisen, Ergebnissen der letzten 48 Stunden und aktuellem Bomber. PHP verarbeitet Spiele und berechnet die Platz- und Kabinenbelegung. Gesuche werden in MySQL/MariaDB gespeichert.
 
-**Bestehende Installation aktualisieren:** [Update 0.14.0](UPDATE-0.14.0.md) · [Fertiges Update-ZIP](vfl-update-0.14.0.zip). Von v0.11.x zuerst [Update 0.13.0](UPDATE-0.13.0.md).
+**Bestehende Installation aktualisieren:** [Update 0.14.1](UPDATE-0.14.1.md) · [Fertiges Update-ZIP](vfl-update-0.14.1.zip). Von v0.11.x zuerst [Update 0.13.0](UPDATE-0.13.0.md).
 
 ## Direkt installieren
 
@@ -20,6 +20,7 @@ Voraussetzung: PHP >=8.2 mit curl, mbstring, DOM/XML, PDO/pdo_mysql, MySQL 8 ode
 - Damen ausschließlich allein in Heimkabine 1 oder 2.
 - Alle Jugendteams gleichen Geschlechts dürfen Kabinen teilen; Heim und Gast bleiben getrennt.
 - Freie Auswärtskabinen auch für Heimteams; unklare Zuordnungen werden angezeigt.
+- Am eigenen Spieltag (Heim, Auswärts, Vereinsduell) entfällt das Training der Mannschaft; zusammengelegte Gruppen trainieren weiter.
 - Gesuche erstellen, abschließen und wieder öffnen, nur mit Admin-Anmeldung.
 
 ## Entwicklung und Tests
