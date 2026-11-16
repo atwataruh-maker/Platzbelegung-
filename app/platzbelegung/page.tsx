@@ -1,3 +1,4 @@
+import {APP_VERSION} from '@/components/club-header';
 import {apiFetch as fetch,appPath} from '@/frontend/api';
 'use client';
 import {useEffect,useState,type CSSProperties} from 'react';
@@ -26,7 +27,7 @@ function BookingCard({booking,style,wide=false}:{booking:Booking;style?:CSSPrope
  const min=Math.min(...booking.segments.map(s=>s.start)),max=Math.max(...booking.segments.map(s=>s.end));
  return <li style={style} data-wide={wide||undefined} className={'pitch-booking '+booking.kind+(booking.moved?' relocated':'')}>
   <div className="booking-top"><time>{clock(min)}–{clock(max)}</time><span>{booking.kind==='match'?(wide?'Spiel · beide Hälften':'Spiel'):booking.kind==='reserve'?'Reserve':booking.moved?'Verschoben':'Training'}</span></div>
-  {booking.kind==='match'&&(booking.clubTeams?.length||booking.category)&&<p className="pitch-match-team">{booking.clubTeams?.length?booking.clubTeams.join(' & '):booking.category}{booking.clubTeams?.length&&booking.category?<small> · {booking.category}</small>:null}</p>}
+  {booking.kind==='match'&&(booking.clubTeams?.length||booking.category)&&<p className="pitch-match-team"><b>{booking.clubTeams?.length?booking.clubTeams.join(' & '):booking.category}</b>{booking.clubTeams?.length&&booking.category?<small> · {booking.category}</small>:null}</p>}
   {booking.kind==='match'&&booking.teams?<div className="pitch-match-teams" aria-label={booking.title}>
    <div><PitchTeamLogo src={booking.teams.homeLogo}/><strong>{booking.teams.home}</strong></div><span className="pitch-versus" aria-hidden="true">vs.</span><div><PitchTeamLogo src={booking.teams.awayLogo}/><strong>{booking.teams.away}</strong></div>
   </div>:<strong>{booking.title}</strong>}
@@ -57,7 +58,7 @@ export default function PitchPage(){
  const select=(value:string|null)=>{if(value!==date){setDate(value);if((value??today)!==day){setData(null);setError('');}}};
  const weekStart=shiftMatchDate(day,-((new Date(day+'T12:00:00Z').getUTCDay()+6)%7));
  const trainings=current?.bookings.filter(b=>b.kind==='training')??[];
- return <div className="app-shell pitch-app"><header className="club-header"><div className="header-inner"><a className="club-brand" href={appPath('/')} aria-label="Zur Startseite"><img className="club-logo" src="https://www.vfl-ramsdorf.de/img/VfLRamsdorf.png" alt="VfL Ramsdorf"/><span className="club-name">RAMSDORF<small>Vereins-App</small></span></a><div className="header-actions"><span className="preview-badge">Version 0.11.0</span><Button variant="ghost" size="icon" className="refresh" onClick={()=>setReload(v=>v+1)} disabled={loading} aria-label="Belegung und Spiele aktualisieren"><RefreshCw className={loading?'spin':''}/></Button></div></div></header>
+ return <div className="app-shell pitch-app"><header className="club-header"><div className="header-inner"><a className="club-brand" href={appPath('/')} aria-label="Zur Startseite"><img className="club-logo" src="https://www.vfl-ramsdorf.de/img/VfLRamsdorf.png" alt="VfL Ramsdorf"/><span className="club-name">RAMSDORF<small>Vereins-App</small></span></a><div className="header-actions"><span className="preview-badge">Version {APP_VERSION}</span><Button variant="ghost" size="icon" className="refresh" onClick={()=>setReload(v=>v+1)} disabled={loading} aria-label="Belegung und Spiele aktualisieren"><RefreshCw className={loading?'spin':''}/></Button></div></div></header>
  <main>
   <a href={appPath('/')} className="pitch-back"><ArrowLeft size={15}/> Übersicht</a>
   <div className="page-heading"><div><p className="eyebrow">Fußball / Plätze & Training</p><h1>Platzbelegung</h1><p className="intro">Ein Tag. Alle Plätze. Änderungen im Blick.</p></div><span className="heading-symbol"><MapPin size={26}/></span></div>
