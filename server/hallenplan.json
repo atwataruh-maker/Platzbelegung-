@@ -1,0 +1,35 @@
+{
+  "title": "Hallenplan Winter 2026/27",
+  "validFrom": "2026-11-19",
+  "validTo": "2027-03-31",
+  "note": "Ergänzend zum Platzplan. Die Platzbelegung bleibt unverändert. Wochentage: 0 = Sonntag, 1 = Montag … 6 = Samstag. Einträge ohne team sind freie Fußball-Hallenzeiten.",
+  "halls": [
+    {"id": "paulus", "name": "Paulushalle", "venue": "Sporthalle Paulusstraße"},
+    {"id": "walburgis", "name": "Walburgishalle"}
+  ],
+  "slots": [
+    {"day": 1, "hall": "walburgis", "start": "16:00", "end": "17:30"},
+    {"day": 1, "hall": "walburgis", "start": "17:30", "end": "19:00", "team": "E3-Junioren"},
+
+    {"day": 2, "hall": "paulus", "start": "16:00", "end": "17:00"},
+    {"day": 2, "hall": "paulus", "start": "17:00", "end": "18:00", "team": "E1-Juniorinnen"},
+    {"day": 2, "hall": "paulus", "start": "18:00", "end": "19:30", "team": "E2-Junioren"},
+    {"day": 2, "hall": "paulus", "start": "19:30", "end": "20:00"},
+    {"day": 2, "hall": "walburgis", "start": "16:00", "end": "17:00"},
+
+    {"day": 3, "hall": "walburgis", "start": "16:00", "end": "17:00"},
+    {"day": 3, "hall": "walburgis", "start": "17:00", "end": "18:30", "team": "G-Junioren"},
+    {"day": 3, "hall": "walburgis", "start": "18:30", "end": "19:30", "team": "F1-Junioren"},
+    {"day": 3, "hall": "walburgis", "start": "19:30", "end": "21:30"},
+
+    {"day": 4, "hall": "paulus", "start": "16:00", "end": "17:30"},
+    {"day": 4, "hall": "walburgis", "start": "16:00", "end": "17:00"},
+    {"day": 4, "hall": "walburgis", "start": "17:00", "end": "18:00", "team": "F2-Junioren"},
+
+    {"day": 6, "hall": "paulus", "start": "10:00", "end": "11:30", "team": "Futziball-Mannschaft"},
+    {"day": 6, "hall": "walburgis", "start": "10:00", "end": "12:30"},
+
+    {"day": 0, "hall": "paulus", "start": "10:00", "end": "12:00"},
+    {"day": 0, "hall": "walburgis", "start": "10:30", "end": "12:00"}
+  ]
+}

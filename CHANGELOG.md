@@ -1,5 +1,12 @@
 # Änderungen
 
+## v0.15.0 — 19.11.2026 · Hallenplan
+
+- Reiter Plätze mit Umschalter „Plätze | Halle“. Die Hallenansicht zeigt für den gewählten Tag Paulushalle und Walburgishalle mit Trainingszeiten der Teams und freien Fußball-Hallenzeiten.
+- Hallenplan Winter 2026/27, gültig vom 19.11.2026 bis 31.03.2027, in `server/hallenplan.json` (ohne neuen Build anpassbar), neuer Endpunkt `/api/halle`.
+- Ergänzend zum Platzplan: Platz- und Kabinenbelegung bleiben unverändert. Noch offene Wunschzeiten (Randnotizen im Plan) sind nicht übernommen.
+- STRATO-Update: [Anleitung](UPDATE-0.15.0.md).
+
 ## v0.14.1 — 16.11.2026 · Kein Training am eigenen Spieltag
 
 - Spielt eine Vereinsmannschaft an einem Tag (Heim-, Auswärtsspiel oder Vereinsduell), entfällt ihr Training an diesem Tag. Es wird weder angezeigt noch verschoben und belegt keinen Platz und keine Kabine. Die Platzbelegung zeigt den Hinweis „Training entfällt · Spieltag“ mit Grund und Anstoßzeit, die Startseite zählt es als Änderung.

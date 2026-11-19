@@ -15,6 +15,12 @@ try{
   try{App::json($route==='/api/bomber'?Bomber::load():Recent::load());}
   catch(Throwable $e){error_log('VfL homepage source: '.$e->getMessage());App::json(['error'=>'Die Quelle ist derzeit nicht erreichbar. Bitte erneut versuchen.'],502);}
  }
+ if($route==='/api/halle'){
+  session_write_close();
+  $plan=json_decode((string)@file_get_contents(__DIR__.'/server/hallenplan.json'),true);
+  if(!is_array($plan)||!is_array($plan['halls']??null)||!is_array($plan['slots']??null))App::json(['error'=>'Hallenplan derzeit nicht verfügbar.'],502);
+  App::json($plan);
+ }
  if($route==='/api/breitensport'){
   session_write_close();
   try{App::json(Breitensport::payload());}

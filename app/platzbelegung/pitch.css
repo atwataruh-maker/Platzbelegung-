@@ -14,3 +14,16 @@
 .pitch-booking.match p.pitch-match-team{color:#fff}
 .cabin-sharing{display:flex;align-items:flex-start;gap:5px;font-weight:650}
 .cabin-sharing svg{flex:none;margin-top:2px}
+
+.pitch-view-switch{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin:0 0 18px;border:1px solid #dbe3ef;border-radius:13px;background:#eef2f8;max-width:420px}
+.pitch-view-switch button{border:0;background:none;border-radius:10px;padding:9px 0;font:inherit;font-size:14px;font-weight:700;color:#4a5d7c;cursor:pointer;min-height:40px}
+.pitch-view-switch button[aria-pressed=true]{background:#fff;color:#203555;box-shadow:0 1px 4px #1a33591a}
+.hall-grid{margin-top:12px}
+.hall-slot{border:1px solid #d5e9dc;border-left:3px solid #3a8a5c;background:#f1f8f3;border-radius:10px;padding:11px}
+.hall-slot>strong{display:block;font-size:14px;color:#22452f;line-height:1.4}
+.hall-slot .cabin-time{color:#2f6a48}
+.hall-slot.free{border:1px dashed #b9c6d6;border-left:3px dashed #9aabc0;background:#f7f9fc}
+.hall-slot.free>strong{font-weight:600;color:#5d6e86}
+.hall-slot.free .cabin-time{color:#5d6e86}
+.legend-free:before{background:#c3cfdd!important}
+.hall-off{margin-top:12px}

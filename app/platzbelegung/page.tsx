@@ -1,8 +1,10 @@
 import {APP_VERSION} from '@/components/club-header';
 import {apiFetch as fetch,appPath} from '@/frontend/api';
 'use client';
-import {useEffect,useState,type CSSProperties} from 'react';
-import {ArrowLeft,ArrowRight,CalendarDays,Check,ExternalLink,RefreshCw,AlertTriangle,LoaderCircle,MapPin,ArrowRightLeft,Shield,CalendarX} from 'lucide-react';
+import {useEffect,useState,type CSSProperties,type ReactNode} from 'react';
+import {ArrowLeft,ArrowRight,CalendarDays,Check,ExternalLink,RefreshCw,AlertTriangle,LoaderCircle,MapPin,ArrowRightLeft,Shield,CalendarX,Building2} from 'lucide-react';
+import {usePublicData} from '@/hooks/use-public-data';
+import {hallDay,germanDate,type HallPlan} from '@/lib/hall-plan';
 import {Button} from '@/components/ui/button';
 import {UpcomingMatches} from '@/components/upcoming-matches';
 import {sevenDays,shiftMatchDate,isMatchDate} from '@/lib/matches';
@@ -38,6 +40,29 @@ function BookingCard({booking,style,wide=false}:{booking:Booking;style?:CSSPrope
   {booking.url&&<a href={booking.url} target="_blank" rel="noopener noreferrer">Spieldetails <ExternalLink size={12}/></a>}
  </li>;
 }
+function HallView({day,label,children}:{day:string;label:string;children:ReactNode}){
+ const {data:plan,error,loading,retry}=usePublicData<HallPlan>('/api/halle');
+ const hall=hallDay(plan,day);
+ return <section className="pitch-section hall-section" aria-labelledby="hall-title">
+  <div className="pitch-section-heading"><div><p className="eyebrow">Hallenzeiten</p><h2 id="hall-title">{label}</h2></div>{hall.active&&<span>{hall.teams} {hall.teams===1?'Training':'Trainings'}</span>}</div>
+  {children}
+  {loading&&!plan&&<div className="pitch-skeleton" role="status">Hallenplan wird geladen …</div>}
+  {error&&!plan&&<div className="pitch-notice danger" role="alert"><AlertTriangle size={20}/><div><strong>Hallenplan nicht erreichbar</strong><Button variant="outline" onClick={retry}>Erneut laden</Button></div></div>}
+  {plan&&<>
+   <div className="pitch-source-note current"><Check size={17}/><p><strong>{plan.title}</strong><span>Gilt vom {germanDate(plan.validFrom)} bis {germanDate(plan.validTo)}. Ergänzend zum Platzplan; die Platzbelegung bleibt unverändert.</span></p></div>
+   {!hall.active?<p className="pitch-empty hall-off">An diesem Tag gilt kein Hallenplan.</p>:<>
+    <div className="pitch-legend"><span className="legend-training">Training</span><span className="legend-free">Freie Fußball-Hallenzeit</span></div>
+    <div className="cabin-grid hall-grid">{hall.halls.map(h=><section key={h.id} className="cabin-room" aria-label={h.name}>
+     <header><Building2 size={21}/><div><h3>{h.name}</h3>{h.venue&&<p>{h.venue}</p>}</div></header>
+     {h.slots.length?<ul>{h.slots.map(s=><li key={s.start+s.hall} className={'hall-slot'+(s.team?'':' free')}>
+      <div className="cabin-time"><time>{s.start}–{s.end}</time><span>{s.team?'Training':'frei'}</span></div>
+      <strong>{s.team??'Freie Fußball-Hallenzeit'}</strong>
+     </li>)}</ul>:<p className="pitch-empty">Keine Fußball-Hallenzeit</p>}
+    </section>)}</div>
+   </>}
+  </>}
+ </section>;
+}
 export default function PitchPage(){
  const [date,setDate]=useState<string|null>(()=>{const q=new URLSearchParams(window.location.search).get('date');return q&&isMatchDate(q)?q:sevenDays().from;});
  const [reload,setReload]=useState(0),[data,setData]=useState<DayPlan|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState('');
@@ -58,10 +83,18 @@ export default function PitchPage(){
  const select=(value:string|null)=>{if(value!==date){setDate(value);if((value??today)!==day){setData(null);setError('');}}};
  const weekStart=shiftMatchDate(day,-((new Date(day+'T12:00:00Z').getUTCDay()+6)%7));
  const trainings=current?.bookings.filter(b=>b.kind==='training')??[];
+ const [view,setView]=useState<'plaetze'|'halle'>(()=>new URLSearchParams(window.location.search).get('ansicht')==='halle'?'halle':'plaetze');
+ const switchView=(v:'plaetze'|'halle')=>{setView(v);const q=new URLSearchParams(window.location.search);if(v==='halle')q.set('ansicht','halle');else q.delete('ansicht');history.replaceState(null,'',window.location.pathname+(q.size?'?'+q:''));};
+ const dateControls=<>
+   <div className="pitch-date-bar"><Button variant="outline" size="icon" aria-label="Vorheriger Tag" onClick={()=>select(shiftMatchDate(day,-1))}><ArrowLeft size={17}/></Button><label><CalendarDays size={17}/><input type="date" min="2000-01-01" max="2100-12-31" aria-label="Datum" value={day} onChange={e=>{if(isMatchDate(e.target.value))select(e.target.value);}}/></label><Button variant="outline" size="icon" aria-label="Nächster Tag" onClick={()=>select(shiftMatchDate(day,1))}><ArrowRight size={17}/></Button><Button variant="outline" onClick={()=>select(today)}>Heute</Button></div>
+   <div className="pitch-week" aria-label="Tag dieser Woche">{Array.from({length:7},(_,i)=>{const d=shiftMatchDate(weekStart,i);return <button key={d} onClick={()=>select(d)} aria-pressed={d===day} className={d===day?'active':''}><span>{['Mo','Di','Mi','Do','Fr','Sa','So'][i]}</span><strong>{Number(d.slice(-2))}</strong></button>;})}</div>
+ </>;
  return <div className="app-shell pitch-app"><header className="club-header"><div className="header-inner"><a className="club-brand" href={appPath('/')} aria-label="Zur Startseite"><img className="club-logo" src="https://www.vfl-ramsdorf.de/img/VfLRamsdorf.png" alt="VfL Ramsdorf"/><span className="club-name">RAMSDORF<small>Vereins-App</small></span></a><div className="header-actions"><span className="preview-badge">Version {APP_VERSION}</span><Button variant="ghost" size="icon" className="refresh" onClick={()=>setReload(v=>v+1)} disabled={loading} aria-label="Belegung und Spiele aktualisieren"><RefreshCw className={loading?'spin':''}/></Button></div></div></header>
  <main>
   <a href={appPath('/')} className="pitch-back"><ArrowLeft size={15}/> Übersicht</a>
   <div className="page-heading"><div><p className="eyebrow">Fußball / Plätze & Training</p><h1>Platzbelegung</h1><p className="intro">Ein Tag. Alle Plätze. Änderungen im Blick.</p></div><span className="heading-symbol"><MapPin size={26}/></span></div>
+  <nav className="pitch-view-switch" aria-label="Ansicht"><button type="button" aria-pressed={view==='plaetze'} onClick={()=>switchView('plaetze')}>Plätze</button><button type="button" aria-pressed={view==='halle'} onClick={()=>switchView('halle')}>Halle</button></nav>
+  {view==='halle'?<HallView day={day} label={label(day)}>{dateControls}</HallView>:<>
   <div className="allocation-banner" aria-live="polite" aria-atomic="true">
    {loading&&<div className="pitch-notice neutral"><LoaderCircle className="spin" size={20}/><div><strong>Belegung wird abgeglichen</strong><p>Trainingsplan und Heimspiele für {label(day)}</p></div></div>}
    {error&&<div className="pitch-notice danger" role="alert"><AlertTriangle size={20}/><div><strong>Abgleich nicht möglich</strong><p>{error}</p><Button variant="outline" onClick={()=>setReload(v=>v+1)}>Erneut laden</Button></div></div>}
@@ -76,8 +109,7 @@ export default function PitchPage(){
   <UpcomingMatches selectedDate={date} onDateChange={select} refreshKey={reload} onRefresh={()=>setReload(v=>v+1)}/>
   <section className="pitch-section" aria-labelledby="pitch-title">
    <div className="pitch-section-heading"><div><p className="eyebrow">Dein Tagesplan</p><h2 id="pitch-title">{label(day)}</h2></div><span>{trainings.length} Trainings</span></div>
-   <div className="pitch-date-bar"><Button variant="outline" size="icon" aria-label="Belegung vorheriger Tag" onClick={()=>select(shiftMatchDate(day,-1))}><ArrowLeft size={17}/></Button><label><CalendarDays size={17}/><input type="date" min="2000-01-01" max="2100-12-31" aria-label="Datum der Platzbelegung" value={day} onChange={e=>{if(isMatchDate(e.target.value))select(e.target.value);}}/></label><Button variant="outline" size="icon" aria-label="Belegung nächster Tag" onClick={()=>select(shiftMatchDate(day,1))}><ArrowRight size={17}/></Button><Button variant="outline" onClick={()=>select(today)}>Heute</Button></div>
-   <div className="pitch-week" aria-label="Tag dieser Woche">{Array.from({length:7},(_,i)=>{const d=shiftMatchDate(weekStart,i);return <button key={d} onClick={()=>select(d)} aria-pressed={d===day} className={d===day?'active':''}><span>{['Mo','Di','Mi','Do','Fr','Sa','So'][i]}</span><strong>{Number(d.slice(-2))}</strong></button>;})}</div>
+   {dateControls}
    <div className="pitch-source-note current"><Check size={17}/><p><strong>{PLAN_LABEL}</strong><span>Grundlage: der bereitgestellte Belegungsplan. Heimspiele und daraus entstehende Platzwechsel werden automatisch ergänzt.</span></p><a href={appPath(SOURCE)} target="_blank" rel="noopener noreferrer" aria-label="Original-PDF öffnen"><ExternalLink size={18}/></a></div>
    {current&&!current.automatic&&<p className="pitch-paused">Grundplan ohne automatische Verschiebung. Gezeigte Spiele und Trainings können sich überschneiden; Flächen sind nicht als frei bestätigt.</p>}
    {loading&&<div className="pitch-skeleton" role="status">Platzübersicht wird geladen …</div>}
@@ -88,6 +120,7 @@ export default function PitchPage(){
    </>}
   </section>
   <details className="pitch-rules"><summary>So werden die Plätze verteilt</summary><div><p><strong>Spiele haben Vorrang.</strong> G–E-Jugend: eine Kunstrasenhälfte. D–A-Jugend: beide Hälften. 1.–3. Herren: Hauptplatz. Andere bekannte Erwachsenenteams: kompletter Kunstrasen. Auswärtsspiele und abgesagte Spiele belegen keinen Platz.</p><p><strong>Trainingszeiten bleiben gleich.</strong> Zuerst bleibt jede konfliktfreie Einheit auf ihrer Fläche. Betroffene Teams wechseln für die gesamte Einheit. Kleinfeldteams können auf einen Rasenteil oder die Reserve-Ecke ausweichen. Größere Teams bekommen die Großspielform auf Rasen 1/3, Rasen 2/3 und 3/3 zusammen oder eine Kunstrasenhälfte. Für verschobenes Training wird kein kompletter Kunstrasen vergeben. Die 1. Herren und alle Jugendmannschaften können als letzte Option eine Hauptplatzhälfte nutzen; dort sind maximal zwei Trainings gleichzeitig möglich. Spiele blockieren beide Hauptplatzhälften. Die Raseneinteilung folgt weiterhin der PDF.</p><p><strong>Zeitannahmen für Spiele:</strong> 30 Minuten vorher zum Aufwärmen, 15 Minuten Halbzeit und 15 Minuten anschließend. Angenommene Spielzeit: G 60, F 40, E 50, D 60, C 70, B 80, A und Erwachsene 90 Minuten. Das sind Planungsvorgaben; Verlängerungen und tatsächliche Endzeiten sind nicht bekannt. Spielfeste und fehlende Zeiten erfordern Abstimmung.</p><p><strong>Quelle & Saison:</strong> Der bereitgestellte Sommerplan ersetzt den früheren Website-Plan. Er wiederholt sich wöchentlich bis zum nächsten Planwechsel; ein Winterplan ist nicht hinterlegt. SF Nordvelen ist entsprechend „ab Okt.“ ab Oktober 2026 berücksichtigt. Gemeinsame Gruppen und Spielreserven sind aus der PDF übernommen. Ferien, Platzsperren und kurzfristige Trainingsausfälle sind darin nicht abgebildet.</p><p>Bei einem neuen Saisonplan muss die neue PDF übernommen werden. Wenn Spieldaten fehlen, unvollständig oder veraltet sind, pausiert die automatische Verschiebung. Hinweise erscheinen im Banner. Vorläufige Ansetzungen werden mit Hinweis vorsorglich eingeplant. Die Berechnung gilt für diese App; sie ändert keine Vereins- oder FUSSBALL.DE-Buchung.</p><a href={appPath(SOURCE)} target="_blank" rel="noopener noreferrer">Originalplan ansehen <ExternalLink size={14}/></a></div></details>
+  </>}
   <footer className="footer"><span>VfL Ramsdorf · Seit 1936</span><a href="https://www.vfl-ramsdorf.de/" target="_blank" rel="noopener noreferrer">Vereinswebsite <ExternalLink size={13}/></a></footer>
  </main></div>;
 }

@@ -30,7 +30,8 @@ try{
  data=await (await fetch('http://127.0.0.1:4187/app/api/breitensport')).json();
  const aerobic=data.offers.find(o=>o.id==='aerobic').sessions[0];assert.equal(aerobic.start,'19:00');assert.equal(aerobic.live.state,'updated');assert.equal(aerobic.live.planned.start,'19:30');
  assert.equal(data.offers.find(o=>o.id==='senioren-sport').sessions[0].live.state,'missing');assert.equal(data.offers.find(o=>o.id==='trampolin').sessions[0].live.state,'unchecked');assert.ok(data.live.retrievedAt);assert.equal(data.offers.length,18);assert.equal(data.contacts.length,3);assert.equal(data.courses.courses[0].seatsLeft,2);
+ data=await (await fetch('http://127.0.0.1:4187/app/api/halle')).json();assert.equal(data.halls.length,2);assert.ok(data.slots.some(s=>s.team==='E3-Junioren'));
  response=await fetch('http://127.0.0.1:4187/app/breitensport?angebot=trampolin');assert.equal(response.status,200);assert.match(await response.text(),/window.VFL/);
- console.log('PASS: /app/api/ergebnisse rolling window and 0:0, /app/api/bomber metadata, /app/bomber route, /app/api/breitensport and /app/breitensport.');
+ console.log('PASS: /app/api/ergebnisse rolling window and 0:0, /app/api/bomber metadata, /app/bomber route, /app/api/breitensport, /app/breitensport and /app/api/halle.');
  console.log('PASS: PHP /app/api/heute day-only schedule, shared allocation, partial source, invalid date and existing API compatibility.');
 }finally{server.kill();fs.rmSync(root,{recursive:true,force:true});}
